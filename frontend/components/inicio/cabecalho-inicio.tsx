@@ -1,4 +1,5 @@
 import { ChevronLeft, MoreVertical, Plus } from "lucide-react";
+import Link from "next/link";
 import { BotaoLink } from "@/components/ui/botao";
 import { SeloStatus } from "@/components/ui/selo-status";
 import { conteudoInicio } from "@/content/inicio";
@@ -6,10 +7,10 @@ import { conteudoInicio } from "@/content/inicio";
 export function CabecalhoInicio() {
   return (
     <div className="border-b border-[#e4e8e8] bg-[#f7f8f9] px-8 pt-5">
-      <button className="foco-acessivel mb-4 inline-flex items-center gap-1 rounded text-[10px] text-[#697172] hover:text-[#202526]">
+      <Link href="/projetos" className="foco-acessivel mb-4 inline-flex items-center gap-1 rounded text-[10px] text-[#697172] hover:text-[#202526]">
         <ChevronLeft className="size-3" />
         Voltar para projetos
-      </button>
+      </Link>
 
       <div className="flex items-start justify-between gap-8">
         <div>

@@ -27,7 +27,7 @@ export const gruposNavegacao: GrupoNavegacao[] = [
         href: "/projetos",
         icone: FolderKanban,
         subitens: [
-          { titulo: "Ativos", href: "/projetos", indicador: "verde" },
+          { titulo: "Ativos", href: "/projetos?status=ativos", indicador: "verde" },
           { titulo: "Rascunhos", href: "/projetos?status=rascunhos", indicador: "cinza" },
           { titulo: "Concluídos", href: "/projetos?status=concluidos", indicador: "verde" },
           { titulo: "Arquivados", href: "/projetos?status=arquivados", indicador: "cinza" },

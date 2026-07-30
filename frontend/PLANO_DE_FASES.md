@@ -12,11 +12,15 @@
 - Fluxo guiado de Ideia, Roteiro, Cenas, Narração, Legendas, Música e Exportação.
 - Modos Rápido, Assistido e Avançado.
 - Storyboard, editor de roteiro, prévias, controles de áudio e revisão final.
-- Rascunho local manual e seletores reutilizáveis de diretórios.
 - Interface pronta para receber contratos e chamadas do MoneyPrinterTurbo.
 
-## Fase 3 — Projetos
-Autosave, versões, filtros, pastas, favoritos, duplicação, arquivo e histórico.
+## Fase 3 — Projetos — concluída
+- Persistência local versionada e migração do rascunho anterior.
+- Autosave no estúdio e carregamento por identificador de projeto.
+- Busca, filtros, ordenação, grade e lista.
+- Pastas virtuais, favoritos, duplicação, movimentação e arquivo.
+- Painel de detalhes, histórico, versões, restauração e exportação JSON.
+- Página Início conectada ao workspace real de projetos.
 
 ## Fase 4 — Produção
 Fila, progresso, cancelamento, novas tentativas, logs e recursos do computador.
