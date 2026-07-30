@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --fundo-aplicacao: #f7f8f9;
+  --fundo-superficie: #ffffff;
+  --fundo-suave: #f1f4f4;
+  --texto-principal: #171a1b;
+  --texto-secundario: #697172;
+  --texto-suave: #92999a;
+  --borda: #e5e9e9;
+  --borda-forte: #d9dede;
+  --verde: #1f9b83;
+  --verde-escuro: #167664;
+  --verde-suave: #e8f5f1;
+  --alerta: #b26a35;
+  --erro: #b84b4b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo-aplicacao);
+  color: var(--texto-principal);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #ccebe3;
+  color: #103c33;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d5dada;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.painel-superficie {
+  border: 1px solid var(--borda);
+  background: var(--fundo-superficie);
+  box-shadow: 0 1px 2px rgb(20 29 27 / 4%);
+}
+
+.foco-acessivel:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--verde) 70%, white);
+  outline-offset: 2px;
+}
