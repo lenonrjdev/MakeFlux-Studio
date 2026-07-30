@@ -1,0 +1,2520 @@
+From 37f8e098670542f97fefda1bf75dd18ccef3c45d Mon Sep 17 00:00:00 2001
+From: MakeFlux Studio <makeflux@local.dev>
+Date: Thu, 30 Jul 2026 15:18:03 +0000
+Subject: [PATCH] =?UTF-8?q?feat(fase-2):=20implementar=20est=C3=BAdio=20gu?=
+ =?UTF-8?q?iado=20de=20cria=C3=A7=C3=A3o=20de=20v=C3=ADdeos?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- cria fluxo completo de Ideia, Roteiro, Cenas, Narração, Legendas, Música e Exportação
+- adiciona modos rápido, assistido e avançado com navegação livre entre etapas
+- implementa editor de roteiro demonstrativo, storyboard editável e prévias visuais
+- adiciona controles de voz, legendas, trilha, mixagem, qualidade e codificador
+- cria resumo lateral persistente, notificações e salvamento manual de rascunho local
+- generaliza o seletor de pastas para materiais, músicas e exportações
+- adapta o cabeçalho global à rota atual e atualiza a versão desktop para 0.2.0
+- documenta os limites do frontend e atualiza o plano de fases
+---
+ PLANO_DE_FASES.md                             |  10 +-
+ README_FASE_2.md                              |  47 ++++
+ app/criar-video/page.tsx                      |  11 +-
+ .../criar-video/cabecalho-projeto-video.tsx   |  60 +++++
+ .../criar-video/estudio-criacao-video.tsx     | 178 +++++++++++++++
+ components/criar-video/etapas/etapa-cenas.tsx | 211 ++++++++++++++++++
+ .../criar-video/etapas/etapa-exportacao.tsx   | 170 ++++++++++++++
+ components/criar-video/etapas/etapa-ideia.tsx | 186 +++++++++++++++
+ .../criar-video/etapas/etapa-legendas.tsx     | 156 +++++++++++++
+ .../criar-video/etapas/etapa-musica.tsx       | 173 ++++++++++++++
+ .../criar-video/etapas/etapa-narracao.tsx     | 175 +++++++++++++++
+ .../criar-video/etapas/etapa-roteiro.tsx      | 138 ++++++++++++
+ components/criar-video/navegacao-etapas.tsx   |  62 +++++
+ .../criar-video/resumo-projeto-video.tsx      |  91 ++++++++
+ components/criar-video/rodape-etapa.tsx       |  42 ++++
+ components/layout/cabecalho-aplicacao.tsx     |  50 ++++-
+ components/ui/botao-selecionar-pasta.tsx      |  23 +-
+ components/ui/campo-formulario.tsx            |  33 +++
+ components/ui/interruptor.tsx                 |  41 ++++
+ components/ui/seletor-segmentado.tsx          |  39 ++++
+ content/criar-video.ts                        |  48 ++++
+ data/criar-video.ts                           | 159 +++++++++++++
+ hooks/use-seletor-pasta.ts                    |  20 +-
+ package.json                                  |   2 +-
+ src-tauri/Cargo.toml                          |   2 +-
+ src-tauri/tauri.conf.json                     |   2 +-
+ types/criar-video.ts                          |  60 +++++
+ 27 files changed, 2158 insertions(+), 31 deletions(-)
+ create mode 100644 README_FASE_2.md
+ create mode 100644 components/criar-video/cabecalho-projeto-video.tsx
+ create mode 100644 components/criar-video/estudio-criacao-video.tsx
+ create mode 100644 components/criar-video/etapas/etapa-cenas.tsx
+ create mode 100644 components/criar-video/etapas/etapa-exportacao.tsx
+ create mode 100644 components/criar-video/etapas/etapa-ideia.tsx
+ create mode 100644 components/criar-video/etapas/etapa-legendas.tsx
+ create mode 100644 components/criar-video/etapas/etapa-musica.tsx
+ create mode 100644 components/criar-video/etapas/etapa-narracao.tsx
+ create mode 100644 components/criar-video/etapas/etapa-roteiro.tsx
+ create mode 100644 components/criar-video/navegacao-etapas.tsx
+ create mode 100644 components/criar-video/resumo-projeto-video.tsx
+ create mode 100644 components/criar-video/rodape-etapa.tsx
+ create mode 100644 components/ui/campo-formulario.tsx
+ create mode 100644 components/ui/interruptor.tsx
+ create mode 100644 components/ui/seletor-segmentado.tsx
+ create mode 100644 content/criar-video.ts
+ create mode 100644 data/criar-video.ts
+ create mode 100644 types/criar-video.ts
+
+diff --git a/PLANO_DE_FASES.md b/PLANO_DE_FASES.md
+index d8e2640..91cbfab 100644
+--- a/PLANO_DE_FASES.md
++++ b/PLANO_DE_FASES.md
+@@ -1,6 +1,6 @@
+ # Plano de fases — MakeFlux Studio
+ 
+-## Fase 1 — Fundação visual e aplicativo desktop
++## Fase 1 — Fundação visual e aplicativo desktop — concluída
+ - Shell Tauri 2 + Next.js com exportação estática.
+ - Sidebar completa e navegação de todos os módulos.
+ - Página Início fiel à referência clean enviada.
+@@ -8,8 +8,12 @@
+ - Seletor reutilizável de pasta com Tauri Dialog e fallback web.
+ - Rotas provisórias para evitar páginas quebradas.
+ 
+-## Fase 2 — Criar vídeo
+-Fluxo guiado: ideia, roteiro, cenas, narração, legendas, música e exportação.
++## Fase 2 — Criar vídeo — concluída
++- Fluxo guiado de Ideia, Roteiro, Cenas, Narração, Legendas, Música e Exportação.
++- Modos Rápido, Assistido e Avançado.
++- Storyboard, editor de roteiro, prévias, controles de áudio e revisão final.
++- Rascunho local manual e seletores reutilizáveis de diretórios.
++- Interface pronta para receber contratos e chamadas do MoneyPrinterTurbo.
+ 
+ ## Fase 3 — Projetos
+ Autosave, versões, filtros, pastas, favoritos, duplicação, arquivo e histórico.
+diff --git a/README_FASE_2.md b/README_FASE_2.md
+new file mode 100644
+index 0000000..0b24a2b
+--- /dev/null
++++ b/README_FASE_2.md
+@@ -0,0 +1,47 @@
++# MakeFlux Studio — Fase 2
++
++A Fase 2 implementa o módulo **Criar vídeo** como um estúdio guiado completo no frontend desktop.
++
++## Entregas
++
++- Fluxo em sete etapas: Ideia, Roteiro, Cenas, Narração, Legendas, Música e Exportação.
++- Navegação livre entre etapas com indicação de progresso.
++- Modos Rápido, Assistido e Avançado.
++- Editor de roteiro com demonstração local, contagem de palavras e duração estimada.
++- Storyboard editável com termos visuais, duração, ordem, duplicação e remoção.
++- Escolha de provedor, voz, velocidade e volume de narração.
++- Editor visual de legendas com presets, posição e tamanho.
++- Biblioteca demonstrativa de músicas e controles de mixagem.
++- Revisão completa de exportação, codificador, qualidade e quantidade de versões.
++- Resumo lateral persistente durante todo o fluxo.
++- Seletores nativos reutilizáveis para pastas de materiais, músicas e exportações.
++- Salvamento manual do rascunho no `localStorage` para validar a experiência do frontend.
++- Cabeçalho global adaptado à rota atual.
++
++## Limite desta fase
++
++Nenhuma chamada real ao MoneyPrinterTurbo, OpenAI, bancos de mídia, TTS ou FFmpeg é executada. Os botões de geração apresentam respostas demonstrativas para validar o fluxo e a experiência antes da integração do motor.
++
++## Executar
++
++```bash
++npm install
++npm run desktop
++```
++
++Somente no navegador:
++
++```bash
++npm run dev
++```
++
++## Estrutura principal adicionada
++
++```text
++app/criar-video/
++components/criar-video/
++components/criar-video/etapas/
++content/criar-video.ts
++data/criar-video.ts
++types/criar-video.ts
++```
+diff --git a/app/criar-video/page.tsx b/app/criar-video/page.tsx
+index 01e6581..d62c8bf 100644
+--- a/app/criar-video/page.tsx
++++ b/app/criar-video/page.tsx
+@@ -1,6 +1,11 @@
+-import { PaginaEmConstrucao } from "@/components/modulos/pagina-em-construcao";
+-import { modulosPlanejados } from "@/content/modulos";
++import { CabecalhoAplicacao } from "@/components/layout/cabecalho-aplicacao";
++import { EstudioCriacaoVideo } from "@/components/criar-video/estudio-criacao-video";
+ 
+ export default function PaginaCriarVideo() {
+-  return <PaginaEmConstrucao {...modulosPlanejados["/criar-video"]} />;
++  return (
++    <div className="min-h-screen">
++      <CabecalhoAplicacao />
++      <EstudioCriacaoVideo />
++    </div>
++  );
+ }
+diff --git a/components/criar-video/cabecalho-projeto-video.tsx b/components/criar-video/cabecalho-projeto-video.tsx
+new file mode 100644
+index 0000000..f14e4aa
+--- /dev/null
++++ b/components/criar-video/cabecalho-projeto-video.tsx
+@@ -0,0 +1,60 @@
++import { ChevronLeft, MoreVertical, Save } from "lucide-react";
++import Link from "next/link";
++
++import { Botao } from "@/components/ui/botao";
++import { SeloStatus } from "@/components/ui/selo-status";
++import { conteudoCriarVideo } from "@/content/criar-video";
++
++export function CabecalhoProjetoVideo({
++  nomeProjeto,
++  modo,
++  aoSalvar,
++}: {
++  nomeProjeto: string;
++  modo: string;
++  aoSalvar: () => void;
++}) {
++  return (
++    <div className="border-b border-[#e4e8e8] bg-[#f7f8f9] px-8 pt-5">
++      <Link
++        href="/projetos"
++        className="foco-acessivel mb-4 inline-flex items-center gap-1 rounded text-[10px] text-[#697172] hover:text-[#202526]"
++      >
++        <ChevronLeft className="size-3" />
++        {conteudoCriarVideo.breadcrumb}
++      </Link>
++
++      <div className="flex items-start justify-between gap-8">
++        <div className="min-w-0">
++          <div className="flex flex-wrap items-center gap-2.5">
++            <h1 className="truncate text-[19px] font-semibold tracking-[-0.025em] text-[#171a1b]">
++              {nomeProjeto || conteudoCriarVideo.titulo}
++            </h1>
++            <span className="rounded border border-[#dce1e1] bg-white px-2 py-1 text-[9px] font-medium text-[#687071]">
++              {conteudoCriarVideo.etiqueta}
++            </span>
++          </div>
++          <p className="mt-2 max-w-[720px] text-[11.5px] leading-5 text-[#747c7d]">
++            {conteudoCriarVideo.descricao}
++          </p>
++        </div>
++
++        <div className="flex shrink-0 items-center gap-2">
++          <SeloStatus texto={conteudoCriarVideo.statusRascunho} tom="neutro" />
++          <SeloStatus texto={`Modo ${modo}`} />
++          <Botao onClick={aoSalvar} className="h-8 px-3">
++            <Save className="size-3.5" />
++            {conteudoCriarVideo.acaoSalvar}
++          </Botao>
++          <button
++            type="button"
++            aria-label="Mais opções do projeto"
++            className="foco-acessivel grid size-8 place-items-center rounded-md border border-[#dfe4e4] bg-white text-[#6a7273] hover:bg-[#f7f9f9]"
++          >
++            <MoreVertical className="size-3.5" />
++          </button>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/components/criar-video/estudio-criacao-video.tsx b/components/criar-video/estudio-criacao-video.tsx
+new file mode 100644
+index 0000000..9394427
+--- /dev/null
++++ b/components/criar-video/estudio-criacao-video.tsx
+@@ -0,0 +1,178 @@
++"use client";
++
++import { CheckCircle2, CircleAlert } from "lucide-react";
++import { useCallback, useEffect, useMemo, useRef, useState } from "react";
++
++import { conteudoCriarVideo } from "@/content/criar-video";
++import { configuracaoInicialVideo, etapasCriacaoVideo } from "@/data/criar-video";
++import type {
++  AtualizarConfiguracaoVideo,
++  ConfiguracaoCriacaoVideo,
++  IdEtapaCriacao,
++} from "@/types/criar-video";
++
++import { CabecalhoProjetoVideo } from "./cabecalho-projeto-video";
++import { NavegacaoEtapas } from "./navegacao-etapas";
++import { ResumoProjetoVideo } from "./resumo-projeto-video";
++import { RodapeEtapa } from "./rodape-etapa";
++import { EtapaCenas } from "./etapas/etapa-cenas";
++import { EtapaExportacao } from "./etapas/etapa-exportacao";
++import { EtapaIdeia } from "./etapas/etapa-ideia";
++import { EtapaLegendas } from "./etapas/etapa-legendas";
++import { EtapaMusica } from "./etapas/etapa-musica";
++import { EtapaNarracao } from "./etapas/etapa-narracao";
++import { EtapaRoteiro } from "./etapas/etapa-roteiro";
++
++const CHAVE_RASCUNHO = "makeflux:rascunho-criar-video-fase-2";
++
++export function EstudioCriacaoVideo() {
++  const [etapaAtual, setEtapaAtual] = useState<IdEtapaCriacao>("ideia");
++  const [configuracao, setConfiguracao] = useState<ConfiguracaoCriacaoVideo>(configuracaoInicialVideo);
++  const [notificacao, setNotificacao] = useState<{ mensagem: string; tipo: "sucesso" | "aviso" } | null>(null);
++  const temporizador = useRef<number | null>(null);
++
++  useEffect(() => {
++    const rascunho = window.localStorage.getItem(CHAVE_RASCUNHO);
++    if (!rascunho) return;
++
++    try {
++      const dados = JSON.parse(rascunho) as Partial<ConfiguracaoCriacaoVideo>;
++      setConfiguracao((estado) => ({ ...estado, ...dados }));
++    } catch {
++      window.localStorage.removeItem(CHAVE_RASCUNHO);
++    }
++  }, []);
++
++  useEffect(() => {
++    return () => {
++      if (temporizador.current) window.clearTimeout(temporizador.current);
++    };
++  }, []);
++
++  const atualizar: AtualizarConfiguracaoVideo = useCallback((campo, valor) => {
++    setConfiguracao((estado) => ({ ...estado, [campo]: valor }));
++  }, []);
++
++  const notificar = useCallback((mensagem: string, tipo: "sucesso" | "aviso" = "sucesso") => {
++    if (temporizador.current) window.clearTimeout(temporizador.current);
++    setNotificacao({ mensagem, tipo });
++    temporizador.current = window.setTimeout(() => setNotificacao(null), 3600);
++  }, []);
++
++  const indiceAtual = useMemo(
++    () => etapasCriacaoVideo.findIndex((etapa) => etapa.id === etapaAtual),
++    [etapaAtual],
++  );
++  const etapa = etapasCriacaoVideo[indiceAtual];
++  const conteudoEtapa = conteudoCriarVideo.etapas[etapaAtual];
++
++  function salvarRascunho() {
++    window.localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(configuracao));
++    notificar("Rascunho salvo neste computador.");
++  }
++
++  function irParaAnterior() {
++    const anterior = etapasCriacaoVideo[indiceAtual - 1];
++    if (anterior) setEtapaAtual(anterior.id);
++  }
++
++  function irParaProximo() {
++    if (etapaAtual === "ideia" && !configuracao.tema.trim()) {
++      notificar("Descreva a ideia do vídeo para continuar pelo fluxo guiado.", "aviso");
++      return;
++    }
++
++    const proxima = etapasCriacaoVideo[indiceAtual + 1];
++    if (proxima) {
++      setEtapaAtual(proxima.id);
++      window.scrollTo({ top: 0, behavior: "smooth" });
++      return;
++    }
++
++    salvarRascunho();
++    notificar("Projeto preparado. A produção real será habilitada na integração com o motor.");
++  }
++
++  function renderizarEtapa() {
++    const propriedades = { configuracao, atualizar };
++
++    switch (etapaAtual) {
++      case "ideia":
++        return <EtapaIdeia {...propriedades} />;
++      case "roteiro":
++        return <EtapaRoteiro {...propriedades} notificar={notificar} />;
++      case "cenas":
++        return <EtapaCenas {...propriedades} notificar={notificar} />;
++      case "narracao":
++        return <EtapaNarracao {...propriedades} notificar={notificar} />;
++      case "legendas":
++        return <EtapaLegendas {...propriedades} />;
++      case "musica":
++        return <EtapaMusica {...propriedades} notificar={notificar} />;
++      case "exportacao":
++        return <EtapaExportacao {...propriedades} />;
++    }
++  }
++
++  return (
++    <div className="min-h-screen pb-[82px]">
++      <CabecalhoProjetoVideo
++        nomeProjeto={configuracao.nomeProjeto}
++        modo={configuracao.modo}
++        aoSalvar={salvarRascunho}
++      />
++      <div className="border-b border-[#e4e8e8] bg-[#f7f8f9] px-8">
++        <NavegacaoEtapas etapaAtual={etapaAtual} aoSelecionar={setEtapaAtual} />
++      </div>
++
++      <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-5 px-8 py-5">
++        <section className="painel-superficie min-w-0 overflow-hidden rounded-md">
++          <header className="flex items-start justify-between gap-6 border-b border-[#e7ebeb] bg-[#fafbfb] px-5 py-4">
++            <div className="flex items-start gap-3">
++              <span className="grid size-8 shrink-0 place-items-center rounded-md border border-[#cce3dd] bg-white text-[10px] font-semibold text-[#238872] shadow-sm">
++                {String(indiceAtual + 1).padStart(2, "0")}
++              </span>
++              <div>
++                <h2 className="text-[12px] font-semibold tracking-[-0.015em] text-[#252a2b]">{conteudoEtapa.titulo}</h2>
++                <p className="mt-1 max-w-[720px] text-[9px] leading-4 text-[#858d8e]">{conteudoEtapa.descricao}</p>
++              </div>
++            </div>
++            <span className="rounded-md border border-[#e0e5e5] bg-white px-2 py-1 text-[8px] font-medium text-[#747c7d]">
++              Etapa {indiceAtual + 1} de {etapasCriacaoVideo.length} · {etapa.titulo}
++            </span>
++          </header>
++
++          <div className="p-5">{renderizarEtapa()}</div>
++        </section>
++
++        <ResumoProjetoVideo configuracao={configuracao} />
++      </div>
++
++      <RodapeEtapa
++        primeiraEtapa={indiceAtual === 0}
++        ultimaEtapa={indiceAtual === etapasCriacaoVideo.length - 1}
++        aoAnterior={irParaAnterior}
++        aoProximo={irParaProximo}
++        aoSalvar={salvarRascunho}
++      />
++
++      {notificacao && (
++        <div
++          role="status"
++          className={`fixed bottom-[78px] right-6 z-50 flex max-w-[390px] items-start gap-2.5 rounded-md border bg-white px-3.5 py-3 text-[9.5px] leading-4 shadow-[0_12px_35px_rgba(20,29,27,.13)] ${
++            notificacao.tipo === "aviso"
++              ? "border-[#ead9cb] text-[#8b5e3b]"
++              : "border-[#cce4de] text-[#276f60]"
++          }`}
++        >
++          {notificacao.tipo === "aviso" ? (
++            <CircleAlert className="mt-0.5 size-3.5 shrink-0" />
++          ) : (
++            <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
++          )}
++          {notificacao.mensagem}
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-cenas.tsx b/components/criar-video/etapas/etapa-cenas.tsx
+new file mode 100644
+index 0000000..a1d4884
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-cenas.tsx
+@@ -0,0 +1,211 @@
++"use client";
++
++import { ChevronDown, ChevronUp, Copy, FolderOpen, GripVertical, ImagePlus, Plus, Trash2 } from "lucide-react";
++
++import { Botao } from "@/components/ui/botao";
++import { BotaoSelecionarPasta } from "@/components/ui/botao-selecionar-pasta";
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { Interruptor } from "@/components/ui/interruptor";
++import { fontesMateriais } from "@/data/criar-video";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++export function EtapaCenas({
++  configuracao,
++  atualizar,
++  notificar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++  notificar: (mensagem: string) => void;
++}) {
++  function atualizarCena(id: number, campo: "termo" | "duracao", valor: string | number) {
++    atualizar(
++      "cenas",
++      configuracao.cenas.map((cena) => (cena.id === id ? { ...cena, [campo]: valor } : cena)),
++    );
++  }
++
++  function moverCena(indice: number, direcao: -1 | 1) {
++    const destino = indice + direcao;
++    if (destino < 0 || destino >= configuracao.cenas.length) return;
++    const cenas = [...configuracao.cenas];
++    [cenas[indice], cenas[destino]] = [cenas[destino], cenas[indice]];
++    atualizar("cenas", cenas);
++  }
++
++  function duplicarCena(indice: number) {
++    const cena = configuracao.cenas[indice];
++    const novaCena = { ...cena, id: Date.now(), titulo: `${cena.titulo} — cópia` };
++    const cenas = [...configuracao.cenas];
++    cenas.splice(indice + 1, 0, novaCena);
++    atualizar("cenas", cenas);
++  }
++
++  function adicionarCena() {
++    atualizar("cenas", [
++      ...configuracao.cenas,
++      {
++        id: Date.now(),
++        titulo: `Cena ${configuracao.cenas.length + 1}`,
++        trecho: "Novo trecho visual para revisar.",
++        termo: "",
++        duracao: 5,
++        origem: configuracao.fonteMateriais,
++      },
++    ]);
++  }
++
++  return (
++    <div className="space-y-5">
++      <div className="grid grid-cols-[1fr_1.2fr] gap-4 rounded-md border border-[#e3e7e7] bg-[#fafbfb] p-4">
++        <CampoFormulario rotulo="Fonte principal dos materiais">
++          <select
++            value={configuracao.fonteMateriais}
++            onChange={(evento) => atualizar("fonteMateriais", evento.target.value)}
++            className={`${classesCampo} h-9`}
++          >
++            {fontesMateriais.map((fonte) => (
++              <option key={fonte}>{fonte}</option>
++            ))}
++          </select>
++        </CampoFormulario>
++
++        <Interruptor
++          ativo={configuracao.correspondenciaNarrativa}
++          aoAlterar={(ativo) => atualizar("correspondenciaNarrativa", ativo)}
++          rotulo="Correspondência narrativa"
++          descricao="Tenta manter os materiais na mesma ordem dos trechos do roteiro."
++        />
++      </div>
++
++      <div className="flex items-center justify-between gap-5 border-b border-[#e5e9e9] pb-3">
++        <div>
++          <div className="flex items-center gap-2">
++            <h3 className="text-[10.5px] font-semibold text-[#303637]">Storyboard do vídeo</h3>
++            <span className="rounded-full bg-[#dff1ec] px-1.5 py-0.5 text-[8px] font-semibold text-[#1c7e6a]">
++              {configuracao.cenas.length}
++            </span>
++          </div>
++          <p className="mt-1 text-[8.5px] text-[#8b9293]">Edite termos, duração e ordem antes de buscar os arquivos reais.</p>
++        </div>
++
++        <div className="flex items-center gap-2">
++          <BotaoSelecionarPasta
++            rotulo="Usar pasta de materiais"
++            tituloDialogo="Escolha uma pasta com vídeos e imagens"
++            chaveArmazenamento="makeflux:pasta-materiais-projeto"
++            className="h-8 px-2.5"
++          />
++          <Botao onClick={adicionarCena} className="h-8 px-2.5">
++            <Plus className="size-3" />
++            Adicionar cena
++          </Botao>
++        </div>
++      </div>
++
++      <div className="space-y-2.5">
++        {configuracao.cenas.map((cena, indice) => (
++          <article key={cena.id} className="grid grid-cols-[28px_116px_minmax(0,1fr)_120px] gap-3 rounded-md border border-[#e1e5e5] bg-white p-3">
++            <div className="flex flex-col items-center gap-1 pt-1 text-[#a0a6a7]">
++              <GripVertical className="size-3.5" />
++              <span className="mt-1 text-[8px] font-semibold text-[#747c7d]">{String(indice + 1).padStart(2, "0")}</span>
++            </div>
++
++            <div className="relative h-[86px] overflow-hidden rounded-md border border-[#dfe4e4] bg-[#ecefef]">
++              <div className="absolute inset-0 bg-[linear-gradient(135deg,#e6ebe9,#cfd9d6)]" />
++              <div className="absolute inset-x-3 bottom-3 space-y-1">
++                <div className="h-1.5 rounded-full bg-white/85" />
++                <div className="h-1.5 w-3/4 rounded-full bg-[#4db69f]" />
++              </div>
++              <span className="absolute left-2 top-2 rounded bg-black/50 px-1.5 py-0.5 text-[7px] font-medium text-white">
++                {cena.duracao}s
++              </span>
++            </div>
++
++            <div className="min-w-0">
++              <div className="flex items-start justify-between gap-3">
++                <div className="min-w-0">
++                  <strong className="block truncate text-[10px] font-medium text-[#303637]">{cena.titulo}</strong>
++                  <p className="mt-1 line-clamp-2 text-[8.5px] leading-4 text-[#858d8e]">{cena.trecho}</p>
++                </div>
++                <span className="shrink-0 rounded border border-[#e2e6e6] bg-[#fafbfb] px-1.5 py-1 text-[7.5px] text-[#7e8687]">
++                  {cena.origem}
++                </span>
++              </div>
++              <input
++                value={cena.termo}
++                onChange={(evento) => atualizarCena(cena.id, "termo", evento.target.value)}
++                className={`${classesCampo} mt-2 h-8 text-[9px]`}
++                placeholder="Termo visual em inglês"
++              />
++            </div>
++
++            <div className="flex flex-col justify-between border-l border-[#edf0f0] pl-3">
++              <div>
++                <span className="block text-[7.5px] uppercase tracking-[0.05em] text-[#9aa1a2]">Duração</span>
++                <div className="mt-1 flex items-center gap-1.5">
++                  <input
++                    type="number"
++                    min={2}
++                    max={30}
++                    value={cena.duracao}
++                    onChange={(evento) => atualizarCena(cena.id, "duracao", Number(evento.target.value))}
++                    className={`${classesCampo} h-8 w-16 px-2 text-center`}
++                  />
++                  <span className="text-[8px] text-[#8c9394]">seg.</span>
++                </div>
++              </div>
++
++              <div className="flex items-center gap-0.5">
++                <button
++                  type="button"
++                  aria-label="Mover cena para cima"
++                  onClick={() => moverCena(indice, -1)}
++                  disabled={indice === 0}
++                  className="foco-acessivel grid size-7 place-items-center rounded text-[#788081] hover:bg-[#f0f3f3] disabled:opacity-30"
++                >
++                  <ChevronUp className="size-3" />
++                </button>
++                <button
++                  type="button"
++                  aria-label="Mover cena para baixo"
++                  onClick={() => moverCena(indice, 1)}
++                  disabled={indice === configuracao.cenas.length - 1}
++                  className="foco-acessivel grid size-7 place-items-center rounded text-[#788081] hover:bg-[#f0f3f3] disabled:opacity-30"
++                >
++                  <ChevronDown className="size-3" />
++                </button>
++                <button
++                  type="button"
++                  aria-label="Duplicar cena"
++                  onClick={() => duplicarCena(indice)}
++                  className="foco-acessivel grid size-7 place-items-center rounded text-[#788081] hover:bg-[#f0f3f3]"
++                >
++                  <Copy className="size-3" />
++                </button>
++                <button
++                  type="button"
++                  aria-label="Excluir cena"
++                  onClick={() => atualizar("cenas", configuracao.cenas.filter((item) => item.id !== cena.id))}
++                  className="foco-acessivel grid size-7 place-items-center rounded text-[#9a7770] hover:bg-[#fbf2f0] hover:text-[#a65145]"
++                >
++                  <Trash2 className="size-3" />
++                </button>
++              </div>
++            </div>
++          </article>
++        ))}
++      </div>
++
++      <button
++        type="button"
++        onClick={() => notificar("A busca real de materiais será conectada ao motor do MoneyPrinterTurbo.")}
++        className="foco-acessivel flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-[#cfd7d6] bg-[#fafbfb] py-3 text-[9.5px] font-medium text-[#657071] hover:border-[#a9c9c1] hover:bg-[#f5faf8] hover:text-[#277b6a]"
++      >
++        <ImagePlus className="size-3.5" />
++        Buscar materiais para todas as cenas
++        <FolderOpen className="size-3.5" />
++      </button>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-exportacao.tsx b/components/criar-video/etapas/etapa-exportacao.tsx
+new file mode 100644
+index 0000000..b0f1bfc
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-exportacao.tsx
+@@ -0,0 +1,170 @@
++"use client";
++
++import { CheckCircle2, Cpu, FileVideo2, Layers3, MonitorUp, ShieldCheck } from "lucide-react";
++
++import { BotaoSelecionarPasta } from "@/components/ui/botao-selecionar-pasta";
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { SeletorSegmentado } from "@/components/ui/seletor-segmentado";
++import { formatosVideo, plataformasVideo } from "@/data/criar-video";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++const qualidades = ["720p · Prévia rápida", "1080p · Alta qualidade", "1440p · Qualidade superior"];
++const codificadores = [
++  "Automático · melhor disponível",
++  "NVIDIA NVENC",
++  "Intel Quick Sync",
++  "AMD AMF",
++  "CPU · libx264",
++];
++const quantidades = [
++  { id: "1", titulo: "1 versão", detalhe: "Uma saída" },
++  { id: "2", titulo: "2 versões", detalhe: "Comparação rápida" },
++  { id: "3", titulo: "3 versões", detalhe: "Mais variações" },
++] as const;
++
++export function EtapaExportacao({
++  configuracao,
++  atualizar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++}) {
++  const plataforma = plataformasVideo.find((item) => item.id === configuracao.plataforma)?.titulo;
++  const duracaoCenas = configuracao.cenas.reduce((total, cena) => total + cena.duracao, 0);
++  const itensRevisao = [
++    { rotulo: "Destino", valor: plataforma ?? "YouTube Shorts", icone: MonitorUp },
++    { rotulo: "Saída", valor: `${configuracao.formato} · ${configuracao.qualidade.split(" · ")[0]}`, icone: FileVideo2 },
++    { rotulo: "Storyboard", valor: `${configuracao.cenas.length} cenas · ${duracaoCenas}s`, icone: Layers3 },
++    { rotulo: "Renderização", valor: configuracao.codificador, icone: Cpu },
++  ];
++
++  return (
++    <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-5">
++      <div className="space-y-6">
++        <div className="grid grid-cols-2 gap-5">
++          <CampoFormulario rotulo="Formato final">
++            <SeletorSegmentado
++              valor={configuracao.formato}
++              opcoes={formatosVideo}
++              aoAlterar={(valor) => atualizar("formato", valor)}
++              className="grid-cols-3"
++            />
++          </CampoFormulario>
++
++          <CampoFormulario rotulo="Qualidade de exportação">
++            <select
++              value={configuracao.qualidade}
++              onChange={(evento) => atualizar("qualidade", evento.target.value)}
++              className={`${classesCampo} h-9`}
++            >
++              {qualidades.map((qualidade) => (
++                <option key={qualidade}>{qualidade}</option>
++              ))}
++            </select>
++          </CampoFormulario>
++        </div>
++
++        <CampoFormulario
++          rotulo="Quantidade de versões"
++          descricao="O motor poderá variar materiais e ordem mantendo a mesma configuração principal."
++        >
++          <SeletorSegmentado
++            valor={String(configuracao.quantidadeVersoes) as "1" | "2" | "3"}
++            opcoes={quantidades}
++            aoAlterar={(valor) => atualizar("quantidadeVersoes", Number(valor))}
++            className="grid-cols-3"
++          />
++        </CampoFormulario>
++
++        <CampoFormulario
++          rotulo="Codificador de vídeo"
++          descricao="O modo automático utiliza aceleração por hardware quando ela estiver disponível."
++        >
++          <select
++            value={configuracao.codificador}
++            onChange={(evento) => atualizar("codificador", evento.target.value)}
++            className={`${classesCampo} h-9`}
++          >
++            {codificadores.map((codificador) => (
++              <option key={codificador}>{codificador}</option>
++            ))}
++          </select>
++        </CampoFormulario>
++
++        <div className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] p-4">
++          <div className="flex items-center justify-between gap-5">
++            <div>
++              <strong className="block text-[10.5px] font-medium text-[#303637]">Pasta de exportação</strong>
++              <p className="mt-1 text-[8.5px] leading-4 text-[#8a9293]">
++                Escolha onde os vídeos, áudios e legendas resultantes serão gravados.
++              </p>
++            </div>
++            <BotaoSelecionarPasta
++              rotulo="Escolher destino"
++              tituloDialogo="Escolha a pasta de exportação"
++              chaveArmazenamento="makeflux:pasta-exportacao"
++              className="h-8 px-2.5"
++            />
++          </div>
++        </div>
++
++        <div className="rounded-md border border-[#cfe5df] bg-[#f1f9f7] p-4">
++          <div className="flex items-start gap-3">
++            <span className="grid size-8 shrink-0 place-items-center rounded-md bg-white text-[#248a75] shadow-sm">
++              <ShieldCheck className="size-4" />
++            </span>
++            <div>
++              <strong className="block text-[10.5px] font-medium text-[#27695c]">Projeto pronto para entrar na produção</strong>
++              <p className="mt-1 text-[8.5px] leading-4 text-[#66827c]">
++                A interface já reúne todas as decisões necessárias. A chamada real será habilitada quando o adaptador do MoneyPrinterTurbo estiver conectado.
++              </p>
++            </div>
++          </div>
++        </div>
++      </div>
++
++      <aside className="rounded-md border border-[#dfe4e4] bg-white p-4 shadow-[0_1px_2px_rgba(20,29,27,.04)]">
++        <div className="flex items-center gap-2.5 border-b border-[#edf0f0] pb-3">
++          <span className="grid size-8 place-items-center rounded-md bg-[#eaf7f3] text-[#218773]">
++            <CheckCircle2 className="size-4" />
++          </span>
++          <div>
++            <strong className="block text-[10.5px] font-semibold text-[#303637]">Revisão final</strong>
++            <span className="mt-0.5 block text-[8px] text-[#92999a]">Configuração consolidada</span>
++          </div>
++        </div>
++
++        <div className="divide-y divide-[#edf0f0]">
++          {itensRevisao.map(({ rotulo, valor, icone: Icone }) => (
++            <div key={rotulo} className="flex items-start gap-2.5 py-3">
++              <Icone className="mt-0.5 size-3.5 shrink-0 text-[#81898a]" />
++              <div className="min-w-0">
++                <span className="block text-[7.5px] font-medium uppercase tracking-[0.05em] text-[#9aa1a2]">{rotulo}</span>
++                <strong className="mt-1 block text-[9px] font-medium leading-4 text-[#3c4243]">{valor}</strong>
++              </div>
++            </div>
++          ))}
++        </div>
++
++        <div className="mt-3 rounded-md bg-[#f3f5f5] p-3">
++          <div className="flex items-center justify-between text-[8.5px]">
++            <span className="text-[#7d8586]">Versões</span>
++            <strong className="text-[#323839]">{configuracao.quantidadeVersoes}</strong>
++          </div>
++          <div className="mt-2 flex items-center justify-between text-[8.5px]">
++            <span className="text-[#7d8586]">Narração</span>
++            <strong className="text-[#323839]">{configuracao.provedorVoz}</strong>
++          </div>
++          <div className="mt-2 flex items-center justify-between text-[8.5px]">
++            <span className="text-[#7d8586]">Legendas</span>
++            <strong className="text-[#323839]">{configuracao.legendasAtivas ? "Ativas" : "Desativadas"}</strong>
++          </div>
++          <div className="mt-2 flex items-center justify-between text-[8.5px]">
++            <span className="text-[#7d8586]">Música</span>
++            <strong className="text-[#323839]">{configuracao.musicaAtiva ? "Ativa" : "Desativada"}</strong>
++          </div>
++        </div>
++      </aside>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-ideia.tsx b/components/criar-video/etapas/etapa-ideia.tsx
+new file mode 100644
+index 0000000..3f62d73
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-ideia.tsx
+@@ -0,0 +1,186 @@
++"use client";
++
++import { Check, Film, Gauge, SlidersHorizontal } from "lucide-react";
++
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { SeletorSegmentado } from "@/components/ui/seletor-segmentado";
++import {
++  duracoesVideo,
++  formatosVideo,
++  idiomasVideo,
++  modosCriacao,
++  objetivosVideo,
++  plataformasVideo,
++} from "@/data/criar-video";
++import { juntarClasses } from "@/lib/classes";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++const iconesModo = {
++  rapido: Gauge,
++  assistido: Film,
++  avancado: SlidersHorizontal,
++};
++
++export function EtapaIdeia({
++  configuracao,
++  atualizar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++}) {
++  return (
++    <div className="space-y-7">
++      <div className="grid grid-cols-2 gap-5">
++        <CampoFormulario
++          rotulo="Nome do projeto"
++          descricao="Identificação usada na lista de projetos e nos arquivos exportados."
++        >
++          <input
++            value={configuracao.nomeProjeto}
++            onChange={(evento) => atualizar("nomeProjeto", evento.target.value)}
++            className={`${classesCampo} h-9`}
++            placeholder="Ex.: Hábitos de produtividade"
++          />
++        </CampoFormulario>
++
++        <CampoFormulario rotulo="Público principal" descricao="Para quem a linguagem e o ritmo devem ser pensados.">
++          <input
++            value={configuracao.publico}
++            onChange={(evento) => atualizar("publico", evento.target.value)}
++            className={`${classesCampo} h-9`}
++            placeholder="Ex.: Empreendedores e criadores"
++          />
++        </CampoFormulario>
++      </div>
++
++      <CampoFormulario
++        rotulo="Qual é a ideia do vídeo?"
++        descricao="Descreva o assunto com contexto suficiente para orientar o roteiro e a busca de materiais."
++      >
++        <textarea
++          value={configuracao.tema}
++          onChange={(evento) => atualizar("tema", evento.target.value)}
++          className={`${classesCampo} min-h-[108px] resize-none py-3 leading-5`}
++          placeholder="Ex.: Explique cinco hábitos simples que reduzem a produtividade no trabalho e mostre como corrigi-los."
++        />
++        <div className="flex items-center justify-between text-[8.5px] text-[#9aa1a2]">
++          <span>Uma ideia clara melhora o roteiro, os termos visuais e a narração.</span>
++          <span>{configuracao.tema.length}/600</span>
++        </div>
++      </CampoFormulario>
++
++      <CampoFormulario rotulo="Objetivo do conteúdo" descricao="Escolha a intenção principal da narrativa.">
++        <div className="grid grid-cols-4 gap-2.5">
++          {objetivosVideo.map((objetivo) => {
++            const ativo = configuracao.objetivo === objetivo.id;
++            return (
++              <button
++                key={objetivo.id}
++                type="button"
++                onClick={() => atualizar("objetivo", objetivo.id)}
++                className={juntarClasses(
++                  "foco-acessivel relative min-h-[92px] rounded-md border p-3 text-left transition",
++                  ativo
++                    ? "border-[#9dcfc3] bg-[#f0f9f6] shadow-[0_1px_2px_rgba(25,111,93,.06)]"
++                    : "border-[#e0e5e5] bg-white hover:border-[#ccd4d3] hover:bg-[#fafbfb]",
++                )}
++              >
++                {ativo && (
++                  <span className="absolute right-2.5 top-2.5 grid size-4 place-items-center rounded-full bg-[#24977f] text-white">
++                    <Check className="size-2.5" strokeWidth={2.5} />
++                  </span>
++                )}
++                <strong className="block text-[10px] font-medium text-[#303637]">{objetivo.titulo}</strong>
++                <span className="mt-2 block pr-2 text-[8.5px] leading-4 text-[#858d8e]">{objetivo.descricao}</span>
++              </button>
++            );
++          })}
++        </div>
++      </CampoFormulario>
++
++      <div className="grid grid-cols-[1.2fr_.8fr] gap-5">
++        <CampoFormulario rotulo="Plataforma de destino">
++          <SeletorSegmentado
++            valor={configuracao.plataforma}
++            opcoes={plataformasVideo}
++            aoAlterar={(valor) => atualizar("plataforma", valor)}
++            className="grid-cols-4"
++          />
++        </CampoFormulario>
++
++        <CampoFormulario rotulo="Formato do vídeo">
++          <SeletorSegmentado
++            valor={configuracao.formato}
++            opcoes={formatosVideo}
++            aoAlterar={(valor) => atualizar("formato", valor)}
++            className="grid-cols-3"
++          />
++        </CampoFormulario>
++      </div>
++
++      <div className="grid grid-cols-2 gap-5">
++        <CampoFormulario rotulo="Idioma principal">
++          <select
++            value={configuracao.idioma}
++            onChange={(evento) => atualizar("idioma", evento.target.value)}
++            className={`${classesCampo} h-9`}
++          >
++            {idiomasVideo.map((idioma) => (
++              <option key={idioma}>{idioma}</option>
++            ))}
++          </select>
++        </CampoFormulario>
++
++        <CampoFormulario rotulo="Duração desejada">
++          <select
++            value={configuracao.duracao}
++            onChange={(evento) => atualizar("duracao", evento.target.value)}
++            className={`${classesCampo} h-9`}
++          >
++            {duracoesVideo.map((duracao) => (
++              <option key={duracao}>{duracao}</option>
++            ))}
++          </select>
++        </CampoFormulario>
++      </div>
++
++      <CampoFormulario
++        rotulo="Modo de criação"
++        descricao="Você pode mudar o nível de controle a qualquer momento sem perder o projeto."
++      >
++        <div className="grid grid-cols-3 gap-2.5">
++          {modosCriacao.map((modo) => {
++            const ativo = configuracao.modo === modo.id;
++            const Icone = iconesModo[modo.id];
++            return (
++              <button
++                key={modo.id}
++                type="button"
++                onClick={() => atualizar("modo", modo.id)}
++                className={juntarClasses(
++                  "foco-acessivel flex items-start gap-3 rounded-md border p-3.5 text-left transition",
++                  ativo
++                    ? "border-[#9dcfc3] bg-[#f0f9f6]"
++                    : "border-[#e0e5e5] bg-white hover:border-[#ccd4d3] hover:bg-[#fafbfb]",
++                )}
++              >
++                <span
++                  className={juntarClasses(
++                    "grid size-8 shrink-0 place-items-center rounded-md",
++                    ativo ? "bg-white text-[#208a75] shadow-sm" : "bg-[#f1f4f4] text-[#747c7d]",
++                  )}
++                >
++                  <Icone className="size-4" strokeWidth={1.7} />
++                </span>
++                <span>
++                  <strong className="block text-[10.5px] font-medium text-[#303637]">{modo.titulo}</strong>
++                  <span className="mt-1 block text-[8.5px] leading-4 text-[#858d8e]">{modo.descricao}</span>
++                </span>
++              </button>
++            );
++          })}
++        </div>
++      </CampoFormulario>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-legendas.tsx b/components/criar-video/etapas/etapa-legendas.tsx
+new file mode 100644
+index 0000000..65f2ac1
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-legendas.tsx
+@@ -0,0 +1,156 @@
++"use client";
++
++import { AlignCenter, Captions, Check, MoveDown, Type } from "lucide-react";
++
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { Interruptor } from "@/components/ui/interruptor";
++import { presetsLegenda } from "@/data/criar-video";
++import { juntarClasses } from "@/lib/classes";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++export function EtapaLegendas({
++  configuracao,
++  atualizar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++}) {
++  return (
++    <div className="grid grid-cols-[330px_minmax(0,1fr)] gap-5">
++      <div className="space-y-5 border-r border-[#edf0f0] pr-5">
++        <Interruptor
++          ativo={configuracao.legendasAtivas}
++          aoAlterar={(ativo) => atualizar("legendasAtivas", ativo)}
++          rotulo="Exibir legendas"
++          descricao="Inclui o texto sincronizado na renderização final."
++        />
++
++        <CampoFormulario rotulo="Estilo da legenda" descricao="Presets podem ser refinados no modo avançado.">
++          <div className="space-y-2">
++            {presetsLegenda.map((preset) => {
++              const ativo = configuracao.presetLegenda === preset.id;
++              return (
++                <button
++                  key={preset.id}
++                  type="button"
++                  onClick={() => atualizar("presetLegenda", preset.id)}
++                  disabled={!configuracao.legendasAtivas}
++                  className={juntarClasses(
++                    "foco-acessivel flex w-full items-center gap-3 rounded-md border p-3 text-left transition disabled:opacity-50",
++                    ativo
++                      ? "border-[#9dcfc3] bg-[#f0f9f6]"
++                      : "border-[#e0e5e5] bg-white hover:border-[#ccd4d3] hover:bg-[#fafbfb]",
++                  )}
++                >
++                  <span className={juntarClasses("grid size-8 place-items-center rounded-md", ativo ? "bg-white text-[#208a75]" : "bg-[#f1f4f4] text-[#737b7c]")}>
++                    <Captions className="size-4" />
++                  </span>
++                  <span className="min-w-0 flex-1">
++                    <strong className="block text-[10px] font-medium text-[#303637]">{preset.titulo}</strong>
++                    <span className="mt-1 block text-[8px] text-[#8b9293]">{preset.descricao}</span>
++                  </span>
++                  {ativo && <Check className="size-3.5 text-[#228c76]" />}
++                </button>
++              );
++            })}
++          </div>
++        </CampoFormulario>
++
++        <div className="grid grid-cols-2 gap-3">
++          <CampoFormulario rotulo="Posição">
++            <select
++              value={configuracao.posicaoLegenda}
++              onChange={(evento) => atualizar("posicaoLegenda", evento.target.value)}
++              disabled={!configuracao.legendasAtivas}
++              className={`${classesCampo} h-9 disabled:opacity-50`}
++            >
++              <option>Superior</option>
++              <option>Central</option>
++              <option>Inferior</option>
++            </select>
++          </CampoFormulario>
++          <CampoFormulario rotulo="Tamanho">
++            <input
++              type="number"
++              min={20}
++              max={80}
++              value={configuracao.tamanhoLegenda}
++              onChange={(evento) => atualizar("tamanhoLegenda", Number(evento.target.value))}
++              disabled={!configuracao.legendasAtivas}
++              className={`${classesCampo} h-9 disabled:opacity-50`}
++            />
++          </CampoFormulario>
++        </div>
++      </div>
++
++      <div className="min-w-0">
++        <div className="mb-3 flex items-center justify-between">
++          <div>
++            <strong className="block text-[10.5px] font-semibold text-[#303637]">Prévia visual</strong>
++            <span className="mt-1 block text-[8px] text-[#92999a]">Exemplo aproximado do resultado no formato selecionado.</span>
++          </div>
++          <span className="rounded border border-[#e0e5e5] bg-[#fafbfb] px-2 py-1 text-[8px] text-[#7d8586]">
++            {configuracao.formato}
++          </span>
++        </div>
++
++        <div className="grid min-h-[438px] place-items-center rounded-md border border-[#dfe4e4] bg-[#eef1f1] p-6">
++          <div className="relative h-[360px] w-[203px] overflow-hidden rounded-lg bg-[#171b1c] shadow-[0_20px_45px_rgba(19,27,26,.2)]">
++            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(65,151,134,.36),transparent_36%),linear-gradient(150deg,#273332,#111515_62%)]" />
++            <div className="absolute left-5 top-5 flex items-center gap-2 text-white/70">
++              <span className="grid size-6 place-items-center rounded-full border border-white/15 bg-white/10">
++                <Type className="size-3" />
++              </span>
++              <span className="text-[7px] uppercase tracking-[0.12em]">MakeFlux Studio</span>
++            </div>
++
++            <div
++              className={juntarClasses(
++                "absolute inset-x-5 text-center transition",
++                configuracao.posicaoLegenda === "Superior" && "top-20",
++                configuracao.posicaoLegenda === "Central" && "top-1/2 -translate-y-1/2",
++                configuracao.posicaoLegenda === "Inferior" && "bottom-14",
++              )}
++            >
++              {configuracao.legendasAtivas ? (
++                <span
++                  className={juntarClasses(
++                    "inline box-decoration-clone font-semibold uppercase leading-[1.45] text-white",
++                    configuracao.presetLegenda === "shorts" && "rounded bg-black/45 px-1.5 py-1 tracking-tight [text-shadow:0_2px_0_#000]",
++                    configuracao.presetLegenda === "documentario" && "rounded bg-black/60 px-2 py-1 font-medium normal-case",
++                    configuracao.presetLegenda === "minimalista" && "font-medium normal-case text-white/95",
++                    configuracao.presetLegenda === "limpa" && "normal-case [text-shadow:0_1px_5px_#000]",
++                  )}
++                  style={{ fontSize: `${Math.max(10, configuracao.tamanhoLegenda / 3.2)}px` }}
++                >
++                  Pequenas distrações podem consumir horas do seu dia.
++                </span>
++              ) : (
++                <span className="text-[9px] text-white/45">Legendas desativadas</span>
++              )}
++            </div>
++
++            <div className="absolute inset-x-5 bottom-5 h-1 overflow-hidden rounded-full bg-white/15">
++              <div className="h-full w-[62%] rounded-full bg-[#54cbb3]" />
++            </div>
++          </div>
++        </div>
++
++        <div className="mt-3 grid grid-cols-3 gap-2.5">
++          <div className="flex items-center gap-2 rounded-md border border-[#e3e7e7] bg-[#fafbfb] p-2.5">
++            <AlignCenter className="size-3.5 text-[#7c8485]" />
++            <span className="text-[8.5px] text-[#697172]">Alinhamento central</span>
++          </div>
++          <div className="flex items-center gap-2 rounded-md border border-[#e3e7e7] bg-[#fafbfb] p-2.5">
++            <MoveDown className="size-3.5 text-[#7c8485]" />
++            <span className="text-[8.5px] text-[#697172]">Posição {configuracao.posicaoLegenda.toLowerCase()}</span>
++          </div>
++          <div className="flex items-center gap-2 rounded-md border border-[#e3e7e7] bg-[#fafbfb] p-2.5">
++            <Type className="size-3.5 text-[#7c8485]" />
++            <span className="text-[8.5px] text-[#697172]">Tamanho {configuracao.tamanhoLegenda}px</span>
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-musica.tsx b/components/criar-video/etapas/etapa-musica.tsx
+new file mode 100644
+index 0000000..d4691eb
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-musica.tsx
+@@ -0,0 +1,173 @@
++"use client";
++
++import { Check, Music2, Pause, Play, Volume1, Waveform } from "lucide-react";
++import { useState } from "react";
++
++import { Botao } from "@/components/ui/botao";
++import { BotaoSelecionarPasta } from "@/components/ui/botao-selecionar-pasta";
++import { CampoFormulario } from "@/components/ui/campo-formulario";
++import { Interruptor } from "@/components/ui/interruptor";
++import { musicasDisponiveis } from "@/data/criar-video";
++import { juntarClasses } from "@/lib/classes";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++export function EtapaMusica({
++  configuracao,
++  atualizar,
++  notificar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++  notificar: (mensagem: string) => void;
++}) {
++  const [tocando, setTocando] = useState<string | null>(null);
++  const musicaSelecionada = musicasDisponiveis.find((musica) => musica.id === configuracao.musica);
++
++  function alternarMusica(id: string) {
++    setTocando((atual) => (atual === id ? null : id));
++  }
++
++  return (
++    <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-5">
++      <div className="space-y-5">
++        <Interruptor
++          ativo={configuracao.musicaAtiva}
++          aoAlterar={(ativo) => atualizar("musicaAtiva", ativo)}
++          rotulo="Adicionar música de fundo"
++          descricao="A trilha será mixada abaixo da narração para não competir com a voz."
++        />
++
++        <div>
++          <div className="mb-3 flex items-center justify-between gap-5">
++            <div>
++              <h3 className="text-[10.5px] font-semibold text-[#303637]">Biblioteca de músicas</h3>
++              <p className="mt-1 text-[8.5px] text-[#8b9293]">Selecione uma faixa ou utilize sua própria biblioteca local.</p>
++            </div>
++            <BotaoSelecionarPasta
++              rotulo="Pasta de músicas"
++              tituloDialogo="Escolha uma pasta de músicas"
++              chaveArmazenamento="makeflux:pasta-musicas"
++              className="h-8 px-2.5"
++            />
++          </div>
++
++          <div className="space-y-2">
++            {musicasDisponiveis.map((musica) => {
++              const selecionada = configuracao.musica === musica.id;
++              const reproduzindo = tocando === musica.id;
++              return (
++                <article
++                  key={musica.id}
++                  className={juntarClasses(
++                    "grid grid-cols-[38px_minmax(0,1fr)_130px_70px] items-center gap-3 rounded-md border px-3 py-2.5 transition",
++                    selecionada
++                      ? "border-[#9dcfc3] bg-[#f0f9f6]"
++                      : "border-[#e0e5e5] bg-white hover:border-[#cfd6d5]",
++                    !configuracao.musicaAtiva && "opacity-50",
++                  )}
++                >
++                  <button
++                    type="button"
++                    aria-label={reproduzindo ? `Pausar ${musica.titulo}` : `Reproduzir ${musica.titulo}`}
++                    onClick={() => alternarMusica(musica.id)}
++                    disabled={!configuracao.musicaAtiva || musica.id === "sem-musica"}
++                    className="foco-acessivel grid size-8 place-items-center rounded-full border border-[#dce2e1] bg-white text-[#57706b] hover:text-[#208a75] disabled:cursor-default disabled:opacity-40"
++                  >
++                    {reproduzindo ? <Pause className="size-3.5" fill="currentColor" /> : <Play className="ml-0.5 size-3.5" fill="currentColor" />}
++                  </button>
++
++                  <button
++                    type="button"
++                    onClick={() => atualizar("musica", musica.id)}
++                    disabled={!configuracao.musicaAtiva}
++                    className="foco-acessivel min-w-0 rounded text-left"
++                  >
++                    <strong className="block truncate text-[10px] font-medium text-[#303637]">{musica.titulo}</strong>
++                    <span className="mt-1 block truncate text-[8px] text-[#899192]">{musica.estilo}</span>
++                  </button>
++
++                  <div className="flex h-7 items-end gap-[2px] overflow-hidden px-2">
++                    {[8, 15, 10, 21, 13, 18, 9, 24, 16, 12, 20, 8, 17, 11, 22, 14, 9, 18].map((altura, indice) => (
++                      <span
++                        key={`${musica.id}-${indice}`}
++                        className={juntarClasses(
++                          "w-[2px] rounded-full",
++                          selecionada ? "bg-[#62b9a7]" : "bg-[#cfd6d5]",
++                          reproduzindo && indice < 10 && "bg-[#238d77]",
++                        )}
++                        style={{ height: `${altura}px` }}
++                      />
++                    ))}
++                  </div>
++
++                  <div className="flex items-center justify-end gap-2">
++                    <span className="text-[8px] tabular-nums text-[#8d9596]">{musica.duracao}</span>
++                    <button
++                      type="button"
++                      aria-label={`Selecionar ${musica.titulo}`}
++                      onClick={() => atualizar("musica", musica.id)}
++                      disabled={!configuracao.musicaAtiva}
++                      className={juntarClasses(
++                        "foco-acessivel grid size-5 place-items-center rounded-full border",
++                        selecionada ? "border-[#24977f] bg-[#24977f] text-white" : "border-[#d2d8d8] bg-white text-transparent",
++                      )}
++                    >
++                      <Check className="size-3" />
++                    </button>
++                  </div>
++                </article>
++              );
++            })}
++          </div>
++        </div>
++
++        <button
++          type="button"
++          onClick={() => notificar("O upload de arquivos individuais será conectado ao seletor desktop na Biblioteca.")}
++          className="foco-acessivel flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-[#cfd7d6] bg-[#fafbfb] py-3 text-[9.5px] font-medium text-[#657071] hover:border-[#a9c9c1] hover:bg-[#f5faf8] hover:text-[#277b6a]"
++        >
++          <Music2 className="size-3.5" />
++          Adicionar uma música ao projeto
++        </button>
++      </div>
++
++      <aside className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] p-4">
++        <span className="text-[8px] font-medium uppercase tracking-[0.06em] text-[#92999a]">Mixagem</span>
++        <div className="mt-4 rounded-md border border-[#e0e5e5] bg-white p-4">
++          <span className="grid size-10 place-items-center rounded-md bg-[#eef5f3] text-[#258a75]">
++            <Waveform className="size-5" />
++          </span>
++          <strong className="mt-3 block text-[10.5px] font-medium text-[#303637]">
++            {configuracao.musicaAtiva ? musicaSelecionada?.titulo : "Música desativada"}
++          </strong>
++          <span className="mt-1 block text-[8.5px] text-[#8b9293]">
++            {configuracao.musicaAtiva ? musicaSelecionada?.estilo : "Apenas a narração será exportada."}
++          </span>
++        </div>
++
++        <CampoFormulario rotulo="Volume da música" descricao="Recomendação para narração: entre 12% e 24%." className="mt-5">
++          <div className="rounded-md border border-[#e1e5e5] bg-white px-3 py-3">
++            <div className="mb-2 flex items-center justify-between text-[9px]">
++              <Volume1 className="size-3.5 text-[#7a8283]" />
++              <strong className="text-[#278773]">{configuracao.volumeMusica}%</strong>
++            </div>
++            <input
++              type="range"
++              min="0"
++              max="60"
++              value={configuracao.volumeMusica}
++              disabled={!configuracao.musicaAtiva}
++              onChange={(evento) => atualizar("volumeMusica", Number(evento.target.value))}
++              className="w-full accent-[#25967f] disabled:opacity-40"
++            />
++          </div>
++        </CampoFormulario>
++
++        <div className="mt-5 grid grid-cols-2 gap-2">
++          <Botao disabled={!configuracao.musicaAtiva}>Aplicar fade</Botao>
++          <Botao disabled={!configuracao.musicaAtiva}>Ajustar corte</Botao>
++        </div>
++      </aside>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-narracao.tsx b/components/criar-video/etapas/etapa-narracao.tsx
+new file mode 100644
+index 0000000..8130d29
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-narracao.tsx
+@@ -0,0 +1,175 @@
++"use client";
++
++import { Check, Headphones, Mic2, Pause, Play, Volume2 } from "lucide-react";
++import { useState } from "react";
++
++import { Botao } from "@/components/ui/botao";
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { SeletorSegmentado } from "@/components/ui/seletor-segmentado";
++import { vozesDisponiveis } from "@/data/criar-video";
++import { juntarClasses } from "@/lib/classes";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++const provedoresVoz = [
++  { id: "Edge TTS", titulo: "Edge TTS", detalhe: "Online · sem chave" },
++  { id: "TTS local", titulo: "TTS local", detalhe: "Offline" },
++  { id: "Áudio próprio", titulo: "Áudio próprio", detalhe: "Arquivo local" },
++] as const;
++
++export function EtapaNarracao({
++  configuracao,
++  atualizar,
++  notificar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++  notificar: (mensagem: string) => void;
++}) {
++  const [reproduzindo, setReproduzindo] = useState(false);
++  const vozesFiltradas = vozesDisponiveis.filter(
++    (voz) => configuracao.provedorVoz === "Áudio próprio" || voz.provedor === configuracao.provedorVoz,
++  );
++
++  function testarVoz() {
++    setReproduzindo((estado) => !estado);
++    notificar(
++      reproduzindo
++        ? "Prévia interrompida."
++        : "Prévia visual iniciada. O áudio real será gerado quando o provedor estiver conectado.",
++    );
++  }
++
++  return (
++    <div className="grid grid-cols-[minmax(0,1fr)_290px] gap-5">
++      <div className="space-y-6">
++        <CampoFormulario rotulo="Provedor da narração" descricao="Escolha entre voz online, processamento local ou áudio próprio.">
++          <SeletorSegmentado
++            valor={configuracao.provedorVoz}
++            opcoes={provedoresVoz}
++            aoAlterar={(valor) => atualizar("provedorVoz", valor)}
++            className="grid-cols-3"
++          />
++        </CampoFormulario>
++
++        {configuracao.provedorVoz === "Áudio próprio" ? (
++          <div className="rounded-md border border-dashed border-[#cdd6d5] bg-[#fafbfb] px-5 py-8 text-center">
++            <span className="mx-auto grid size-10 place-items-center rounded-md bg-[#eef4f2] text-[#2b8875]">
++              <Mic2 className="size-5" />
++            </span>
++            <strong className="mt-3 block text-[10.5px] font-medium text-[#343a3b]">Selecione uma narração pronta</strong>
++            <p className="mx-auto mt-1 max-w-[420px] text-[8.5px] leading-4 text-[#8a9293]">
++              Na integração desktop, este botão abrirá o seletor nativo para arquivos WAV, MP3 e M4A.
++            </p>
++            <Botao className="mt-4">Escolher arquivo de áudio</Botao>
++          </div>
++        ) : (
++          <CampoFormulario rotulo="Voz disponível" descricao="Ouça uma prévia antes de confirmar a narração.">
++            <div className="grid grid-cols-2 gap-2.5">
++              {vozesFiltradas.map((voz) => {
++                const ativa = configuracao.voz === voz.id;
++                return (
++                  <button
++                    key={voz.id}
++                    type="button"
++                    onClick={() => atualizar("voz", voz.id)}
++                    className={juntarClasses(
++                      "foco-acessivel flex items-center gap-3 rounded-md border p-3 text-left transition",
++                      ativa
++                        ? "border-[#9dcfc3] bg-[#f0f9f6]"
++                        : "border-[#e0e5e5] bg-white hover:border-[#ccd4d3] hover:bg-[#fafbfb]",
++                    )}
++                  >
++                    <span
++                      className={juntarClasses(
++                        "grid size-9 shrink-0 place-items-center rounded-full",
++                        ativa ? "bg-white text-[#208a75] shadow-sm" : "bg-[#f1f4f4] text-[#727a7b]",
++                      )}
++                    >
++                      <Headphones className="size-4" />
++                    </span>
++                    <span className="min-w-0 flex-1">
++                      <strong className="block truncate text-[10px] font-medium text-[#303637]">{voz.nome}</strong>
++                      <span className="mt-1 block truncate text-[8px] text-[#8b9293]">{voz.detalhe}</span>
++                    </span>
++                    {ativa && (
++                      <span className="grid size-4 place-items-center rounded-full bg-[#24977f] text-white">
++                        <Check className="size-2.5" strokeWidth={2.5} />
++                      </span>
++                    )}
++                  </button>
++                );
++              })}
++            </div>
++          </CampoFormulario>
++        )}
++
++        <div className="grid grid-cols-2 gap-5">
++          <CampoFormulario rotulo="Velocidade da voz" descricao="Ajuste sem alterar o tom natural.">
++            <div className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] px-3 py-3">
++              <div className="mb-2 flex items-center justify-between text-[9px]">
++                <span className="text-[#7a8283]">0.75×</span>
++                <strong className="text-[#278773]">{configuracao.velocidadeVoz.toFixed(2)}×</strong>
++                <span className="text-[#7a8283]">1.50×</span>
++              </div>
++              <input
++                type="range"
++                min="0.75"
++                max="1.5"
++                step="0.05"
++                value={configuracao.velocidadeVoz}
++                onChange={(evento) => atualizar("velocidadeVoz", Number(evento.target.value))}
++                className="w-full accent-[#25967f]"
++              />
++            </div>
++          </CampoFormulario>
++
++          <CampoFormulario rotulo="Volume da narração" descricao="Volume aplicado antes da mixagem final.">
++            <div className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] px-3 py-3">
++              <div className="mb-2 flex items-center justify-between text-[9px]">
++                <Volume2 className="size-3.5 text-[#7a8283]" />
++                <strong className="text-[#278773]">{configuracao.volumeVoz}%</strong>
++              </div>
++              <input
++                type="range"
++                min="20"
++                max="100"
++                value={configuracao.volumeVoz}
++                onChange={(evento) => atualizar("volumeVoz", Number(evento.target.value))}
++                className="w-full accent-[#25967f]"
++              />
++            </div>
++          </CampoFormulario>
++        </div>
++      </div>
++
++      <aside className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] p-4">
++        <span className="text-[8px] font-medium uppercase tracking-[0.06em] text-[#92999a]">Prévia da narração</span>
++        <div className="mt-4 flex h-[188px] items-center justify-center rounded-md border border-[#e0e5e5] bg-white">
++          <div className="text-center">
++            <button
++              type="button"
++              onClick={testarVoz}
++              className="foco-acessivel mx-auto grid size-12 place-items-center rounded-full bg-[#1f9b83] text-white shadow-[0_8px_22px_rgba(31,155,131,.22)] hover:bg-[#18866f]"
++            >
++              {reproduzindo ? <Pause className="size-5" fill="currentColor" /> : <Play className="ml-0.5 size-5" fill="currentColor" />}
++            </button>
++            <strong className="mt-3 block text-[10px] font-medium text-[#343a3b]">
++              {reproduzindo ? "Reproduzindo prévia" : "Ouvir trecho de teste"}
++            </strong>
++            <span className="mt-1 block text-[8px] text-[#92999a]">12 segundos · português brasileiro</span>
++          </div>
++        </div>
++
++        <div className="mt-4 space-y-3">
++          <CampoFormulario rotulo="Pronúncia personalizada" descricao="Palavras que precisam de orientação específica." opcional>
++            <input className={`${classesCampo} h-9`} placeholder="Ex.: MakeFlux = Meik Flâks" />
++          </CampoFormulario>
++          <Botao onClick={() => notificar("A narração será gerada pelo provedor escolhido na integração.")} variante="primario" className="w-full">
++            <Mic2 className="size-3.5" />
++            Preparar narração
++          </Botao>
++        </div>
++      </aside>
++    </div>
++  );
++}
+diff --git a/components/criar-video/etapas/etapa-roteiro.tsx b/components/criar-video/etapas/etapa-roteiro.tsx
+new file mode 100644
+index 0000000..2097e43
+--- /dev/null
++++ b/components/criar-video/etapas/etapa-roteiro.tsx
+@@ -0,0 +1,138 @@
++"use client";
++
++import { FileText, LoaderCircle, RotateCcw, Sparkles, WandSparkles } from "lucide-react";
++import { useState } from "react";
++
++import { Botao } from "@/components/ui/botao";
++import { CampoFormulario, classesCampo } from "@/components/ui/campo-formulario";
++import { modelosIa } from "@/data/criar-video";
++import type { AtualizarConfiguracaoVideo, ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++function criarRoteiroDemonstracao(tema: string) {
++  const assunto = tema.trim() || "hábitos que reduzem a produtividade";
++  return `Você pode estar perdendo horas do seu dia sem perceber. ${assunto} não começa com uma grande decisão, mas com pequenas interrupções repetidas. Primeiro, observe o que quebra seu foco. Depois, escolha apenas três prioridades para o dia e reserve períodos sem notificações. Por fim, encerre cada tarefa antes de abrir outra. Uma mudança simples já pode devolver clareza à sua rotina. Qual distração você vai eliminar hoje?`;
++}
++
++export function EtapaRoteiro({
++  configuracao,
++  atualizar,
++  notificar,
++}: {
++  configuracao: ConfiguracaoCriacaoVideo;
++  atualizar: AtualizarConfiguracaoVideo;
++  notificar: (mensagem: string) => void;
++}) {
++  const [gerando, setGerando] = useState(false);
++  const palavras = configuracao.roteiro.trim() ? configuracao.roteiro.trim().split(/\s+/).length : 0;
++  const duracaoEstimada = Math.max(0, Math.round((palavras / 150) * 60));
++
++  function gerarRoteiro() {
++    setGerando(true);
++    window.setTimeout(() => {
++      atualizar("roteiro", criarRoteiroDemonstracao(configuracao.tema));
++      setGerando(false);
++      notificar("Roteiro de demonstração criado para validar a interface.");
++    }, 650);
++  }
++
++  return (
++    <div className="grid grid-cols-[320px_minmax(0,1fr)] gap-5">
++      <div className="space-y-5 border-r border-[#edf0f0] pr-5">
++        <CampoFormulario rotulo="Modelo de escrita" descricao="O provedor real será validado na etapa de integrações.">
++          <select
++            value={configuracao.modeloIa}
++            onChange={(evento) => atualizar("modeloIa", evento.target.value)}
++            className={`${classesCampo} h-9`}
++          >
++            {modelosIa.map((modelo) => (
++              <option key={modelo}>{modelo}</option>
++            ))}
++          </select>
++        </CampoFormulario>
++
++        <CampoFormulario
++          rotulo="Prompt do roteiro"
++          descricao="Explique estrutura, ritmo, tom e resultado esperado."
++        >
++          <textarea
++            value={configuracao.promptRoteiro}
++            onChange={(evento) => atualizar("promptRoteiro", evento.target.value)}
++            className={`${classesCampo} min-h-[132px] resize-none py-3 leading-5`}
++          />
++        </CampoFormulario>
++
++        <details className="rounded-md border border-[#e1e5e5] bg-[#fafbfb] p-3" open={configuracao.modo === "avancado"}>
++          <summary className="cursor-pointer text-[10px] font-medium text-[#3d4445]">System prompt avançado</summary>
++          <textarea
++            value={configuracao.systemPrompt}
++            onChange={(evento) => atualizar("systemPrompt", evento.target.value)}
++            className={`${classesCampo} mt-3 min-h-[108px] resize-none py-3 text-[9.5px] leading-4`}
++          />
++        </details>
++
++        <Botao onClick={gerarRoteiro} disabled={gerando} variante="primario" className="w-full">
++          {gerando ? <LoaderCircle className="size-3.5 animate-spin" /> : <WandSparkles className="size-3.5" />}
++          {gerando ? "Preparando demonstração" : "Gerar roteiro de demonstração"}
++        </Botao>
++
++        <div className="rounded-md border border-[#e6e1d9] bg-[#fbf8f4] p-3 text-[8.5px] leading-4 text-[#816d59]">
++          A geração desta fase é apenas uma simulação visual. Nenhuma chamada de API é feita agora.
++        </div>
++      </div>
++
++      <div className="min-w-0">
++        <div className="mb-3 flex items-center justify-between gap-4">
++          <div className="flex items-center gap-2">
++            <span className="grid size-7 place-items-center rounded-md bg-[#eef5f3] text-[#248975]">
++              <FileText className="size-3.5" />
++            </span>
++            <div>
++              <strong className="block text-[10.5px] font-semibold text-[#303637]">Editor do roteiro</strong>
++              <span className="mt-0.5 block text-[8px] text-[#92999a]">Edite livremente antes de criar as cenas.</span>
++            </div>
++          </div>
++          <div className="flex items-center gap-1.5">
++            <Botao
++              onClick={() => atualizar("roteiro", "")}
++              variante="fantasma"
++              className="h-8 px-2.5"
++              disabled={!configuracao.roteiro}
++            >
++              <RotateCcw className="size-3" />
++              Limpar
++            </Botao>
++            <Botao
++              onClick={() => notificar("A comparação de versões será aprofundada no Laboratório de IA.")}
++              className="h-8 px-2.5"
++            >
++              <Sparkles className="size-3" />
++              Criar variação
++            </Botao>
++          </div>
++        </div>
++
++        <textarea
++          value={configuracao.roteiro}
++          onChange={(evento) => atualizar("roteiro", evento.target.value)}
++          className={`${classesCampo} min-h-[425px] resize-none px-5 py-5 text-[12px] leading-7`}
++          placeholder="O roteiro aparecerá aqui. Você também pode colar um texto próprio e continuar sem utilizar IA."
++        />
++
++        <div className="mt-3 grid grid-cols-3 divide-x divide-[#e5e9e9] rounded-md border border-[#e5e9e9] bg-[#fafbfb] py-2.5">
++          <div className="px-3">
++            <strong className="block text-[10px] font-medium text-[#333839]">{palavras}</strong>
++            <span className="mt-1 block text-[7.5px] uppercase tracking-[0.05em] text-[#9aa1a2]">Palavras</span>
++          </div>
++          <div className="px-3">
++            <strong className="block text-[10px] font-medium text-[#333839]">~{duracaoEstimada}s</strong>
++            <span className="mt-1 block text-[7.5px] uppercase tracking-[0.05em] text-[#9aa1a2]">Duração estimada</span>
++          </div>
++          <div className="px-3">
++            <strong className="block text-[10px] font-medium text-[#333839]">Português natural</strong>
++            <span className="mt-1 block text-[7.5px] uppercase tracking-[0.05em] text-[#9aa1a2]">Leitura</span>
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/components/criar-video/navegacao-etapas.tsx b/components/criar-video/navegacao-etapas.tsx
+new file mode 100644
+index 0000000..3051612
+--- /dev/null
++++ b/components/criar-video/navegacao-etapas.tsx
+@@ -0,0 +1,62 @@
++"use client";
++
++import { Check } from "lucide-react";
++
++import { etapasCriacaoVideo } from "@/data/criar-video";
++import { juntarClasses } from "@/lib/classes";
++import type { IdEtapaCriacao } from "@/types/criar-video";
++
++export function NavegacaoEtapas({
++  etapaAtual,
++  aoSelecionar,
++}: {
++  etapaAtual: IdEtapaCriacao;
++  aoSelecionar: (etapa: IdEtapaCriacao) => void;
++}) {
++  const indiceAtual = etapasCriacaoVideo.findIndex((etapa) => etapa.id === etapaAtual);
++
++  return (
++    <nav className="mt-5 grid grid-cols-7 border-t border-[#e6eaea]" aria-label="Etapas de criação do vídeo">
++      {etapasCriacaoVideo.map((etapa, indice) => {
++        const ativa = etapa.id === etapaAtual;
++        const concluida = indice < indiceAtual;
++        const Icone = etapa.icone;
++
++        return (
++          <button
++            key={etapa.id}
++            type="button"
++            onClick={() => aoSelecionar(etapa.id)}
++            className={juntarClasses(
++              "foco-acessivel relative flex min-w-0 items-center gap-2.5 border-r border-[#e8ebeb] px-3 py-3 text-left transition last:border-r-0",
++              ativa ? "bg-white" : "hover:bg-white/70",
++            )}
++          >
++            <span
++              className={juntarClasses(
++                "grid size-7 shrink-0 place-items-center rounded-md border",
++                ativa && "border-[#bcded6] bg-[#eaf7f3] text-[#1d816d]",
++                concluida && "border-[#cfe5df] bg-white text-[#278f79]",
++                !ativa && !concluida && "border-[#e1e5e5] bg-[#f3f5f5] text-[#92999a]",
++              )}
++            >
++              {concluida ? <Check className="size-3.5" strokeWidth={2.2} /> : <Icone className="size-3.5" strokeWidth={1.8} />}
++            </span>
++            <span className="min-w-0">
++              <strong
++                className={juntarClasses(
++                  "block truncate text-[9.5px] font-medium",
++                  ativa ? "text-[#1f2525]" : "text-[#606869]",
++                )}
++              >
++                {etapa.titulo}
++              </strong>
++              <span className="mt-0.5 block truncate text-[7.5px] text-[#9aa1a2]">{etapa.resumo}</span>
++            </span>
++            {ativa && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#299a84]" />}
++          </button>
++        );
++      })}
++    </nav>
++  );
++}
+diff --git a/components/criar-video/resumo-projeto-video.tsx b/components/criar-video/resumo-projeto-video.tsx
+new file mode 100644
+index 0000000..17de878
+--- /dev/null
++++ b/components/criar-video/resumo-projeto-video.tsx
+@@ -0,0 +1,91 @@
++import { Clock3, FileText, FolderOutput, LayoutTemplate, MonitorPlay, Sparkles } from "lucide-react";
++
++import { BotaoSelecionarPasta } from "@/components/ui/botao-selecionar-pasta";
++import { conteudoCriarVideo } from "@/content/criar-video";
++import { plataformasVideo } from "@/data/criar-video";
++import type { ConfiguracaoCriacaoVideo } from "@/types/criar-video";
++
++function MiniaturaFormato({ formato }: { formato: ConfiguracaoCriacaoVideo["formato"] }) {
++  const dimensoes = {
++    "9:16": "h-[118px] w-[66px]",
++    "16:9": "h-[66px] w-[118px]",
++    "1:1": "size-[94px]",
++  } as const;
++
++  return (
++    <div className="flex h-[136px] items-center justify-center rounded-md border border-[#e4e8e8] bg-[#f2f4f4]">
++      <div
++        className={`${dimensoes[formato]} relative overflow-hidden rounded-[4px] border border-[#d3d9d9] bg-[#1d2223] shadow-[0_8px_22px_rgba(18,25,24,.13)]`}
++      >
++        <div className="absolute inset-x-2 top-2 h-1.5 rounded-full bg-white/20" />
++        <div className="absolute inset-x-2 bottom-4 space-y-1">
++          <div className="h-1 rounded-full bg-white/85" />
++          <div className="h-1 w-4/5 rounded-full bg-[#5dd0b9]" />
++        </div>
++        <div className="absolute left-2 top-1/2 size-4 -translate-y-1/2 rounded-full border border-white/30 bg-white/10" />
++      </div>
++    </div>
++  );
++}
++
++export function ResumoProjetoVideo({ configuracao }: { configuracao: ConfiguracaoCriacaoVideo }) {
++  const plataforma = plataformasVideo.find((item) => item.id === configuracao.plataforma)?.titulo;
++  const palavras = configuracao.roteiro.trim() ? configuracao.roteiro.trim().split(/\s+/).length : 0;
++
++  const detalhes = [
++    { rotulo: "Plataforma", valor: plataforma ?? "YouTube Shorts", icone: MonitorPlay },
++    { rotulo: "Formato", valor: `${configuracao.formato} · ${configuracao.qualidade.split(" · ")[0]}`, icone: LayoutTemplate },
++    { rotulo: "Duração", valor: configuracao.duracao, icone: Clock3 },
++    { rotulo: "Roteiro", valor: palavras ? `${palavras} palavras` : "Ainda não gerado", icone: FileText },
++    { rotulo: "Criação", valor: configuracao.modo, icone: Sparkles },
++  ];
++
++  return (
++    <aside className="space-y-4 self-start lg:sticky lg:top-[78px]">
++      <section className="painel-superficie rounded-md p-4">
++        <div>
++          <h2 className="text-[11px] font-semibold text-[#252a2b]">{conteudoCriarVideo.resumoTitulo}</h2>
++          <p className="mt-1 text-[9px] leading-4 text-[#8b9293]">{conteudoCriarVideo.resumoDescricao}</p>
++        </div>
++
++        <div className="mt-4">
++          <MiniaturaFormato formato={configuracao.formato} />
++        </div>
++
++        <div className="mt-4 divide-y divide-[#edf0f0] border-y border-[#edf0f0]">
++          {detalhes.map(({ rotulo, valor, icone: Icone }) => (
++            <div key={rotulo} className="flex items-center gap-2.5 py-2.5">
++              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-[#f1f4f4] text-[#71797a]">
++                <Icone className="size-3.5" strokeWidth={1.7} />
++              </span>
++              <div className="min-w-0 flex-1">
++                <span className="block text-[7.5px] font-medium uppercase tracking-[0.06em] text-[#9aa1a2]">{rotulo}</span>
++                <strong className="mt-0.5 block truncate capitalize text-[9.5px] font-medium text-[#343a3b]">{valor}</strong>
++              </div>
++            </div>
++          ))}
++        </div>
++
++        <div className="mt-4 rounded-md border border-[#dcebe7] bg-[#f2f9f7] p-3">
++          <div className="flex items-start gap-2.5">
++            <FolderOutput className="mt-0.5 size-3.5 shrink-0 text-[#258a75]" />
++            <div>
++              <strong className="block text-[9.5px] font-medium text-[#27695c]">{conteudoCriarVideo.pastaSaidaTitulo}</strong>
++              <p className="mt-1 text-[8.5px] leading-4 text-[#6b8580]">{conteudoCriarVideo.pastaSaidaDescricao}</p>
++            </div>
++          </div>
++          <BotaoSelecionarPasta
++            rotulo="Escolher pasta de saída"
++            tituloDialogo="Escolha a pasta de exportação do MakeFlux Studio"
++            chaveArmazenamento="makeflux:pasta-exportacao"
++            className="mt-3 h-8 w-full justify-start px-2.5"
++          />
++        </div>
++      </section>
++
++      <div className="rounded-md border border-[#e7e1d9] bg-[#fbf8f4] p-3 text-[8.5px] leading-4 text-[#826d58]">
++        {conteudoCriarVideo.avisoFrontend}
++      </div>
++    </aside>
++  );
++}
+diff --git a/components/criar-video/rodape-etapa.tsx b/components/criar-video/rodape-etapa.tsx
+new file mode 100644
+index 0000000..990f891
+--- /dev/null
++++ b/components/criar-video/rodape-etapa.tsx
+@@ -0,0 +1,42 @@
++import { ArrowLeft, ArrowRight, CheckCircle2, Save } from "lucide-react";
++
++import { Botao } from "@/components/ui/botao";
++import { conteudoCriarVideo } from "@/content/criar-video";
++
++export function RodapeEtapa({
++  primeiraEtapa,
++  ultimaEtapa,
++  aoAnterior,
++  aoProximo,
++  aoSalvar,
++}: {
++  primeiraEtapa: boolean;
++  ultimaEtapa: boolean;
++  aoAnterior: () => void;
++  aoProximo: () => void;
++  aoSalvar: () => void;
++}) {
++  return (
++    <footer className="fixed bottom-0 left-[218px] right-0 z-30 flex h-[64px] items-center justify-between border-t border-[#dfe4e4] bg-white/96 px-8 shadow-[0_-8px_24px_rgba(20,29,27,.035)] backdrop-blur-sm">
++      <div className="flex items-center gap-2">
++        <Botao onClick={aoAnterior} disabled={primeiraEtapa} variante="fantasma">
++          <ArrowLeft className="size-3.5" />
++          {conteudoCriarVideo.acaoAnterior}
++        </Botao>
++        <span className="hidden text-[9px] text-[#9aa1a2] xl:inline">As alterações ficam no rascunho local ao salvar.</span>
++      </div>
++
++      <div className="flex items-center gap-2">
++        <Botao onClick={aoSalvar}>
++          <Save className="size-3.5" />
++          {conteudoCriarVideo.acaoSalvar}
++        </Botao>
++        <Botao onClick={aoProximo} variante="primario" className="min-w-[146px]">
++          {ultimaEtapa ? <CheckCircle2 className="size-3.5" /> : null}
++          {ultimaEtapa ? conteudoCriarVideo.acaoFinalizar : conteudoCriarVideo.acaoContinuar}
++          {!ultimaEtapa ? <ArrowRight className="size-3.5" /> : null}
++        </Botao>
++      </div>
++    </footer>
++  );
++}
+diff --git a/components/layout/cabecalho-aplicacao.tsx b/components/layout/cabecalho-aplicacao.tsx
+index f66830a..d86b63e 100644
+--- a/components/layout/cabecalho-aplicacao.tsx
++++ b/components/layout/cabecalho-aplicacao.tsx
+@@ -1,25 +1,57 @@
+ "use client";
+ 
+ import { Bell, CircleHelp, Plus, Search, UsersRound } from "lucide-react";
++import { usePathname } from "next/navigation";
++
+ import { Botao, BotaoLink } from "@/components/ui/botao";
+ 
++const titulosRotas: Record<string, string> = {
++  "/": "Início",
++  "/criar-video": "Criar vídeo",
++  "/projetos": "Projetos",
++  "/producao": "Produção",
++  "/laboratorio-de-ia": "Laboratório de IA",
++  "/biblioteca": "Biblioteca",
++  "/templates": "Templates",
++  "/publicacao": "Publicação",
++  "/integracoes": "Integrações",
++  "/configuracoes": "Configurações",
++  "/central-de-ajuda": "Central de ajuda",
++};
++
+ export function CabecalhoAplicacao() {
++  const pathname = usePathname();
++  const tituloAtual = titulosRotas[pathname] ?? "MakeFlux Studio";
++  const criandoVideo = pathname === "/criar-video";
++
+   return (
+     <header className="flex h-[62px] items-center justify-between border-b border-[#e6eaea] bg-white px-8">
+       <div className="flex items-center gap-2 text-[10.5px] text-[#8b9293]">
+         <span>MakeFlux Studio</span>
+         <span className="text-[#c4c9c9]">/</span>
+-        <strong className="font-medium text-[#4b5253]">Início</strong>
++        <strong className="font-medium text-[#4b5253]">{tituloAtual}</strong>
+       </div>
+ 
+       <div className="flex items-center gap-1.5">
+-        <button className="foco-acessivel grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]">
++        <button
++          type="button"
++          aria-label="Buscar no aplicativo"
++          className="foco-acessivel grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]"
++        >
+           <Search className="size-4" />
+         </button>
+-        <button className="foco-acessivel grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]">
++        <button
++          type="button"
++          aria-label="Abrir ajuda"
++          className="foco-acessivel grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]"
++        >
+           <CircleHelp className="size-4" />
+         </button>
+-        <button className="foco-acessivel relative grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]">
++        <button
++          type="button"
++          aria-label="Abrir notificações"
++          className="foco-acessivel relative grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]"
++        >
+           <Bell className="size-4" />
+           <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[#d85e5e] ring-2 ring-white" />
+         </button>
+@@ -27,10 +59,12 @@ export function CabecalhoAplicacao() {
+           <UsersRound className="size-3.5" />
+           Workspace
+         </Botao>
+-        <BotaoLink href="/criar-video" variante="primario" className="ml-1 h-8 px-3">
+-          <Plus className="size-3.5" />
+-          Novo vídeo
+-        </BotaoLink>
++        {!criandoVideo && (
++          <BotaoLink href="/criar-video" variante="primario" className="ml-1 h-8 px-3">
++            <Plus className="size-3.5" />
++            Novo vídeo
++          </BotaoLink>
++        )}
+         <div className="ml-2 grid size-8 place-items-center rounded-full bg-[#e7f3ef] text-[10px] font-semibold text-[#1b7966] ring-1 ring-[#d6e8e3]">
+           LA
+         </div>
+diff --git a/components/ui/botao-selecionar-pasta.tsx b/components/ui/botao-selecionar-pasta.tsx
+index af1fe32..932ec6a 100644
+--- a/components/ui/botao-selecionar-pasta.tsx
++++ b/components/ui/botao-selecionar-pasta.tsx
+@@ -6,12 +6,25 @@ import { useSeletorPasta } from "@/hooks/use-seletor-pasta";
+ 
+ import { Botao } from "./botao";
+ 
+-export function BotaoSelecionarPasta() {
+-  const { pasta, selecionando, erro, selecionarPasta } = useSeletorPasta();
++export function BotaoSelecionarPasta({
++  rotulo = "Escolher pasta principal",
++  tituloDialogo = "Escolha a pasta principal do MakeFlux Studio",
++  chaveArmazenamento = "makeflux:pasta-estudio",
++  className,
++}: {
++  rotulo?: string;
++  tituloDialogo?: string;
++  chaveArmazenamento?: string;
++  className?: string;
++}) {
++  const { pasta, selecionando, erro, selecionarPasta } = useSeletorPasta({
++    chaveArmazenamento,
++    tituloDialogo,
++  });
+ 
+   return (
+     <div className="min-w-0">
+-      <Botao onClick={selecionarPasta} disabled={selecionando} className="max-w-full">
++      <Botao onClick={selecionarPasta} disabled={selecionando} className={className ?? "max-w-full"}>
+         {selecionando ? (
+           <LoaderCircle className="size-3.5 animate-spin" />
+         ) : pasta ? (
+@@ -19,9 +32,7 @@ export function BotaoSelecionarPasta() {
+         ) : (
+           <FolderOpen className="size-3.5" />
+         )}
+-        <span className="max-w-[230px] truncate">
+-          {pasta || "Escolher pasta principal"}
+-        </span>
++        <span className="max-w-[230px] truncate">{pasta || rotulo}</span>
+       </Botao>
+       {erro && <p className="mt-1.5 text-[10px] leading-4 text-[#a45c38]">{erro}</p>}
+     </div>
+diff --git a/components/ui/campo-formulario.tsx b/components/ui/campo-formulario.tsx
+new file mode 100644
+index 0000000..94dcd58
+--- /dev/null
++++ b/components/ui/campo-formulario.tsx
+@@ -0,0 +1,33 @@
++import type { ReactNode } from "react";
++
++import { juntarClasses } from "@/lib/classes";
++
++export function CampoFormulario({
++  rotulo,
++  descricao,
++  opcional,
++  children,
++  className,
++}: {
++  rotulo: string;
++  descricao?: string;
++  opcional?: boolean;
++  children: ReactNode;
++  className?: string;
++}) {
++  return (
++    <div className={juntarClasses("space-y-2", className)}>
++      <div className="flex items-start justify-between gap-4">
++        <div>
++          <label className="block text-[10.5px] font-semibold text-[#303637]">{rotulo}</label>
++          {descricao && <p className="mt-1 text-[9px] leading-4 text-[#8b9293]">{descricao}</p>}
++        </div>
++        {opcional && <span className="text-[8px] uppercase tracking-[0.06em] text-[#a0a6a7]">Opcional</span>}
++      </div>
++      {children}
++    </div>
++  );
++}
++
++export const classesCampo =
++  "foco-acessivel w-full rounded-md border border-[#dfe4e4] bg-white px-3 text-[11px] text-[#2f3435] placeholder:text-[#a0a6a7] hover:border-[#d2d8d8] focus:border-[#8fc6ba]";
+diff --git a/components/ui/interruptor.tsx b/components/ui/interruptor.tsx
+new file mode 100644
+index 0000000..501f26e
+--- /dev/null
++++ b/components/ui/interruptor.tsx
+@@ -0,0 +1,41 @@
++"use client";
++
++import { juntarClasses } from "@/lib/classes";
++
++export function Interruptor({
++  ativo,
++  aoAlterar,
++  rotulo,
++  descricao,
++}: {
++  ativo: boolean;
++  aoAlterar: (ativo: boolean) => void;
++  rotulo: string;
++  descricao?: string;
++}) {
++  return (
++    <div className="flex items-center justify-between gap-5 rounded-md border border-[#e3e7e7] bg-[#fafbfb] px-3.5 py-3">
++      <div>
++        <strong className="block text-[10.5px] font-medium text-[#303637]">{rotulo}</strong>
++        {descricao && <span className="mt-1 block text-[9px] leading-4 text-[#8c9394]">{descricao}</span>}
++      </div>
++      <button
++        type="button"
++        role="switch"
++        aria-checked={ativo}
++        onClick={() => aoAlterar(!ativo)}
++        className={juntarClasses(
++          "foco-acessivel relative h-5 w-9 shrink-0 rounded-full border transition",
++          ativo ? "border-[#208a75] bg-[#269b84]" : "border-[#d1d7d7] bg-[#e4e8e8]",
++        )}
++      >
++        <span
++          className={juntarClasses(
++            "absolute top-0.5 size-3.5 rounded-full bg-white shadow-sm transition",
++            ativo ? "left-[17px]" : "left-0.5",
++          )}
++        />
++      </button>
++    </div>
++  );
++}
+diff --git a/components/ui/seletor-segmentado.tsx b/components/ui/seletor-segmentado.tsx
+new file mode 100644
+index 0000000..1415a87
+--- /dev/null
++++ b/components/ui/seletor-segmentado.tsx
+@@ -0,0 +1,39 @@
++"use client";
++
++import { juntarClasses } from "@/lib/classes";
++
++export function SeletorSegmentado<T extends string>({
++  valor,
++  opcoes,
++  aoAlterar,
++  className,
++}: {
++  valor: T;
++  opcoes: ReadonlyArray<{ id: T; titulo: string; detalhe?: string }>;
++  aoAlterar: (valor: T) => void;
++  className?: string;
++}) {
++  return (
++    <div className={juntarClasses("grid gap-1 rounded-md border border-[#dfe4e4] bg-[#f3f5f5] p-1", className)}>
++      {opcoes.map((opcao) => {
++        const ativo = valor === opcao.id;
++        return (
++          <button
++            key={opcao.id}
++            type="button"
++            onClick={() => aoAlterar(opcao.id)}
++            className={juntarClasses(
++              "foco-acessivel rounded-[5px] px-3 py-2 text-left transition",
++              ativo
++                ? "bg-white text-[#202526] shadow-[0_1px_2px_rgba(20,29,27,.08)]"
++                : "text-[#737b7c] hover:bg-white/65 hover:text-[#363c3d]",
++            )}
++          >
++            <strong className="block text-[10px] font-medium">{opcao.titulo}</strong>
++            {opcao.detalhe && <span className="mt-0.5 block text-[8px] text-[#959c9d]">{opcao.detalhe}</span>}
++          </button>
++        );
++      })}
++    </div>
++  );
++}
+diff --git a/content/criar-video.ts b/content/criar-video.ts
+new file mode 100644
+index 0000000..f460273
+--- /dev/null
++++ b/content/criar-video.ts
+@@ -0,0 +1,48 @@
++export const conteudoCriarVideo = {
++  breadcrumb: "Voltar para projetos",
++  titulo: "Criar novo vídeo",
++  etiqueta: "Fluxo assistido",
++  descricao:
++    "Configure cada etapa da produção com clareza. Você pode avançar no seu ritmo e revisar tudo antes da exportação.",
++  statusRascunho: "Rascunho local",
++  acaoSalvar: "Salvar rascunho",
++  acaoAnterior: "Etapa anterior",
++  acaoContinuar: "Continuar",
++  acaoFinalizar: "Preparar produção",
++  resumoTitulo: "Resumo do projeto",
++  resumoDescricao: "As escolhas principais ficam visíveis durante todo o fluxo.",
++  pastaSaidaTitulo: "Pasta de exportação",
++  pastaSaidaDescricao: "Os vídeos finais serão organizados nesta pasta do computador.",
++  avisoFrontend:
++    "Esta fase valida toda a experiência do estúdio. A execução real será conectada ao MoneyPrinterTurbo na fase de integração.",
++  etapas: {
++    ideia: {
++      titulo: "Defina a ideia do vídeo",
++      descricao: "Comece pelo assunto, objetivo e formato. Essas escolhas orientam todas as próximas etapas.",
++    },
++    roteiro: {
++      titulo: "Construa o roteiro",
++      descricao: "Use um prompt orientado, escreva manualmente ou gere uma versão de demonstração para revisar.",
++    },
++    cenas: {
++      titulo: "Organize as cenas",
++      descricao: "Revise os termos visuais e a ordem do storyboard antes de baixar ou selecionar materiais.",
++    },
++    narracao: {
++      titulo: "Escolha a narração",
++      descricao: "Defina o provedor, a voz, a velocidade e o volume que melhor combinam com o conteúdo.",
++    },
++    legendas: {
++      titulo: "Personalize as legendas",
++      descricao: "Escolha um estilo legível e confira como o texto será apresentado no vídeo.",
++    },
++    musica: {
++      titulo: "Defina a trilha sonora",
++      descricao: "Escolha uma música da biblioteca ou mantenha o vídeo somente com a narração.",
++    },
++    exportacao: {
++      titulo: "Revise a exportação",
++      descricao: "Confirme qualidade, codificador, quantidade de versões e destino antes de enviar à produção.",
++    },
++  },
++} as const;
+diff --git a/data/criar-video.ts b/data/criar-video.ts
+new file mode 100644
+index 0000000..8319dd5
+--- /dev/null
++++ b/data/criar-video.ts
+@@ -0,0 +1,159 @@
++import {
++  Captions,
++  Clapperboard,
++  FileText,
++  Lightbulb,
++  Mic2,
++  Music2,
++  UploadCloud,
++} from "lucide-react";
++
++import type { ConfiguracaoCriacaoVideo, CenaVideo, IdEtapaCriacao } from "@/types/criar-video";
++
++export const etapasCriacaoVideo: Array<{
++  id: IdEtapaCriacao;
++  titulo: string;
++  resumo: string;
++  icone: typeof Lightbulb;
++}> = [
++  { id: "ideia", titulo: "Ideia", resumo: "Assunto e objetivo", icone: Lightbulb },
++  { id: "roteiro", titulo: "Roteiro", resumo: "Texto e prompt", icone: FileText },
++  { id: "cenas", titulo: "Cenas", resumo: "Storyboard visual", icone: Clapperboard },
++  { id: "narracao", titulo: "Narração", resumo: "Voz e áudio", icone: Mic2 },
++  { id: "legendas", titulo: "Legendas", resumo: "Estilo e posição", icone: Captions },
++  { id: "musica", titulo: "Música", resumo: "Trilha e volume", icone: Music2 },
++  { id: "exportacao", titulo: "Exportação", resumo: "Saída final", icone: UploadCloud },
++];
++
++export const modosCriacao = [
++  {
++    id: "rapido",
++    titulo: "Rápido",
++    descricao: "A IA prepara todas as etapas com os padrões selecionados.",
++  },
++  {
++    id: "assistido",
++    titulo: "Assistido",
++    descricao: "Você revisa e aprova cada etapa antes de continuar.",
++  },
++  {
++    id: "avancado",
++    titulo: "Avançado",
++    descricao: "Exibe prompts e parâmetros técnicos completos.",
++  },
++] as const;
++
++export const objetivosVideo = [
++  { id: "informar", titulo: "Informar", descricao: "Apresentar fatos e contexto com objetividade." },
++  { id: "educar", titulo: "Educar", descricao: "Ensinar um conceito ou processo de forma clara." },
++  { id: "entreter", titulo: "Entreter", descricao: "Criar ritmo, curiosidade e retenção visual." },
++  { id: "promover", titulo: "Promover", descricao: "Apresentar uma ideia, marca, serviço ou produto." },
++] as const;
++
++export const plataformasVideo = [
++  { id: "shorts", titulo: "YouTube Shorts" },
++  { id: "reels", titulo: "Instagram Reels" },
++  { id: "tiktok", titulo: "TikTok" },
++  { id: "youtube", titulo: "YouTube" },
++] as const;
++
++export const formatosVideo = [
++  { id: "9:16", titulo: "Vertical", detalhe: "9:16" },
++  { id: "16:9", titulo: "Horizontal", detalhe: "16:9" },
++  { id: "1:1", titulo: "Quadrado", detalhe: "1:1" },
++] as const;
++
++export const idiomasVideo = ["Português (Brasil)", "Inglês", "Espanhol"];
++export const duracoesVideo = ["30 segundos", "45 segundos", "60 segundos", "90 segundos"];
++export const modelosIa = ["OpenAI · modelo padrão", "Ollama · modelo local", "Escrever sem IA"];
++export const fontesMateriais = ["Pexels", "Pixabay", "Biblioteca local", "Materiais próprios"];
++
++export const vozesDisponiveis = [
++  { id: "pt-BR-FranciscaNeural", nome: "Francisca", detalhe: "Feminina · natural", provedor: "Edge TTS" },
++  { id: "pt-BR-AntonioNeural", nome: "Antônio", detalhe: "Masculina · equilibrada", provedor: "Edge TTS" },
++  { id: "local-narrador-01", nome: "Narrador local", detalhe: "Masculina · offline", provedor: "TTS local" },
++];
++
++export const presetsLegenda = [
++  { id: "limpa", titulo: "Limpa", descricao: "Branca, discreta e centralizada." },
++  { id: "shorts", titulo: "Shorts dinâmica", descricao: "Palavras maiores com contorno forte." },
++  { id: "documentario", titulo: "Documentário", descricao: "Faixa inferior com ritmo calmo." },
++  { id: "minimalista", titulo: "Minimalista", descricao: "Texto compacto sem fundo." },
++];
++
++export const musicasDisponiveis = [
++  { id: "sem-musica", titulo: "Sem música", estilo: "Somente narração", duracao: "—" },
++  { id: "digital-focus", titulo: "Digital Focus", estilo: "Tecnologia · suave", duracao: "02:14" },
++  { id: "quiet-motion", titulo: "Quiet Motion", estilo: "Ambient · moderno", duracao: "01:48" },
++  { id: "forward-pulse", titulo: "Forward Pulse", estilo: "Motivacional · leve", duracao: "02:31" },
++];
++
++export const cenasIniciais: CenaVideo[] = [
++  {
++    id: 1,
++    titulo: "Gancho inicial",
++    trecho: "Você pode estar perdendo horas do seu dia sem perceber.",
++    termo: "person checking phone early morning productivity",
++    duracao: 5,
++    origem: "Pexels",
++  },
++  {
++    id: 2,
++    titulo: "Problema",
++    trecho: "Pequenas distrações quebram seu foco e aumentam o tempo de cada tarefa.",
++    termo: "distracted office worker multiple notifications",
++    duracao: 8,
++    origem: "Pexels",
++  },
++  {
++    id: 3,
++    titulo: "Solução",
++    trecho: "Organizar prioridades e bloquear interrupções muda completamente a rotina.",
++    termo: "focused person planning tasks notebook desk",
++    duracao: 9,
++    origem: "Biblioteca local",
++  },
++  {
++    id: 4,
++    titulo: "Fechamento",
++    trecho: "Comece hoje eliminando apenas uma distração recorrente.",
++    termo: "productive workspace calm focused ending",
++    duracao: 6,
++    origem: "Pixabay",
++  },
++];
++
++export const configuracaoInicialVideo: ConfiguracaoCriacaoVideo = {
++  nomeProjeto: "Novo vídeo sem título",
++  tema: "",
++  objetivo: "informar",
++  publico: "Pessoas interessadas em produtividade e tecnologia",
++  plataforma: "shorts",
++  idioma: "Português (Brasil)",
++  duracao: "45 segundos",
++  formato: "9:16",
++  modo: "assistido",
++  modeloIa: "OpenAI · modelo padrão",
++  promptRoteiro:
++    "Crie um roteiro direto para vídeo curto. Comece com um gancho forte, use frases curtas e finalize com uma ação prática.",
++  systemPrompt:
++    "Você é um roteirista especializado em vídeos curtos, claros e visualmente representáveis para redes sociais.",
++  roteiro: "",
++  fonteMateriais: "Pexels",
++  correspondenciaNarrativa: true,
++  cenas: cenasIniciais,
++  provedorVoz: "Edge TTS",
++  voz: "pt-BR-FranciscaNeural",
++  velocidadeVoz: 1,
++  volumeVoz: 90,
++  legendasAtivas: true,
++  presetLegenda: "limpa",
++  posicaoLegenda: "Inferior",
++  tamanhoLegenda: 42,
++  musicaAtiva: true,
++  musica: "digital-focus",
++  volumeMusica: 18,
++  qualidade: "1080p · Alta qualidade",
++  codificador: "Automático · melhor disponível",
++  quantidadeVersoes: 1,
++};
+diff --git a/hooks/use-seletor-pasta.ts b/hooks/use-seletor-pasta.ts
+index 56cfa9b..e12b191 100644
+--- a/hooks/use-seletor-pasta.ts
++++ b/hooks/use-seletor-pasta.ts
+@@ -2,17 +2,21 @@
+ 
+ import { useCallback, useEffect, useState } from "react";
+ 
+-const CHAVE_ARMAZENAMENTO = "makeflux:pasta-estudio";
+-
+-export function useSeletorPasta() {
++export function useSeletorPasta({
++  chaveArmazenamento = "makeflux:pasta-estudio",
++  tituloDialogo = "Escolha uma pasta",
++}: {
++  chaveArmazenamento?: string;
++  tituloDialogo?: string;
++} = {}) {
+   const [pasta, setPasta] = useState<string>("");
+   const [selecionando, setSelecionando] = useState(false);
+   const [erro, setErro] = useState<string>("");
+ 
+   useEffect(() => {
+-    const pastaSalva = window.localStorage.getItem(CHAVE_ARMAZENAMENTO);
++    const pastaSalva = window.localStorage.getItem(chaveArmazenamento);
+     if (pastaSalva) setPasta(pastaSalva);
+-  }, []);
++  }, [chaveArmazenamento]);
+ 
+   const selecionarPasta = useCallback(async () => {
+     setSelecionando(true);
+@@ -26,7 +30,7 @@ export function useSeletorPasta() {
+         const resultado = await open({
+           directory: true,
+           multiple: false,
+-          title: "Escolha a pasta principal do MakeFlux Studio",
++          title: tituloDialogo,
+         });
+ 
+         pastaSelecionada = typeof resultado === "string" ? resultado : null;
+@@ -39,7 +43,7 @@ export function useSeletorPasta() {
+ 
+       if (pastaSelecionada) {
+         setPasta(pastaSelecionada);
+-        window.localStorage.setItem(CHAVE_ARMAZENAMENTO, pastaSelecionada);
++        window.localStorage.setItem(chaveArmazenamento, pastaSelecionada);
+       }
+     } catch (causa) {
+       const cancelado = causa instanceof Error && causa.name === "AbortError";
+@@ -47,7 +51,7 @@ export function useSeletorPasta() {
+     } finally {
+       setSelecionando(false);
+     }
+-  }, []);
++  }, [chaveArmazenamento, tituloDialogo]);
+ 
+   return { pasta, selecionando, erro, selecionarPasta };
+ }
+diff --git a/package.json b/package.json
+index 43924a1..0c8712c 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "makeflux-studio",
+-  "version": "0.1.0",
++  "version": "0.2.0",
+   "private": true,
+   "scripts": {
+     "dev": "next dev",
+diff --git a/src-tauri/Cargo.toml b/src-tauri/Cargo.toml
+index 9f0b794..b089f27 100644
+--- a/src-tauri/Cargo.toml
++++ b/src-tauri/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "makeflux-studio"
+-version = "0.1.0"
++version = "0.2.0"
+ description = "MakeFlux Studio"
+ authors = ["MakeFlux Studio"]
+ edition = "2021"
+diff --git a/src-tauri/tauri.conf.json b/src-tauri/tauri.conf.json
+index 9a13629..a4c101c 100644
+--- a/src-tauri/tauri.conf.json
++++ b/src-tauri/tauri.conf.json
+@@ -1,7 +1,7 @@
+ {
+   "$schema": "https://schema.tauri.app/config/2",
+   "productName": "MakeFlux Studio",
+-  "version": "0.1.0",
++  "version": "0.2.0",
+   "identifier": "com.makeflux.studio",
+   "build": {
+     "beforeDevCommand": "npm run dev",
+diff --git a/types/criar-video.ts b/types/criar-video.ts
+new file mode 100644
+index 0000000..98d8dfa
+--- /dev/null
++++ b/types/criar-video.ts
+@@ -0,0 +1,60 @@
++export type IdEtapaCriacao =
++  | "ideia"
++  | "roteiro"
++  | "cenas"
++  | "narracao"
++  | "legendas"
++  | "musica"
++  | "exportacao";
++
++export type ModoCriacao = "rapido" | "assistido" | "avancado";
++export type PlataformaVideo = "shorts" | "reels" | "tiktok" | "youtube";
++export type FormatoVideo = "9:16" | "16:9" | "1:1";
++export type ObjetivoVideo = "informar" | "educar" | "entreter" | "promover";
++
++export type CenaVideo = {
++  id: number;
++  titulo: string;
++  trecho: string;
++  termo: string;
++  duracao: number;
++  origem: string;
++};
++
++export type ConfiguracaoCriacaoVideo = {
++  nomeProjeto: string;
++  tema: string;
++  objetivo: ObjetivoVideo;
++  publico: string;
++  plataforma: PlataformaVideo;
++  idioma: string;
++  duracao: string;
++  formato: FormatoVideo;
++  modo: ModoCriacao;
++  modeloIa: string;
++  promptRoteiro: string;
++  systemPrompt: string;
++  roteiro: string;
++  fonteMateriais: string;
++  correspondenciaNarrativa: boolean;
++  cenas: CenaVideo[];
++  provedorVoz: string;
++  voz: string;
++  velocidadeVoz: number;
++  volumeVoz: number;
++  legendasAtivas: boolean;
++  presetLegenda: string;
++  posicaoLegenda: string;
++  tamanhoLegenda: number;
++  musicaAtiva: boolean;
++  musica: string;
++  volumeMusica: number;
++  qualidade: string;
++  codificador: string;
++  quantidadeVersoes: number;
++};
++
++export type AtualizarConfiguracaoVideo = <K extends keyof ConfiguracaoCriacaoVideo>(
++  campo: K,
++  valor: ConfiguracaoCriacaoVideo[K],
++) => void;
+-- 
+2.47.3
+
