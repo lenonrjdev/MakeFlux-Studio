@@ -5,9 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 export function useSeletorPasta({
   chaveArmazenamento = "makeflux:pasta-estudio",
   tituloDialogo = "Escolha uma pasta",
+  aoSelecionar,
 }: {
   chaveArmazenamento?: string;
   tituloDialogo?: string;
+  aoSelecionar?: (pasta: string) => void;
 } = {}) {
   const [pasta, setPasta] = useState<string>("");
   const [selecionando, setSelecionando] = useState(false);
@@ -48,6 +50,7 @@ export function useSeletorPasta({
       if (pastaSelecionada) {
         setPasta(pastaSelecionada);
         window.localStorage.setItem(chaveArmazenamento, pastaSelecionada);
+        aoSelecionar?.(pastaSelecionada);
       }
     } catch (causa) {
       const cancelado = causa instanceof Error && causa.name === "AbortError";
@@ -55,7 +58,7 @@ export function useSeletorPasta({
     } finally {
       setSelecionando(false);
     }
-  }, [chaveArmazenamento, tituloDialogo]);
+  }, [aoSelecionar, chaveArmazenamento, tituloDialogo]);
 
   return { pasta, selecionando, erro, selecionarPasta };
 }

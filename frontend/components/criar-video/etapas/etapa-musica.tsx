@@ -22,6 +22,8 @@ export function EtapaMusica({
 }) {
   const [tocando, setTocando] = useState<string | null>(null);
   const musicaSelecionada = musicasDisponiveis.find((musica) => musica.id === configuracao.musica);
+  const tituloMusicaSelecionada = configuracao.musicaLocal?.nome ?? musicaSelecionada?.titulo;
+  const detalheMusicaSelecionada = configuracao.musicaLocal ? "Biblioteca local" : musicaSelecionada?.estilo;
 
   function alternarMusica(id: string) {
     setTocando((atual) => (atual === id ? null : id));
@@ -52,8 +54,25 @@ export function EtapaMusica({
           </div>
 
           <div className="space-y-2">
+            {configuracao.musicaLocal && (
+              <article className="grid grid-cols-[38px_minmax(0,1fr)_130px_70px] items-center gap-3 rounded-md border border-[#9dcfc3] bg-[#f0f9f6] px-3 py-2.5">
+                <span className="grid size-8 place-items-center rounded-full border border-[#cce4de] bg-white text-[#278773]">
+                  <Music2 className="size-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <strong className="block truncate text-[10px] font-medium text-[#303637]">{configuracao.musicaLocal.nome}</strong>
+                  <span className="mt-1 block truncate text-[8px] text-[#899192]">Biblioteca local · arquivo selecionado</span>
+                </div>
+                <div className="flex h-7 items-end gap-[2px] overflow-hidden px-2">
+                  {[9, 16, 11, 21, 13, 18, 10, 23, 15, 12, 19, 8, 17, 12, 20, 14, 10, 18].map((altura, indice) => (
+                    <span key={`local-${indice}`} className="w-[2px] rounded-full bg-[#62b9a7]" style={{ height: `${altura}px` }} />
+                  ))}
+                </div>
+                <span className="text-right text-[8px] font-medium text-[#278773]">Selecionada</span>
+              </article>
+            )}
             {musicasDisponiveis.map((musica) => {
-              const selecionada = configuracao.musica === musica.id;
+              const selecionada = !configuracao.musicaLocal && configuracao.musica === musica.id;
               const reproduzindo = tocando === musica.id;
               return (
                 <article
@@ -78,7 +97,7 @@ export function EtapaMusica({
 
                   <button
                     type="button"
-                    onClick={() => atualizar("musica", musica.id)}
+                    onClick={() => { atualizar("musica", musica.id); atualizar("musicaLocal", undefined); }}
                     disabled={!configuracao.musicaAtiva}
                     className="foco-acessivel min-w-0 rounded text-left"
                   >
@@ -105,7 +124,7 @@ export function EtapaMusica({
                     <button
                       type="button"
                       aria-label={`Selecionar ${musica.titulo}`}
-                      onClick={() => atualizar("musica", musica.id)}
+                      onClick={() => { atualizar("musica", musica.id); atualizar("musicaLocal", undefined); }}
                       disabled={!configuracao.musicaAtiva}
                       className={juntarClasses(
                         "foco-acessivel grid size-5 place-items-center rounded-full border",
@@ -138,10 +157,10 @@ export function EtapaMusica({
             <Waves className="size-5" />
           </span>
           <strong className="mt-3 block text-[10.5px] font-medium text-[#303637]">
-            {configuracao.musicaAtiva ? musicaSelecionada?.titulo : "Música desativada"}
+            {configuracao.musicaAtiva ? tituloMusicaSelecionada : "Música desativada"}
           </strong>
           <span className="mt-1 block text-[8.5px] text-[#8b9293]">
-            {configuracao.musicaAtiva ? musicaSelecionada?.estilo : "Apenas a narração será exportada."}
+            {configuracao.musicaAtiva ? detalheMusicaSelecionada : "Apenas a narração será exportada."}
           </span>
         </div>
 

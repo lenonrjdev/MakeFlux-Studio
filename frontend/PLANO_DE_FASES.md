@@ -38,8 +38,13 @@
 - Comparação A/B, escolha do melhor resultado e biblioteca de presets.
 - Transferência do resultado aprovado para um novo projeto no estúdio.
 
-## Fase 6 — Biblioteca
-Materiais, mídia local, músicas, narrações, legendas, fontes, prompts e exportações.
+## Fase 6 — Biblioteca — concluída
+- Acervo local para vídeos, imagens, músicas, narrações, legendas, fontes, prompts e exportações.
+- Busca, categorias, ordenação, visualização em grade ou lista e filtros por coleção.
+- Coleções personalizadas, favoritos, tags, metadados, duplicação, movimentação e remoção segura.
+- Importação de múltiplos arquivos e pasta raiz reutilizando o seletor desktop.
+- Sincronização das exportações da Produção e dos presets do Laboratório de IA.
+- Transferência de recursos aprovados diretamente para as etapas do estúdio.
 
 ## Fase 7 — Templates
 Presets completos de criação e renderização.

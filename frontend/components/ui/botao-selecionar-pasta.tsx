@@ -11,15 +11,18 @@ export function BotaoSelecionarPasta({
   tituloDialogo = "Escolha a pasta principal do MakeFlux Studio",
   chaveArmazenamento = "makeflux:pasta-estudio",
   className,
+  aoSelecionar,
 }: {
   rotulo?: string;
   tituloDialogo?: string;
   chaveArmazenamento?: string;
   className?: string;
+  aoSelecionar?: (pasta: string) => void;
 }) {
   const { pasta, selecionando, erro, selecionarPasta } = useSeletorPasta({
     chaveArmazenamento,
     tituloDialogo,
+    aoSelecionar,
   });
 
   return (

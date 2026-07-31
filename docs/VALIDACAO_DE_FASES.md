@@ -107,3 +107,8 @@ scripts\validacao\fases\fase-06.json
 ```
 
 Depois, `validar-fase-atual.ps1` passa a apontar para o manifesto mais recente. Os manifestos antigos permanecem disponíveis para regressão.
+
+
+## Fase 6 — Biblioteca
+
+Valida o acervo local, coleções, importação, sincronização com Produção e Laboratório de IA, transferência ao estúdio, rota exportada e aplicativo desktop.

@@ -19,6 +19,7 @@ export type CenaVideo = {
   termo: string;
   duracao: number;
   origem: string;
+  arquivoLocal?: string;
 };
 
 export type ConfiguracaoCriacaoVideo = {
@@ -42,13 +43,16 @@ export type ConfiguracaoCriacaoVideo = {
   voz: string;
   velocidadeVoz: number;
   volumeVoz: number;
+  narracaoLocal?: { nome: string; caminho: string };
   legendasAtivas: boolean;
   presetLegenda: string;
   posicaoLegenda: string;
   tamanhoLegenda: number;
+  legendaLocal?: { nome: string; caminho: string };
   musicaAtiva: boolean;
   musica: string;
   volumeMusica: number;
+  musicaLocal?: { nome: string; caminho: string };
   qualidade: string;
   codificador: string;
   quantidadeVersoes: number;

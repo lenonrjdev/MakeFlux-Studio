@@ -56,11 +56,17 @@ export function EtapaNarracao({
             <span className="mx-auto grid size-10 place-items-center rounded-md bg-[#eef4f2] text-[#2b8875]">
               <Mic2 className="size-5" />
             </span>
-            <strong className="mt-3 block text-[10.5px] font-medium text-[#343a3b]">Selecione uma narração pronta</strong>
+            <strong className="mt-3 block text-[10.5px] font-medium text-[#343a3b]">
+              {configuracao.narracaoLocal?.nome ?? "Selecione uma narração pronta"}
+            </strong>
             <p className="mx-auto mt-1 max-w-[420px] text-[8.5px] leading-4 text-[#8a9293]">
-              Na integração desktop, este botão abrirá o seletor nativo para arquivos WAV, MP3 e M4A.
+              {configuracao.narracaoLocal
+                ? configuracao.narracaoLocal.caminho
+                : "Na integração desktop, este botão abrirá o seletor nativo para arquivos WAV, MP3 e M4A."}
             </p>
-            <Botao className="mt-4">Escolher arquivo de áudio</Botao>
+            <Botao className="mt-4">
+              {configuracao.narracaoLocal ? "Trocar arquivo de áudio" : "Escolher arquivo de áudio"}
+            </Botao>
           </div>
         ) : (
           <CampoFormulario rotulo="Voz disponível" descricao="Ouça uma prévia antes de confirmar a narração.">

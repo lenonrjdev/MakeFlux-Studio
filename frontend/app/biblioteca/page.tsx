@@ -1,6 +1,5 @@
-import { PaginaEmConstrucao } from "@/components/modulos/pagina-em-construcao";
-import { modulosPlanejados } from "@/content/modulos";
+import { CentralBiblioteca } from "@/components/biblioteca/central-biblioteca";
 
 export default function PaginaBiblioteca() {
-  return <PaginaEmConstrucao {...modulosPlanejados["/biblioteca"]} />;
+  return <CentralBiblioteca />;
 }

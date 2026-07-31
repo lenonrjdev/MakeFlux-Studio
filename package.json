@@ -1,6 +1,6 @@
 {
   "name": "makeflux-studio-workspace",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "validar:ambiente": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-ambiente.ps1",
@@ -9,6 +9,7 @@
     "validar:fase-atual": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-atual.ps1",
     "validar:fase-3": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-03.ps1",
     "validar:fase-4": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-04.ps1",
-    "validar:fase-5": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-05.ps1"
+    "validar:fase-5": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-05.ps1",
+    "validar:fase-6": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validacao/validar-fase-06.ps1"
   }
 }

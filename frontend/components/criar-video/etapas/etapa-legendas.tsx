@@ -25,6 +25,14 @@ export function EtapaLegendas({
           descricao="Inclui o texto sincronizado na renderização final."
         />
 
+        {configuracao.legendaLocal && (
+          <div className="rounded-md border border-[#cfe3de] bg-[#f2f9f7] px-3 py-2.5">
+            <span className="text-[8px] font-medium uppercase tracking-[0.05em] text-[#3d8171]">Legenda da Biblioteca</span>
+            <strong className="mt-1 block truncate text-[9.5px] font-medium text-[#303637]">{configuracao.legendaLocal.nome}</strong>
+            <span className="mt-1 block truncate text-[8px] text-[#778382]">{configuracao.legendaLocal.caminho}</span>
+          </div>
+        )}
+
         <CampoFormulario rotulo="Estilo da legenda" descricao="Presets podem ser refinados no modo avançado.">
           <div className="space-y-2">
             {presetsLegenda.map((preset) => {

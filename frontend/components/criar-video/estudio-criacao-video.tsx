@@ -12,6 +12,7 @@ import {
   obterProjetoLocal,
   salvarConfiguracaoProjetoLocal,
 } from "@/lib/projetos-locais";
+import { consumirTransferenciaBibliotecaParaEstudio } from "@/lib/biblioteca-local";
 import { consumirTransferenciaLaboratorioParaEstudio } from "@/lib/laboratorio-ia-local";
 import { criarTarefaProducaoLocal } from "@/lib/producao-local";
 import type {
@@ -78,6 +79,60 @@ function aplicarTransferenciaLaboratorio() {
   return { configuracao, etapa: "roteiro" as IdEtapaCriacao };
 }
 
+function aplicarTransferenciaBiblioteca() {
+  const transferencia = consumirTransferenciaBibliotecaParaEstudio();
+  if (!transferencia) return { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+
+  const configuracao: ConfiguracaoCriacaoVideo = {
+    ...configuracaoInicialVideo,
+    nomeProjeto: `Biblioteca · ${transferencia.nome.slice(0, 48)}`,
+    cenas: [...configuracaoInicialVideo.cenas],
+  };
+
+  if (["video", "imagem"].includes(transferencia.tipo)) {
+    configuracao.fonteMateriais = "Biblioteca local";
+    configuracao.cenas = [
+      {
+        id: Date.now(),
+        titulo: transferencia.nome,
+        trecho: transferencia.descricao || "Material selecionado na Biblioteca.",
+        termo: transferencia.caminho,
+        duracao: transferencia.tipo === "imagem" ? 5 : 8,
+        origem: "Biblioteca local",
+        arquivoLocal: transferencia.caminho,
+      },
+      ...configuracao.cenas,
+    ];
+    return { configuracao, etapa: "cenas" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "musica") {
+    configuracao.musicaAtiva = true;
+    configuracao.musica = "biblioteca-local";
+    configuracao.musicaLocal = { nome: transferencia.nome, caminho: transferencia.caminho };
+    return { configuracao, etapa: "musica" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "narracao") {
+    configuracao.provedorVoz = "Áudio próprio";
+    configuracao.narracaoLocal = { nome: transferencia.nome, caminho: transferencia.caminho };
+    return { configuracao, etapa: "narracao" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "legenda") {
+    configuracao.legendasAtivas = true;
+    configuracao.legendaLocal = { nome: transferencia.nome, caminho: transferencia.caminho };
+    return { configuracao, etapa: "legendas" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "prompt") {
+    configuracao.promptRoteiro = transferencia.conteudo || transferencia.descricao;
+    return { configuracao, etapa: "roteiro" as IdEtapaCriacao };
+  }
+
+  return { configuracao, etapa: "ideia" as IdEtapaCriacao };
+}
+
 export function EstudioCriacaoVideo() {
   const router = useRouter();
   const [etapaAtual, setEtapaAtual] = useState<IdEtapaCriacao>("ideia");
@@ -103,10 +158,14 @@ export function EstudioCriacaoVideo() {
         setConfiguracao(existente.configuracao);
         setEtapaAtual(existente.etapaAtual);
       } else {
-        const origemLaboratorio = new URLSearchParams(window.location.search).get("origem") === "laboratorio";
+        const origem = new URLSearchParams(window.location.search).get("origem");
+        const origemLaboratorio = origem === "laboratorio";
+        const origemBiblioteca = origem === "biblioteca";
         const transferencia = origemLaboratorio
           ? aplicarTransferenciaLaboratorio()
-          : { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+          : origemBiblioteca
+            ? aplicarTransferenciaBiblioteca()
+            : { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
         const criado = criarProjetoLocal(transferencia.configuracao);
         setProjetoId(criado.id);
         setConfiguracao(transferencia.configuracao);
