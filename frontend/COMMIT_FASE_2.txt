@@ -1,0 +1,5 @@
+Commit da Fase 2
+
+37f8e09 feat(fase-2): implementar estúdio guiado de criação de vídeos
+
+Aplique os arquivos desta atualização sobre a raiz do projeto da Fase 1, preservando os caminhos apresentados.

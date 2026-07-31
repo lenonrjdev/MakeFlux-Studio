@@ -1,0 +1,5 @@
+MAKEFLUX STUDIO - FASE 10
+
+1. Extraia este pacote em C:\projetos\makeFluxStudio
+2. Execute .\VALIDAR_FASE_ATUAL.cmd
+3. Faça o commit somente após FASE APROVADA.

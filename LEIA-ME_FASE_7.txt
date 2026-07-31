@@ -1,0 +1,5 @@
+MAKEFLUX STUDIO — FASE 7
+
+Extraia este pacote em C:\projetos\makeFluxStudio.
+O pacote contém somente arquivos novos ou alterados da Fase 7.
+Depois execute VALIDAR_FASE_ATUAL.cmd na raiz.

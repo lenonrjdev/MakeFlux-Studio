@@ -1,0 +1,10 @@
+MAKEFLUX STUDIO - FASE 4
+
+Atualizacao incremental estruturada a partir da raiz do repositorio.
+Extraia o conteudo em:
+C:\projetos\makeFluxStudio
+
+Depois execute:
+.\VALIDAR_FASE_ATUAL.cmd
+
+A fase somente deve ser consolidada apos a mensagem FASE APROVADA.

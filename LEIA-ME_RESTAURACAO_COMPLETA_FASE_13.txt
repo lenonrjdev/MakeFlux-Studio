@@ -1,0 +1,11 @@
+MAKEFLUX STUDIO - RESTAURACAO COMPLETA ATE A FASE 13 / VERSAO 1.0.0
+
+Este pacote contem o codigo-fonte completo do MakeFlux Studio consolidado ate a Fase 13.
+Ele nao inclui .git, node_modules, .next, out, target, dist ou relatorios locais.
+
+Para restaurar com seguranca:
+1. Preserve ou copie a pasta .git do repositorio anterior.
+2. Substitua a pasta do projeto por esta copia limpa.
+3. Execute npm install dentro de frontend.
+4. Execute VALIDAR_FASE_ATUAL.cmd na raiz.
+5. Considere a Fase 13 consolidada somente quando aparecer FASE APROVADA.

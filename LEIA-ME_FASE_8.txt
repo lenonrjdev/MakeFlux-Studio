@@ -1,0 +1,5 @@
+MAKEFLUX STUDIO — FASE 8
+
+Extraia este ZIP em C:\projetos\makeFluxStudio.
+Não extraia dentro da pasta frontend.
+Depois execute: .\VALIDAR_FASE_ATUAL.cmd

@@ -1,0 +1,48 @@
+{
+  "name": "makeflux-studio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "test:estrutura": "node --test test/estrutura-aplicacao.test.mjs",
+    "test:fase3": "node --test test/fase-03-projetos.test.mjs",
+    "validar:frontend": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "tauri": "tauri",
+    "desktop": "tauri dev",
+    "desktop:build": "tauri build",
+    "test:fase4": "node --test test/fase-04-producao.test.mjs",
+    "test:fase5": "node --test test/fase-05-laboratorio-ia.test.mjs",
+    "test:fase6": "node --test test/fase-06-biblioteca.test.mjs",
+    "test:fase7": "node --test test/fase-07-templates.test.mjs",
+    "test:fase8": "node --test test/fase-08-publicacao.test.mjs",
+    "test:fase9": "node --test test/fase-09-integracoes.test.mjs",
+    "test:fase10": "node --test test/fase-10-configuracoes.test.mjs",
+    "test:fase11": "node --test test/fase-11-ajuda.test.mjs",
+    "test:fase12": "node --test test/fase-12-integracao-nativa.test.mjs",
+    "test:fase13": "node --test test/fase-13-qualidade-distribuicao.test.mjs test/e2e-fluxo-completo.test.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-dialog": "^2.4.0",
+    "lucide-react": "^0.468.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tauri-apps/cli": "^2.8.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

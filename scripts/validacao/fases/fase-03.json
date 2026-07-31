@@ -1,0 +1,37 @@
+{
+  "fase": "03",
+  "nome": "Projetos, autosave e versionamento",
+  "versao": "0.3.0",
+  "arquivosObrigatorios": [
+    "frontend/app/page.tsx",
+    "frontend/app/criar-video/page.tsx",
+    "frontend/app/projetos/page.tsx",
+    "frontend/components/criar-video/estudio-criacao-video.tsx",
+    "frontend/components/projetos/central-projetos.tsx",
+    "frontend/components/projetos/painel-detalhes-projeto.tsx",
+    "frontend/hooks/use-projetos-locais.ts",
+    "frontend/lib/projetos-locais.ts",
+    "frontend/types/projeto.ts",
+    "frontend/src-tauri/Cargo.toml",
+    "frontend/src-tauri/tauri.conf.json",
+    "frontend/test/estrutura-aplicacao.test.mjs",
+    "frontend/test/fase-03-projetos.test.mjs"
+  ],
+  "rotas": [
+    {
+      "rota": "/",
+      "arquivo": "frontend/app/page.tsx",
+      "saida": "frontend/out/index.html"
+    },
+    {
+      "rota": "/criar-video",
+      "arquivo": "frontend/app/criar-video/page.tsx",
+      "saida": "frontend/out/criar-video/index.html"
+    },
+    {
+      "rota": "/projetos",
+      "arquivo": "frontend/app/projetos/page.tsx",
+      "saida": "frontend/out/projetos/index.html"
+    }
+  ]
+}

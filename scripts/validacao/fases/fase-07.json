@@ -1,0 +1,66 @@
+{
+  "fase": "07",
+  "nome": "Templates completos de criacao e renderizacao",
+  "versao": "0.7.0",
+  "arquivosObrigatorios": [
+    "frontend/app/page.tsx",
+    "frontend/app/criar-video/page.tsx",
+    "frontend/app/projetos/page.tsx",
+    "frontend/app/producao/page.tsx",
+    "frontend/app/laboratorio-de-ia/page.tsx",
+    "frontend/app/biblioteca/page.tsx",
+    "frontend/app/templates/page.tsx",
+    "frontend/components/templates/central-templates.tsx",
+    "frontend/components/templates/painel-categorias-templates.tsx",
+    "frontend/components/templates/painel-detalhes-template.tsx",
+    "frontend/components/templates/modal-criar-template.tsx",
+    "frontend/hooks/use-templates-locais.ts",
+    "frontend/lib/templates-locais.ts",
+    "frontend/types/templates.ts",
+    "frontend/test/estrutura-aplicacao.test.mjs",
+    "frontend/test/fase-03-projetos.test.mjs",
+    "frontend/test/fase-04-producao.test.mjs",
+    "frontend/test/fase-05-laboratorio-ia.test.mjs",
+    "frontend/test/fase-06-biblioteca.test.mjs",
+    "frontend/test/fase-07-templates.test.mjs",
+    "frontend/src-tauri/Cargo.toml",
+    "frontend/src-tauri/tauri.conf.json"
+  ],
+  "rotas": [
+    {
+      "rota": "/",
+      "arquivo": "frontend/app/page.tsx",
+      "saida": "frontend/out/index.html"
+    },
+    {
+      "rota": "/criar-video",
+      "arquivo": "frontend/app/criar-video/page.tsx",
+      "saida": "frontend/out/criar-video/index.html"
+    },
+    {
+      "rota": "/projetos",
+      "arquivo": "frontend/app/projetos/page.tsx",
+      "saida": "frontend/out/projetos/index.html"
+    },
+    {
+      "rota": "/producao",
+      "arquivo": "frontend/app/producao/page.tsx",
+      "saida": "frontend/out/producao/index.html"
+    },
+    {
+      "rota": "/laboratorio-de-ia",
+      "arquivo": "frontend/app/laboratorio-de-ia/page.tsx",
+      "saida": "frontend/out/laboratorio-de-ia/index.html"
+    },
+    {
+      "rota": "/biblioteca",
+      "arquivo": "frontend/app/biblioteca/page.tsx",
+      "saida": "frontend/out/biblioteca/index.html"
+    },
+    {
+      "rota": "/templates",
+      "arquivo": "frontend/app/templates/page.tsx",
+      "saida": "frontend/out/templates/index.html"
+    }
+  ]
+}

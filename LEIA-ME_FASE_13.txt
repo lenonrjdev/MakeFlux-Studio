@@ -1,0 +1,10 @@
+MAKEFLUX STUDIO - FASE 13 / VERSAO 1.0
+
+1. Extraia este ZIP na raiz C:\projetos\makeFluxStudio.
+2. Nao extraia dentro da pasta frontend.
+3. Execute .\VALIDAR_FASE_ATUAL.cmd.
+4. Somente consolide o commit quando aparecer FASE APROVADA.
+5. Depois da aprovacao, use PREPARAR_DISTRIBUICAO_V1.cmd para gerar manifesto e checksums.
+6. A assinatura oficial exige um certificado real e deve ser executada separadamente.
+
+Esta fase adiciona SQLite, cofre criptografado, telemetria local opcional, testes E2E e preparacao da versao 1.0.

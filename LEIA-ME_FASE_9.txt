@@ -1,0 +1,7 @@
+MAKEFLUX STUDIO - FASE 9
+
+1. Extraia este pacote em C:\projetos\makeFluxStudio.
+2. Execute .\VALIDAR_FASE_ATUAL.cmd na raiz.
+3. Somente consolide o commit quando aparecer FASE APROVADA.
+
+Modulo entregue: Integracoes, provedores e modos Online, Hibrido e Offline.

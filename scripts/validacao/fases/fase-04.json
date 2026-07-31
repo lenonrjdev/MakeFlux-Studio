@@ -1,0 +1,45 @@
+{
+  "fase": "04",
+  "nome": "Produção e fila de renderização",
+  "versao": "0.4.0",
+  "arquivosObrigatorios": [
+    "frontend/app/page.tsx",
+    "frontend/app/criar-video/page.tsx",
+    "frontend/app/projetos/page.tsx",
+    "frontend/app/producao/page.tsx",
+    "frontend/components/producao/central-producao.tsx",
+    "frontend/components/producao/fila-renderizacao.tsx",
+    "frontend/components/producao/painel-detalhes-tarefa.tsx",
+    "frontend/components/producao/monitor-recursos.tsx",
+    "frontend/hooks/use-producao-local.ts",
+    "frontend/lib/producao-local.ts",
+    "frontend/types/producao.ts",
+    "frontend/test/estrutura-aplicacao.test.mjs",
+    "frontend/test/fase-03-projetos.test.mjs",
+    "frontend/test/fase-04-producao.test.mjs",
+    "frontend/src-tauri/Cargo.toml",
+    "frontend/src-tauri/tauri.conf.json"
+  ],
+  "rotas": [
+    {
+      "rota": "/",
+      "arquivo": "frontend/app/page.tsx",
+      "saida": "frontend/out/index.html"
+    },
+    {
+      "rota": "/criar-video",
+      "arquivo": "frontend/app/criar-video/page.tsx",
+      "saida": "frontend/out/criar-video/index.html"
+    },
+    {
+      "rota": "/projetos",
+      "arquivo": "frontend/app/projetos/page.tsx",
+      "saida": "frontend/out/projetos/index.html"
+    },
+    {
+      "rota": "/producao",
+      "arquivo": "frontend/app/producao/page.tsx",
+      "saida": "frontend/out/producao/index.html"
+    }
+  ]
+}
