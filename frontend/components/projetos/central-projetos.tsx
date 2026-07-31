@@ -2,11 +2,12 @@
 
 import { FolderPlus, Plus, SearchX } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Botao } from "@/components/ui/botao";
 import { conteudoProjetos } from "@/content/projetos";
 import { useProjetosLocais } from "@/hooks/use-projetos-locais";
+import { criarTarefaProducaoLocal } from "@/lib/producao-local";
 import type {
   FiltroStatusProjetos,
   OrdenacaoProjetos,
@@ -30,6 +31,8 @@ const mapaFiltroUrl: Record<string, FiltroStatusProjetos> = {
   arquivados: "arquivados",
 };
 
+const limiteProjetosRecentesEm = Date.now() - 1000 * 60 * 60 * 48;
+
 export function CentralProjetos() {
   const router = useRouter();
   const parametros = useSearchParams();
@@ -51,31 +54,27 @@ export function CentralProjetos() {
     exportarProjeto,
   } = useProjetosLocais();
 
+  const statusInicial = parametros.get("status");
+  const filtroInicial = statusInicial ? mapaFiltroUrl[statusInicial] : undefined;
+
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<FiltroStatusProjetos>("todos");
+  const [filtro, setFiltro] = useState<FiltroStatusProjetos>(filtroInicial ?? "todos");
   const [ordenacao, setOrdenacao] = useState<OrdenacaoProjetos>("recentes");
   const [visualizacao, setVisualizacao] = useState<VisualizacaoProjetos>("grade");
-  const [pastaSelecionada, setPastaSelecionada] = useState<SelecaoPastaProjetos>("todos");
+  const [pastaSelecionada, setPastaSelecionada] = useState<SelecaoPastaProjetos>(
+    statusInicial === "arquivados" ? "arquivados" : "todos",
+  );
   const [projetoSelecionadoId, setProjetoSelecionadoId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const status = parametros.get("status");
-    if (status && mapaFiltroUrl[status]) {
-      setFiltro(mapaFiltroUrl[status]);
-      if (status === "arquivados") setPastaSelecionada("arquivados");
-    }
-  }, [parametros]);
 
   const projetoSelecionado = projetos.find((projeto) => projeto.id === projetoSelecionadoId) ?? null;
 
   const projetosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    const agora = Date.now();
 
     return [...projetos]
       .filter((projeto) => {
         if (pastaSelecionada === "favoritos" && !projeto.favorito) return false;
-        if (pastaSelecionada === "recentes" && agora - new Date(projeto.ultimaAberturaEm).getTime() > 1000 * 60 * 60 * 48) return false;
+        if (pastaSelecionada === "recentes" && new Date(projeto.ultimaAberturaEm).getTime() < limiteProjetosRecentesEm) return false;
         if (pastaSelecionada === "arquivados" && projeto.status !== "arquivado") return false;
         if (!["todos", "favoritos", "recentes", "arquivados"].includes(pastaSelecionada) && projeto.pastaId !== pastaSelecionada) return false;
 
@@ -142,6 +141,12 @@ export function CentralProjetos() {
 
   function mudarStatusSelecionado(status: StatusProjetoStudio) {
     if (projetoSelecionado) alterarStatus(projetoSelecionado.id, status);
+  }
+
+  function enviarProjetoParaProducao() {
+    if (!projetoSelecionado) return;
+    const tarefa = criarTarefaProducaoLocal(projetoSelecionado);
+    router.push(`/producao?tarefa=${encodeURIComponent(tarefa.id)}`);
   }
 
   if (!carregado) {
@@ -237,6 +242,7 @@ export function CentralProjetos() {
           aoCriarVersao={criarVersaoDoSelecionado}
           aoRestaurarVersao={(versaoId) => restaurarVersao(projetoSelecionado.id, versaoId)}
           aoExportar={() => exportarProjeto(projetoSelecionado)}
+          aoEnviarProducao={enviarProjetoParaProducao}
         />
       )}
     </div>

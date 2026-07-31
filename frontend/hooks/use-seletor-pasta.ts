@@ -14,8 +14,12 @@ export function useSeletorPasta({
   const [erro, setErro] = useState<string>("");
 
   useEffect(() => {
-    const pastaSalva = window.localStorage.getItem(chaveArmazenamento);
-    if (pastaSalva) setPasta(pastaSalva);
+    const temporizador = window.setTimeout(() => {
+      const pastaSalva = window.localStorage.getItem(chaveArmazenamento);
+      if (pastaSalva) setPasta(pastaSalva);
+    }, 0);
+
+    return () => window.clearTimeout(temporizador);
   }, [chaveArmazenamento]);
 
   const selecionarPasta = useCallback(async () => {

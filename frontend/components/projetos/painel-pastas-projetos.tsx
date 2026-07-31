@@ -8,6 +8,8 @@ import { conteudoProjetos } from "@/content/projetos";
 import { juntarClasses } from "@/lib/classes";
 import type { PastaProjetoStudio, ProjetoStudio } from "@/types/projeto";
 
+const limiteProjetosRecentesEm = Date.now() - 1000 * 60 * 60 * 48;
+
 export type SelecaoPastaProjetos = "todos" | "favoritos" | "recentes" | "arquivados" | string;
 
 export function PainelPastasProjetos({
@@ -43,7 +45,7 @@ export function PainelPastasProjetos({
       id: "recentes",
       titulo: "Abertos recentemente",
       icone: Clock3,
-      total: projetos.filter((item) => Date.now() - new Date(item.ultimaAberturaEm).getTime() < 1000 * 60 * 60 * 48).length,
+      total: projetos.filter((item) => new Date(item.ultimaAberturaEm).getTime() >= limiteProjetosRecentesEm).length,
     },
     { id: "arquivados", titulo: "Arquivados", icone: Archive, total: projetos.filter((item) => item.status === "arquivado").length },
   ] as const;

@@ -22,11 +22,21 @@
 - Painel de detalhes, histórico, versões, restauração e exportação JSON.
 - Página Início conectada ao workspace real de projetos.
 
-## Fase 4 — Produção
-Fila, progresso, cancelamento, novas tentativas, logs e recursos do computador.
+## Fase 4 — Produção — concluída
+- Fila local persistente e integrada aos projetos.
+- Progresso geral e detalhado por oito etapas.
+- Pausa, retomada, cancelamento, prioridade, duplicação e nova tentativa.
+- Erros amigáveis, logs técnicos e arquivos gerados.
+- Monitor de CPU, RAM, GPU, VRAM e disco preparado para Tauri.
+- Simulador isolado e pronto para substituição pelo MoneyPrinterTurbo.
 
-## Fase 5 — Laboratório de IA
-Prompts, modelos, versões A/B, termos visuais, vozes e metadados sociais.
+## Fase 5 — Laboratório de IA — concluída
+- Ferramentas separadas para roteiros, prompts do sistema, ganchos, termos visuais e metadados.
+- Experimentos persistentes com parâmetros, histórico e duplicação.
+- Geração local simulada com duas a quatro variações comparáveis.
+- Pontuações de clareza, engajamento, representabilidade visual e aderência.
+- Comparação A/B, escolha do melhor resultado e biblioteca de presets.
+- Transferência do resultado aprovado para um novo projeto no estúdio.
 
 ## Fase 6 — Biblioteca
 Materiais, mídia local, músicas, narrações, legendas, fontes, prompts e exportações.

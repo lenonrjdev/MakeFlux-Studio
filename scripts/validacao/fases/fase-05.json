@@ -1,0 +1,52 @@
+{
+  "fase": "05",
+  "nome": "Laboratorio de IA e comparacao de prompts",
+  "versao": "0.5.0",
+  "arquivosObrigatorios": [
+    "frontend/app/page.tsx",
+    "frontend/app/criar-video/page.tsx",
+    "frontend/app/projetos/page.tsx",
+    "frontend/app/producao/page.tsx",
+    "frontend/app/laboratorio-de-ia/page.tsx",
+    "frontend/components/laboratorio-ia/central-laboratorio-ia.tsx",
+    "frontend/components/laboratorio-ia/painel-configuracao-experimento.tsx",
+    "frontend/components/laboratorio-ia/painel-resultados-laboratorio.tsx",
+    "frontend/components/laboratorio-ia/biblioteca-presets-prompts.tsx",
+    "frontend/hooks/use-laboratorio-ia-local.ts",
+    "frontend/lib/laboratorio-ia-local.ts",
+    "frontend/types/laboratorio-ia.ts",
+    "frontend/test/estrutura-aplicacao.test.mjs",
+    "frontend/test/fase-03-projetos.test.mjs",
+    "frontend/test/fase-04-producao.test.mjs",
+    "frontend/test/fase-05-laboratorio-ia.test.mjs",
+    "frontend/src-tauri/Cargo.toml",
+    "frontend/src-tauri/tauri.conf.json"
+  ],
+  "rotas": [
+    {
+      "rota": "/",
+      "arquivo": "frontend/app/page.tsx",
+      "saida": "frontend/out/index.html"
+    },
+    {
+      "rota": "/criar-video",
+      "arquivo": "frontend/app/criar-video/page.tsx",
+      "saida": "frontend/out/criar-video/index.html"
+    },
+    {
+      "rota": "/projetos",
+      "arquivo": "frontend/app/projetos/page.tsx",
+      "saida": "frontend/out/projetos/index.html"
+    },
+    {
+      "rota": "/producao",
+      "arquivo": "frontend/app/producao/page.tsx",
+      "saida": "frontend/out/producao/index.html"
+    },
+    {
+      "rota": "/laboratorio-de-ia",
+      "arquivo": "frontend/app/laboratorio-de-ia/page.tsx",
+      "saida": "frontend/out/laboratorio-de-ia/index.html"
+    }
+  ]
+}

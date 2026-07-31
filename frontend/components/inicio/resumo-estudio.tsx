@@ -1,9 +1,10 @@
 "use client";
 
-import { Archive, Bot, CheckCircle2, Cpu, FolderRoot, Mic2, Video } from "lucide-react";
+import { Bot, CheckCircle2, Clock3, Cpu, FolderRoot, Mic2, Video } from "lucide-react";
 
 import { BotaoSelecionarPasta } from "@/components/ui/botao-selecionar-pasta";
 import { conteudoInicio } from "@/content/inicio";
+import { useProducaoLocal } from "@/hooks/use-producao-local";
 import { useProjetosLocais } from "@/hooks/use-projetos-locais";
 
 const detalhes = [
@@ -14,12 +15,13 @@ const detalhes = [
 
 export function ResumoEstudio() {
   const { projetos } = useProjetosLocais();
+  const { tarefas } = useProducaoLocal();
   const metricas = [
     { rotulo: "Projetos", valor: projetos.filter((item) => item.status !== "arquivado").length, icone: FolderRoot },
     { rotulo: "Em edição", valor: projetos.filter((item) => item.status === "em-edicao").length, icone: Video },
-    { rotulo: "Prontos", valor: projetos.filter((item) => item.status === "pronto").length, icone: CheckCircle2 },
-    { rotulo: "Concluídos", valor: projetos.filter((item) => item.status === "concluido").length, icone: CheckCircle2 },
-    { rotulo: "Arquivados", valor: projetos.filter((item) => item.status === "arquivado").length, icone: Archive },
+    { rotulo: "Na fila", valor: tarefas.filter((item) => item.status === "na-fila").length, icone: Clock3 },
+    { rotulo: "Processando", valor: tarefas.filter((item) => item.status === "processando").length, icone: Cpu },
+    { rotulo: "Concluídos", valor: tarefas.filter((item) => item.status === "concluida").length, icone: CheckCircle2 },
   ];
 
   return (

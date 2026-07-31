@@ -4,6 +4,7 @@ import {
   Archive,
   CheckCircle2,
   Clock3,
+  Clapperboard,
   Copy,
   Download,
   FileClock,
@@ -45,6 +46,7 @@ export function PainelDetalhesProjeto({
   aoCriarVersao,
   aoRestaurarVersao,
   aoExportar,
+  aoEnviarProducao,
 }: {
   projeto: ProjetoStudio;
   pastas: PastaProjetoStudio[];
@@ -56,6 +58,7 @@ export function PainelDetalhesProjeto({
   aoCriarVersao: () => void;
   aoRestaurarVersao: (versaoId: string) => void;
   aoExportar: () => void;
+  aoEnviarProducao: () => void;
 }) {
   const arquivado = projeto.status === "arquivado";
 
@@ -112,7 +115,12 @@ export function PainelDetalhesProjeto({
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               {!arquivado && (
-                <Link href={`/criar-video?projeto=${encodeURIComponent(projeto.id)}`} className="foco-acessivel inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#18806c] bg-[#1f9b83] px-3 text-[9.5px] font-medium text-white hover:bg-[#18866f]">
+                <button type="button" onClick={aoEnviarProducao} className="foco-acessivel col-span-2 inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#18806c] bg-[#1f9b83] px-3 text-[9.5px] font-medium text-white hover:bg-[#18866f]">
+                  <Clapperboard className="size-3.5" /> Enviar para produção
+                </button>
+              )}
+              {!arquivado && (
+                <Link href={`/criar-video?projeto=${encodeURIComponent(projeto.id)}`} className="foco-acessivel inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#dfe4e4] bg-white px-3 text-[9.5px] font-medium text-[#596162] hover:bg-[#f7f9f9]">
                   <Sparkles className="size-3.5" /> Continuar edição
                 </Link>
               )}

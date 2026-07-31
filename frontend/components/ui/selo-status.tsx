@@ -7,12 +7,14 @@ export function SeloStatus({
   tom = "verde",
 }: {
   texto: string;
-  tom?: "verde" | "neutro" | "laranja";
+  tom?: "verde" | "neutro" | "laranja" | "vermelho" | "azul";
 }) {
   const tons = {
     verde: "border-[#cbe5de] bg-[#edf8f5] text-[#17715f]",
     neutro: "border-[#e0e4e4] bg-[#f7f8f8] text-[#5f6768]",
     laranja: "border-[#eadbcf] bg-[#fbf5f0] text-[#9d6034]",
+    vermelho: "border-[#eccdcd] bg-[#fff3f3] text-[#a84e4e]",
+    azul: "border-[#cddfe7] bg-[#f0f7fa] text-[#3d7890]",
   };
 
   return (

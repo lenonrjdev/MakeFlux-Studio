@@ -2,6 +2,7 @@
 
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { conteudoCriarVideo } from "@/content/criar-video";
 import { configuracaoInicialVideo, etapasCriacaoVideo } from "@/data/criar-video";
@@ -11,6 +12,8 @@ import {
   obterProjetoLocal,
   salvarConfiguracaoProjetoLocal,
 } from "@/lib/projetos-locais";
+import { consumirTransferenciaLaboratorioParaEstudio } from "@/lib/laboratorio-ia-local";
+import { criarTarefaProducaoLocal } from "@/lib/producao-local";
 import type {
   AtualizarConfiguracaoVideo,
   ConfiguracaoCriacaoVideo,
@@ -31,7 +34,52 @@ import { EtapaRoteiro } from "./etapas/etapa-roteiro";
 
 type EstadoSalvamento = "carregando" | "salvando" | "salvo" | "erro";
 
+function aplicarTransferenciaLaboratorio() {
+  const transferencia = consumirTransferenciaLaboratorioParaEstudio();
+  if (!transferencia) return { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+
+  const configuracao: ConfiguracaoCriacaoVideo = {
+    ...configuracaoInicialVideo,
+    nomeProjeto: `Experimento · ${transferencia.tema.slice(0, 54)}`,
+    tema: transferencia.tema,
+    modeloIa: transferencia.modelo,
+    promptRoteiro: transferencia.promptUsuario,
+    systemPrompt: transferencia.promptSistema,
+  };
+
+  if (["roteiro", "gancho"].includes(transferencia.tipo)) {
+    configuracao.roteiro = transferencia.conteudo;
+    return { configuracao, etapa: "roteiro" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "prompt-sistema") {
+    configuracao.systemPrompt = transferencia.conteudo;
+    return { configuracao, etapa: "roteiro" as IdEtapaCriacao };
+  }
+
+  if (transferencia.tipo === "termos-visuais") {
+    const termos = transferencia.conteudo
+      .split("\n")
+      .map((linha) => linha.replace(/^\d+[.)]\s*/, "").trim())
+      .filter((linha) => linha.length > 8 && !linha.toLowerCase().startsWith("tema de referência"))
+      .slice(0, 8);
+    configuracao.cenas = termos.map((termo, indice) => ({
+      id: indice + 1,
+      titulo: `Cena ${String(indice + 1).padStart(2, "0")}`,
+      trecho: "Trecho a definir conforme o roteiro aprovado.",
+      termo,
+      duracao: 6,
+      origem: "Laboratório de IA",
+    }));
+    return { configuracao, etapa: "cenas" as IdEtapaCriacao };
+  }
+
+  configuracao.roteiro = transferencia.conteudo;
+  return { configuracao, etapa: "roteiro" as IdEtapaCriacao };
+}
+
 export function EstudioCriacaoVideo() {
+  const router = useRouter();
   const [etapaAtual, setEtapaAtual] = useState<IdEtapaCriacao>("ideia");
   const [configuracao, setConfiguracao] = useState<ConfiguracaoCriacaoVideo>(configuracaoInicialVideo);
   const [projetoId, setProjetoId] = useState<string | null>(null);
@@ -46,22 +94,32 @@ export function EstudioCriacaoVideo() {
     if (inicializado.current) return;
     inicializado.current = true;
 
-    const idInformado = new URLSearchParams(window.location.search).get("projeto");
-    const existente = idInformado ? obterProjetoLocal(idInformado) : null;
+    const temporizadorInicializacao = window.setTimeout(() => {
+      const idInformado = new URLSearchParams(window.location.search).get("projeto");
+      const existente = idInformado ? obterProjetoLocal(idInformado) : null;
 
-    if (existente) {
-      setProjetoId(existente.id);
-      setConfiguracao(existente.configuracao);
-      setEtapaAtual(existente.etapaAtual);
-    } else {
-      const criado = criarProjetoLocal(configuracaoInicialVideo);
-      setProjetoId(criado.id);
-      window.history.replaceState(null, "", `/criar-video?projeto=${encodeURIComponent(criado.id)}`);
-    }
+      if (existente) {
+        setProjetoId(existente.id);
+        setConfiguracao(existente.configuracao);
+        setEtapaAtual(existente.etapaAtual);
+      } else {
+        const origemLaboratorio = new URLSearchParams(window.location.search).get("origem") === "laboratorio";
+        const transferencia = origemLaboratorio
+          ? aplicarTransferenciaLaboratorio()
+          : { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+        const criado = criarProjetoLocal(transferencia.configuracao);
+        setProjetoId(criado.id);
+        setConfiguracao(transferencia.configuracao);
+        setEtapaAtual(transferencia.etapa);
+        window.history.replaceState(null, "", `/criar-video?projeto=${encodeURIComponent(criado.id)}`);
+      }
 
-    setEstadoSalvamento("salvo");
-    setSalvoEm(new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
-    window.setTimeout(() => setProntoParaAutosave(true), 0);
+      setEstadoSalvamento("salvo");
+      setSalvoEm(new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+      setProntoParaAutosave(true);
+    }, 0);
+
+    return () => window.clearTimeout(temporizadorInicializacao);
   }, []);
 
   useEffect(() => {
@@ -73,8 +131,8 @@ export function EstudioCriacaoVideo() {
   useEffect(() => {
     if (!prontoParaAutosave || !projetoId) return;
 
-    setEstadoSalvamento("salvando");
-    const temporizador = window.setTimeout(() => {
+    const temporizadorEstado = window.setTimeout(() => setEstadoSalvamento("salvando"), 0);
+    const temporizadorSalvamento = window.setTimeout(() => {
       try {
         salvarConfiguracaoProjetoLocal({ id: projetoId, configuracao, etapaAtual });
         setEstadoSalvamento("salvo");
@@ -84,7 +142,10 @@ export function EstudioCriacaoVideo() {
       }
     }, 850);
 
-    return () => window.clearTimeout(temporizador);
+    return () => {
+      window.clearTimeout(temporizadorEstado);
+      window.clearTimeout(temporizadorSalvamento);
+    };
   }, [configuracao, etapaAtual, projetoId, prontoParaAutosave]);
 
   const atualizar: AtualizarConfiguracaoVideo = useCallback((campo, valor) => {
@@ -151,9 +212,15 @@ export function EstudioCriacaoVideo() {
         status: "pronto",
         registrarAutosave: false,
       });
-      criarVersaoProjetoLocal(projetoId, "Pronto para produção");
+      criarVersaoProjetoLocal(projetoId, "Enviado para produção");
+      const projetoAtualizado = obterProjetoLocal(projetoId);
+      if (projetoAtualizado) {
+        const tarefa = criarTarefaProducaoLocal(projetoAtualizado);
+        router.push(`/producao?tarefa=${encodeURIComponent(tarefa.id)}`);
+        return;
+      }
     }
-    notificar("Projeto preparado e movido para o status pronto para renderizar.");
+    notificar("Não foi possível enviar este projeto para a fila de produção.", "aviso");
   }
 
   function renderizarEtapa() {
