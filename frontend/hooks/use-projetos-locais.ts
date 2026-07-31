@@ -33,10 +33,11 @@ export function useProjetosLocais() {
   }, []);
 
   useEffect(() => {
-    recarregar();
+    const temporizadorInicial = window.setTimeout(recarregar, 0);
     window.addEventListener(EVENTO_WORKSPACE_PROJETOS, recarregar);
     window.addEventListener("storage", recarregar);
     return () => {
+      window.clearTimeout(temporizadorInicial);
       window.removeEventListener(EVENTO_WORKSPACE_PROJETOS, recarregar);
       window.removeEventListener("storage", recarregar);
     };

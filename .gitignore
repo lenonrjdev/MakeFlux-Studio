@@ -1,0 +1,3 @@
+
+# Cache incremental do TypeScript
+*.tsbuildinfo

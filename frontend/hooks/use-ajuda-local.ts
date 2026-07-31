@@ -23,10 +23,13 @@ export function useAjudaLocal() {
   const recarregar = useCallback(() => setWorkspace(carregarAjudaLocal()), []);
 
   useEffect(() => {
-    recarregar();
+    const carregamentoInicial = window.setTimeout(recarregar, 0);
+
     window.addEventListener(EVENTO_WORKSPACE_AJUDA, recarregar);
     window.addEventListener("storage", recarregar);
+
     return () => {
+      window.clearTimeout(carregamentoInicial);
       window.removeEventListener(EVENTO_WORKSPACE_AJUDA, recarregar);
       window.removeEventListener("storage", recarregar);
     };

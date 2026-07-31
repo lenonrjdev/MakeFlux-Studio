@@ -86,7 +86,7 @@ function Invoke-MakeFluxEtapa {
     catch {
         $duracao = ((Get-Date) - $inicio).TotalSeconds
         Add-MakeFluxResultado -Etapa $Nome -Status "falhou" -DuracaoSegundos $duracao -Detalhe $_.Exception.Message
-        Write-MakeFluxFalha ("$Nome: " + $_.Exception.Message)
+        Write-MakeFluxFalha ("{0}: {1}" -f $Nome, $_.Exception.Message)
         throw
     }
 }
@@ -117,16 +117,45 @@ function Invoke-MakeFluxComando {
     $executavel = Get-MakeFluxExecutavel $Comando
     $arquivoLog = Join-Path $script:DiretorioRelatorio ($NomeLog + ".log")
     Push-Location $Diretorio
+    $preferenciaErroAnterior = $ErrorActionPreference
+    $possuiPreferenciaNativa = Test-Path Variable:PSNativeCommandUseErrorActionPreference
+    if ($possuiPreferenciaNativa) {
+        $preferenciaNativaAnterior = $PSNativeCommandUseErrorActionPreference
+    }
+
     try {
-        & $executavel @Argumentos 2>&1 | Tee-Object -FilePath $arquivoLog
+        # Ferramentas nativas como Cargo escrevem progresso normal em stderr.
+        # Durante a execucao, stderr deve ser registrado no log sem virar uma
+        # excecao terminante. A aprovacao continua dependendo do exit code real.
+        $ErrorActionPreference = "Continue"
+        if ($possuiPreferenciaNativa) {
+            $PSNativeCommandUseErrorActionPreference = $false
+        }
+
+        & $executavel @Argumentos 2>&1 |
+            ForEach-Object {
+                if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                    $_.Exception.Message
+                }
+                else {
+                    [string]$_
+                }
+            } |
+            Tee-Object -FilePath $arquivoLog
+
         $codigo = $LASTEXITCODE
         if ($null -eq $codigo) { $codigo = 0 }
-        if ($codigo -ne 0) {
-            throw ("Comando falhou com codigo " + $codigo + ": " + $Comando + " " + ($Argumentos -join " "))
-        }
     }
     finally {
+        $ErrorActionPreference = $preferenciaErroAnterior
+        if ($possuiPreferenciaNativa) {
+            $PSNativeCommandUseErrorActionPreference = $preferenciaNativaAnterior
+        }
         Pop-Location
+    }
+
+    if ($codigo -ne 0) {
+        throw ("Comando falhou com codigo " + $codigo + ": " + $Comando + " " + ($Argumentos -join " "))
     }
 }
 
