@@ -4,13 +4,17 @@ import { LogOut, Search } from "lucide-react";
 import Link from "next/link";
 
 import { atalhosRodape, gruposNavegacao } from "@/data/navegacao";
+import { useConfiguracoesLocais } from "@/hooks/use-configuracoes-locais";
 
 import { ItemNavegacaoBarra } from "./item-navegacao";
 import { Marca } from "../ui/marca";
 
 export function BarraLateral() {
+  const { workspace } = useConfiguracoesLocais();
+  const iniciais = workspace.perfil.nome.split(" ").filter(Boolean).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase() || "MF";
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-[218px] flex-col border-r border-[#e4e8e8] bg-white px-3.5 py-3.5">
+    <aside className="barra-lateral fixed inset-y-0 left-0 z-40 flex w-[218px] flex-col border-r border-[#e4e8e8] bg-white px-3.5 py-3.5">
       <div className="px-1.5 pb-4 pt-0.5">
         <Marca />
       </div>
@@ -57,11 +61,11 @@ export function BarraLateral() {
 
         <div className="mt-3 flex items-center gap-2.5 rounded-md border border-[#e7eaea] p-2.5">
           <div className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e7f3ef] text-[10px] font-semibold text-[#1b7966]">
-            LA
+            {iniciais}
           </div>
           <div className="min-w-0 flex-1">
-            <strong className="block truncate text-[10.5px] font-medium">Lenon Alexandre</strong>
-            <span className="block truncate text-[9px] text-[#949b9c]">Workspace local</span>
+            <strong className="block truncate text-[10.5px] font-medium">{workspace.perfil.nome || "Usuário local"}</strong>
+            <span className="block truncate text-[9px] text-[#949b9c]">{workspace.workspace.nome || "Workspace local"}</span>
           </div>
         </div>
       </div>

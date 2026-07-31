@@ -61,6 +61,10 @@ frontend\src-tauri\target\release\bundle
 .\VALIDAR_FASE_05.cmd
 .\VALIDAR_FASE_06.cmd
 .\VALIDAR_FASE_07.cmd
+.\VALIDAR_FASE_08.cmd
+.\VALIDAR_FASE_09.cmd
+.\VALIDAR_FASE_10.cmd
+.\VALIDAR_FASE_11.cmd
 ```
 
 Cada comando usa o contrato imutável correspondente em `scripts/validacao/fases`.
@@ -124,3 +128,16 @@ Valida presets completos, criação a partir de projetos, persistência, importa
 ## Fase 8 — Publicação
 
 Execute `VALIDAR_FASE_08.cmd` ou `VALIDAR_FASE_ATUAL.cmd`. A homologação inclui contratos de publicação, metadados, calendário, integração com Produção, build Next.js e instalador Tauri.
+
+## Fase 9 — Integrações
+
+Execute `VALIDAR_FASE_09.cmd` ou `VALIDAR_FASE_ATUAL.cmd`. A homologação inclui catálogo de provedores, modos de processamento, padrões por capacidade, persistência segura, diagnóstico demonstrativo, rota exportada e instalador Tauri.
+
+
+## Fase 10 — Configurações
+
+Valida perfil local, workspace, padrões de criação, desempenho, armazenamento, aparência global, backup JSON, restauração, bloqueio local por PIN e preferências de atualização. O manifesto oficial é `scripts/validacao/fases/fase-10.json`.
+
+## Fase 11 — Central de ajuda
+
+Valida onboarding, biblioteca de guias, perguntas frequentes, diagnóstico local, checklists de solução de problemas, sanitização do pacote de suporte, rota `/central-de-ajuda`, build estático e instalador Tauri. O manifesto oficial é `scripts/validacao/fases/fase-11.json`.

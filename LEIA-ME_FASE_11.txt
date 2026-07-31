@@ -1,0 +1,12 @@
+MAKEFLUX STUDIO - FASE 11
+CENTRAL DE AJUDA, DIAGNOSTICO E PACOTE DE SUPORTE
+
+1. Extraia este ZIP na raiz C:\projetos\makeFluxStudio.
+2. Nao extraia dentro da pasta frontend.
+3. Execute .\VALIDAR_FASE_ATUAL.cmd.
+4. Somente consolide o commit depois de aparecer FASE APROVADA.
+
+Versao: 0.11.0
+Rota principal: /central-de-ajuda
+Persistencia: makeflux:workspace-ajuda:v1
+Pacote tecnico: makeflux-support

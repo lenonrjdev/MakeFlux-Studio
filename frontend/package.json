@@ -1,6 +1,6 @@
 {
   "name": "makeflux-studio",
-  "version": "0.8.0",
+  "version": "0.11.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -19,7 +19,10 @@
     "test:fase5": "node --test test/fase-05-laboratorio-ia.test.mjs",
     "test:fase6": "node --test test/fase-06-biblioteca.test.mjs",
     "test:fase7": "node --test test/fase-07-templates.test.mjs",
-    "test:fase8": "node --test test/fase-08-publicacao.test.mjs"
+    "test:fase8": "node --test test/fase-08-publicacao.test.mjs",
+    "test:fase9": "node --test test/fase-09-integracoes.test.mjs",
+    "test:fase10": "node --test test/fase-10-configuracoes.test.mjs",
+    "test:fase11": "node --test test/fase-11-ajuda.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

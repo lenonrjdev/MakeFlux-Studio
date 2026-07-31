@@ -1,6 +1,11 @@
-import { PaginaEmConstrucao } from "@/components/modulos/pagina-em-construcao";
-import { modulosPlanejados } from "@/content/modulos";
+import { Suspense } from "react";
+
+import { CentralConfiguracoes } from "@/components/configuracoes/central-configuracoes";
 
 export default function PaginaConfiguracoes() {
-  return <PaginaEmConstrucao {...modulosPlanejados["/configuracoes"]} />;
+  return (
+    <Suspense fallback={<div className="min-h-[calc(100vh-62px)] animate-pulse bg-[#f7f8f9]" />}>
+      <CentralConfiguracoes />
+    </Suspense>
+  );
 }

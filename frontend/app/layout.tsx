@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { ProvedorConfiguracoes } from "@/components/configuracoes/provedor-configuracoes";
 import { AplicacaoShell } from "@/components/layout/aplicacao-shell";
 
 import "./globals.css";
@@ -11,9 +12,11 @@ export const metadata: Metadata = {
 
 export default function LayoutRaiz({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body>
-        <AplicacaoShell>{children}</AplicacaoShell>
+        <ProvedorConfiguracoes>
+          <AplicacaoShell>{children}</AplicacaoShell>
+        </ProvedorConfiguracoes>
       </body>
     </html>
   );

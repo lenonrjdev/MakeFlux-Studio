@@ -1,6 +1,6 @@
 [package]
 name = "makeflux-studio"
-version = "0.8.0"
+version = "0.11.0"
 description = "MakeFlux Studio"
 authors = ["MakeFlux Studio"]
 edition = "2021"

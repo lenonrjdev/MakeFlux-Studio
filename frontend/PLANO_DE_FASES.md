@@ -62,14 +62,31 @@
 - Criação a partir de projetos ou vídeos concluídos na Produção.
 - Agendamento local, registro do link publicado, favoritos, duplicação, arquivo e histórico.
 
-## Fase 9 — Integrações
-MoneyPrinterTurbo, OpenAI, Ollama, mídia, TTS, Whisper e FFmpeg.
+## Fase 9 — Integrações — concluída
+- Catálogo de provedores para MoneyPrinterTurbo, OpenAI, Ollama, Gemini, DeepSeek, mídia, TTS, Whisper, FFmpeg e publicação.
+- Modos Online, Híbrido e Offline com indicação de compatibilidade.
+- Provedores padrão por capacidade: motor, roteiro, materiais, voz, legendas, renderização e publicação.
+- Configuração de endpoints, modelos, parâmetros e confirmação segura de credenciais sem persistir o segredo completo.
+- Teste individual, diagnóstico geral, histórico, ativação, restauração e mensagens de estado.
+- Camada local isolada e preparada para o adaptador Tauri, cofre seguro e API real do MoneyPrinterTurbo.
 
-## Fase 10 — Configurações
-Perfil local, workspace, desempenho, armazenamento, backup, segurança e atualização.
+## Fase 10 — Configurações — concluída
+- Perfil local com foto, idioma, autoria e identidade refletida no shell.
+- Workspace com pastas reutilizáveis, nomenclatura e organização de exportações.
+- Padrões de criação, desempenho, limites de CPU/GPU, fila e RAM.
+- Medição real do armazenamento local, política de cache e limpeza segura.
+- Tema claro, escuro ou do sistema, densidade, escala, contraste e sidebar compacta.
+- Backup JSON real, restauração por mesclagem ou substituição e seleção do conteúdo.
+- Bloqueio local por PIN com hash SHA-256 e inatividade configurável.
+- Preferências de atualização preparadas para aplicativo, motor e rollback.
 
-## Fase 11 — Central de ajuda
-Onboarding, guias, diagnóstico, solução de erros e pacote de suporte.
+## Fase 11 — Central de ajuda — concluída
+- Onboarding persistente com seis etapas para preparar o workspace e concluir o primeiro fluxo.
+- Biblioteca de guias por categoria, favoritos, progresso e perguntas frequentes.
+- Diagnóstico local do armazenamento, projetos, configurações, integrações, Tauri e Web Crypto.
+- Solução guiada para falhas de motor, IA, FFmpeg, voz, legendas e espaço em disco.
+- Pacote de suporte JSON com credenciais, PIN, foto e caminhos pessoais sanitizados.
+- Histórico de novidades e atalhos internos para cada módulo relacionado.
 
 ## Fase 12 — Integração completa e modo offline
 Adaptador de API, verificação de capacidades, atualização segura do motor e rollback.

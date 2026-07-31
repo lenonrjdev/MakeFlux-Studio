@@ -59,6 +59,6 @@ export const gruposNavegacao: GrupoNavegacao[] = [
 ];
 
 export const atalhosRodape = [
-  { titulo: "Guia inicial", href: "/central-de-ajuda", icone: BookOpenText },
-  { titulo: "Novidades", href: "/central-de-ajuda", icone: Sparkles },
+  { titulo: "Guia inicial", href: "/central-de-ajuda?secao=primeiros-passos", icone: BookOpenText },
+  { titulo: "Novidades", href: "/central-de-ajuda?secao=novidades", icone: Sparkles },
 ];

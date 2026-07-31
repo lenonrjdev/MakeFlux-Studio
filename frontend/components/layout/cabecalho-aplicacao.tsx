@@ -4,6 +4,7 @@ import { Bell, CircleHelp, Plus, Search, UsersRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { Botao, BotaoLink } from "@/components/ui/botao";
+import { useConfiguracoesLocais } from "@/hooks/use-configuracoes-locais";
 
 const titulosRotas: Record<string, string> = {
   "/": "Início",
@@ -21,6 +22,8 @@ const titulosRotas: Record<string, string> = {
 
 export function CabecalhoAplicacao() {
   const pathname = usePathname();
+  const { workspace } = useConfiguracoesLocais();
+  const iniciais = workspace.perfil.nome.split(" ").filter(Boolean).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase() || "MF";
   const tituloAtual = titulosRotas[pathname] ?? "MakeFlux Studio";
   const criandoVideo = pathname === "/criar-video";
 
@@ -57,7 +60,7 @@ export function CabecalhoAplicacao() {
         </button>
         <Botao className="ml-1 h-8 px-2.5">
           <UsersRound className="size-3.5" />
-          Workspace
+          {workspace.workspace.nome || "Workspace"}
         </Botao>
         {!criandoVideo && (
           <BotaoLink href="/criar-video" variante="primario" className="ml-1 h-8 px-3">
@@ -66,7 +69,7 @@ export function CabecalhoAplicacao() {
           </BotaoLink>
         )}
         <div className="ml-2 grid size-8 place-items-center rounded-full bg-[#e7f3ef] text-[10px] font-semibold text-[#1b7966] ring-1 ring-[#d6e8e3]">
-          LA
+          {iniciais}
         </div>
       </div>
     </header>
