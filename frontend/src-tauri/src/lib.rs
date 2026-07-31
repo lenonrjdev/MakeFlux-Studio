@@ -2,7 +2,7 @@ mod commands;
 mod models;
 mod state;
 
-use state::{EstadoCofre, EstadoProcessoMotor};
+use state::{EstadoCofre, EstadoOperacoesLote, EstadoProcessoMotor};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -10,6 +10,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(EstadoProcessoMotor::default())
         .manage(EstadoCofre::default())
+        .manage(EstadoOperacoesLote::default())
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
@@ -37,6 +38,12 @@ pub fn run() {
             commands::cofre::listar_segredos_cofre,
             commands::cofre::salvar_segredo_cofre,
             commands::cofre::remover_segredo_cofre,
+            commands::desempenho::consultar_status_desempenho,
+            commands::desempenho::listar_registros_paginados,
+            commands::desempenho::iniciar_operacao_lote,
+            commands::desempenho::cancelar_operacao_lote,
+            commands::desempenho::listar_operacoes_lote,
+            commands::desempenho::executar_manutencao_banco,
         ])
         .on_window_event(|janela, evento| {
             if let tauri::WindowEvent::Destroyed = evento {

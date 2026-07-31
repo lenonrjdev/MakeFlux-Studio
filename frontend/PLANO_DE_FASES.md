@@ -107,5 +107,15 @@
 - Preparação de MSI/NSIS, manifesto de release, checksums SHA-256 e fluxo externo de assinatura.
 - Versão `1.0.0` sincronizada em Next.js, Cargo e Tauri.
 
-## Pós-1.0 — Evolução contínua
-Correções de campo, atualização automática assinada, novos provedores, publicação real por OAuth e otimizações de desempenho serão entregues por versões incrementais.
+## Fase 14 — Desempenho e grandes volumes — concluída
+- Schema SQLite v2 com índices para atualização, origem e telemetria.
+- Paginação nativa com filtros, ordenação, cursor e métricas de duração.
+- Lista virtualizada no frontend para manter a interface leve com milhares de registros.
+- Operações em lote persistentes, transacionais, executadas em blocos e canceláveis.
+- Carga controlada de até 100 mil registros para homologação de campo.
+- Checkpoint WAL, otimização de índices, compactação protegida e histórico de manutenção.
+- Central `/desempenho` com saúde do banco, fragmentação e consultas lentas.
+- Versão `1.1.0` sincronizada em Next.js, Cargo e Tauri.
+
+## Pós-1.1 — Evolução contínua
+Rotinas locais, notificações nativas, publicação real por OAuth e atualização automática assinada serão entregues por versões incrementais.

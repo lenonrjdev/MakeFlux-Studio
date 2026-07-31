@@ -29,13 +29,13 @@ test("a Fase 13 possui a Central de qualidade e distribuição", () => {
   }
 });
 
-test("a versão 1.0 permanece sincronizada no frontend e aplicativo desktop", () => {
+test("a linha 1.x permanece sincronizada no frontend e aplicativo desktop", () => {
   const pacote = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
   const cargo = ler("src-tauri/Cargo.toml");
-  assert.equal(pacote.version, "1.0.0");
-  assert.equal(tauri.version, "1.0.0");
-  assert.match(cargo, /version\s*=\s*"1\.0\.0"/);
+  assert.match(pacote.version, /^1\./);
+  assert.equal(pacote.version, tauri.version);
+  assert.match(cargo, new RegExp(`version\\s*=\\s*"${pacote.version.replaceAll(".", "\\.")}"`));
 });
 
 test("o SQLite possui schema versionado e migração idempotente", () => {

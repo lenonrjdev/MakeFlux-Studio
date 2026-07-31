@@ -1,6 +1,6 @@
 {
   "name": "makeflux-studio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -24,7 +24,8 @@
     "test:fase10": "node --test test/fase-10-configuracoes.test.mjs",
     "test:fase11": "node --test test/fase-11-ajuda.test.mjs",
     "test:fase12": "node --test test/fase-12-integracao-nativa.test.mjs",
-    "test:fase13": "node --test test/fase-13-qualidade-distribuicao.test.mjs test/e2e-fluxo-completo.test.mjs"
+    "test:fase13": "node --test test/fase-13-qualidade-distribuicao.test.mjs test/e2e-fluxo-completo.test.mjs",
+    "test:fase14": "node --test test/fase-14-desempenho-volumes.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

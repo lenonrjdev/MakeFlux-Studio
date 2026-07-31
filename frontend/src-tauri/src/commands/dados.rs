@@ -12,14 +12,14 @@ use crate::models::{
     ResultadoMigracaoSqlite, StatusBancoLocal,
 };
 
-fn agora_millis() -> u64 {
+pub(crate) fn agora_millis() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duracao| duracao.as_millis() as u64)
         .unwrap_or_default()
 }
 
-fn caminho_banco(app: &AppHandle) -> Result<PathBuf, String> {
+pub(crate) fn caminho_banco(app: &AppHandle) -> Result<PathBuf, String> {
     let diretorio = app
         .path()
         .app_local_data_dir()
@@ -29,7 +29,7 @@ fn caminho_banco(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(diretorio.join("makeflux-studio.sqlite3"))
 }
 
-fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
+pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
     let caminho = caminho_banco(app)?;
     let conexao =
         Connection::open(&caminho).map_err(|erro| format!("Falha ao abrir o SQLite: {erro}"))?;
@@ -56,9 +56,46 @@ fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
                 detalhes TEXT NOT NULL,
                 criado_em INTEGER NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS metricas_consulta (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                operacao TEXT NOT NULL,
+                duracao_ms REAL NOT NULL,
+                registros INTEGER NOT NULL,
+                criado_em INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS operacoes_lote (
+                id TEXT PRIMARY KEY NOT NULL,
+                tipo TEXT NOT NULL,
+                status TEXT NOT NULL,
+                total INTEGER NOT NULL,
+                processados INTEGER NOT NULL,
+                afetados INTEGER NOT NULL,
+                iniciado_em INTEGER NOT NULL,
+                atualizado_em INTEGER NOT NULL,
+                mensagem TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS manutencao_banco (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                acao TEXT NOT NULL,
+                criado_em INTEGER NOT NULL,
+                duracao_ms REAL NOT NULL,
+                antes_bytes INTEGER NOT NULL,
+                depois_bytes INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_workspace_store_atualizado ON workspace_store(atualizado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_workspace_store_origem ON workspace_store(origem);
+            CREATE INDEX IF NOT EXISTS idx_telemetria_criado ON telemetria_local(criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_operacoes_lote_status ON operacoes_lote(status, atualizado_em DESC);
+            PRAGMA user_version = 2;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (2, ?1, ?2)",
+            params![agora_millis() as i64, "índices, métricas e operações em lote v2"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v2: {erro}"))?;
     Ok(conexao)
 }
 

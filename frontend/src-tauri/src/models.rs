@@ -196,3 +196,84 @@ pub struct SegredoCofreResumo {
     pub chave: String,
     pub atualizado_em: u64,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FiltroRegistrosPaginados {
+    pub termo: Option<String>,
+    pub origem: Option<String>,
+    pub limite: Option<u32>,
+    pub cursor: Option<String>,
+    pub ordem: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegistroPaginado {
+    pub chave: String,
+    pub origem: String,
+    pub atualizado_em: u64,
+    pub tamanho_bytes: u64,
+    pub previa: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PaginaRegistros {
+    pub itens: Vec<RegistroPaginado>,
+    pub total: u64,
+    pub proximo_cursor: Option<String>,
+    pub duracao_ms: f64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SolicitacaoOperacaoLote {
+    pub tipo: String,
+    pub quantidade: Option<u32>,
+    pub tamanho_payload: Option<u32>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct OperacaoLote {
+    pub id: String,
+    pub tipo: String,
+    pub status: String,
+    pub total: u64,
+    pub processados: u64,
+    pub afetados: u64,
+    pub iniciado_em: u64,
+    pub atualizado_em: u64,
+    pub mensagem: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusDesempenhoBanco {
+    pub disponivel: bool,
+    pub schema_versao: u32,
+    pub registros_workspace: u64,
+    pub registros_telemetria: u64,
+    pub tamanho_banco_bytes: u64,
+    pub tamanho_wal_bytes: u64,
+    pub paginas: u64,
+    pub paginas_livres: u64,
+    pub tamanho_pagina: u64,
+    pub fragmentacao_percentual: f64,
+    pub consultas_lentas: u64,
+    pub operacoes_ativas: u64,
+    pub ultima_manutencao_em: Option<u64>,
+    pub mensagem: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResultadoManutencao {
+    pub sucesso: bool,
+    pub acao: String,
+    pub antes_bytes: u64,
+    pub depois_bytes: u64,
+    pub duracao_ms: f64,
+    pub mensagem: String,
+}

@@ -49,6 +49,11 @@ export const modulosPlanejados = {
     fase: "Fase 13",
     descricao: "SQLite, cofre de credenciais, testes ponta a ponta, telemetria local e release 1.0.",
   },
+  "/desempenho": {
+    titulo: "Desempenho e grandes volumes",
+    fase: "Fase 14",
+    descricao: "Paginação SQLite, operações em lote, cancelamento, métricas e manutenção do banco.",
+  },
   "/central-de-ajuda": {
     titulo: "Central de ajuda",
     fase: "Fase 11",

@@ -153,3 +153,8 @@ A Fase 12 adiciona validação dos comandos Rust, adaptador REST, fila híbrida,
 ## Fase 13 — Qualidade e distribuição 1.0
 
 Valida a migração para SQLite, o cofre criptografado, a telemetria local opcional, os testes de ponta a ponta, a rota `/qualidade`, a versão `1.0.0`, o build Tauri e o instalador desktop. O manifesto oficial é `scripts/validacao/fases/fase-13.json`.
+
+
+## Fase 14 — Desempenho e grandes volumes
+
+Valida a versão 1.1.0, schema SQLite v2, paginação, virtualização, lotes canceláveis, métricas, manutenção e build desktop completo.
