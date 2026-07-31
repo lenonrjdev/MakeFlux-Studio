@@ -54,8 +54,13 @@
 - Importação e exportação JSON para compartilhar configurações.
 - Aplicação direta no estúdio e salvamento da configuração atual como template.
 
-## Fase 8 — Publicação
-Metadados, calendário simples, thumbnails, status e links publicados.
+## Fase 8 — Publicação — concluída
+- Central de distribuição com rascunhos, conteúdos prontos, agendados, publicados e falhas.
+- Metadados completos: título, descrição, hashtags e chamada para ação.
+- Quatro estilos de thumbnail com texto, cor e prévia em tempo real.
+- Planejamento mensal em calendário e visualização em grade.
+- Criação a partir de projetos ou vídeos concluídos na Produção.
+- Agendamento local, registro do link publicado, favoritos, duplicação, arquivo e histórico.
 
 ## Fase 9 — Integrações
 MoneyPrinterTurbo, OpenAI, Ollama, mídia, TTS, Whisper e FFmpeg.

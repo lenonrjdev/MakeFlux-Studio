@@ -119,3 +119,8 @@ Valida o acervo local, coleções, importação, sincronização com Produção 
 ## Fase 7 — Templates
 
 Valida presets completos, criação a partir de projetos, persistência, importação/exportação JSON, transferência ao estúdio, rota exportada e aplicativo desktop.
+
+
+## Fase 8 — Publicação
+
+Execute `VALIDAR_FASE_08.cmd` ou `VALIDAR_FASE_ATUAL.cmd`. A homologação inclui contratos de publicação, metadados, calendário, integração com Produção, build Next.js e instalador Tauri.

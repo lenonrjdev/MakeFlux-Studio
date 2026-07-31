@@ -1,6 +1,5 @@
-import { PaginaEmConstrucao } from "@/components/modulos/pagina-em-construcao";
-import { modulosPlanejados } from "@/content/modulos";
+import { CentralPublicacao } from "@/components/publicacao/central-publicacao";
 
 export default function PaginaPublicacao() {
-  return <PaginaEmConstrucao {...modulosPlanejados["/publicacao"]} />;
+  return <CentralPublicacao />;
 }

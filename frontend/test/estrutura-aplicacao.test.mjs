@@ -30,6 +30,7 @@ test("as rotas essenciais da aplicacao existem", () => {
     "app/laboratorio-de-ia/page.tsx",
     "app/biblioteca/page.tsx",
     "app/templates/page.tsx",
+    "app/publicacao/page.tsx",
     "app/configuracoes/page.tsx",
     "app/central-de-ajuda/page.tsx",
   ];
