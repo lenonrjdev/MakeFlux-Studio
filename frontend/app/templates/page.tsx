@@ -1,6 +1,5 @@
-import { PaginaEmConstrucao } from "@/components/modulos/pagina-em-construcao";
-import { modulosPlanejados } from "@/content/modulos";
+import { CentralTemplates } from "@/components/templates/central-templates";
 
 export default function PaginaTemplates() {
-  return <PaginaEmConstrucao {...modulosPlanejados["/templates"]} />;
+  return <CentralTemplates />;
 }

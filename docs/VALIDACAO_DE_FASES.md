@@ -59,6 +59,8 @@ frontend\src-tauri\target\release\bundle
 .\VALIDAR_FASE_03.cmd
 .\VALIDAR_FASE_04.cmd
 .\VALIDAR_FASE_05.cmd
+.\VALIDAR_FASE_06.cmd
+.\VALIDAR_FASE_07.cmd
 ```
 
 Cada comando usa o contrato imutável correspondente em `scripts/validacao/fases`.
@@ -112,3 +114,8 @@ Depois, `validar-fase-atual.ps1` passa a apontar para o manifesto mais recente. 
 ## Fase 6 — Biblioteca
 
 Valida o acervo local, coleções, importação, sincronização com Produção e Laboratório de IA, transferência ao estúdio, rota exportada e aplicativo desktop.
+
+
+## Fase 7 — Templates
+
+Valida presets completos, criação a partir de projetos, persistência, importação/exportação JSON, transferência ao estúdio, rota exportada e aplicativo desktop.

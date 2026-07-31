@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, Loader2, MoreVertical, Save } from "lucide-react";
+import { Check, ChevronLeft, LayoutTemplate, Loader2, MoreVertical, Save } from "lucide-react";
 import Link from "next/link";
 
 import { Botao } from "@/components/ui/botao";
@@ -13,12 +13,14 @@ export function CabecalhoProjetoVideo({
   estadoSalvamento,
   salvoEm,
   aoSalvar,
+  aoSalvarComoTemplate,
 }: {
   nomeProjeto: string;
   modo: string;
   estadoSalvamento: EstadoSalvamento;
   salvoEm?: string;
   aoSalvar: () => void;
+  aoSalvarComoTemplate: () => void;
 }) {
   const textoAutosave =
     estadoSalvamento === "carregando"
@@ -71,6 +73,10 @@ export function CabecalhoProjetoVideo({
         <div className="flex shrink-0 items-center gap-2">
           <SeloStatus texto="Projeto local" tom="neutro" />
           <SeloStatus texto={`Modo ${modo}`} />
+          <Botao onClick={aoSalvarComoTemplate} className="h-8 px-3" disabled={estadoSalvamento === "carregando"}>
+            <LayoutTemplate className="size-3.5" />
+            Salvar como template
+          </Botao>
           <Botao onClick={aoSalvar} className="h-8 px-3" disabled={estadoSalvamento === "carregando"}>
             <Save className="size-3.5" />
             Salvar versão

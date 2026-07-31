@@ -46,8 +46,13 @@
 - Sincronização das exportações da Produção e dos presets do Laboratório de IA.
 - Transferência de recursos aprovados diretamente para as etapas do estúdio.
 
-## Fase 7 — Templates
-Presets completos de criação e renderização.
+## Fase 7 — Templates — concluída
+- Oito templates oficiais para curiosidades, listas, histórias, notícias, educação, produtos, documentários e Dark Lo-fi.
+- Presets completos de roteiro, prompts, materiais, voz, legendas, música e exportação.
+- Criação manual ou a partir de projetos existentes.
+- Busca, categorias, filtros, favoritos, grade, lista, duplicação, edição e arquivamento.
+- Importação e exportação JSON para compartilhar configurações.
+- Aplicação direta no estúdio e salvamento da configuração atual como template.
 
 ## Fase 8 — Publicação
 Metadados, calendário simples, thumbnails, status e links publicados.

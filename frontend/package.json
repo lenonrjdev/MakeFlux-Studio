@@ -1,6 +1,6 @@
 {
   "name": "makeflux-studio",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -17,7 +17,8 @@
     "desktop:build": "tauri build",
     "test:fase4": "node --test test/fase-04-producao.test.mjs",
     "test:fase5": "node --test test/fase-05-laboratorio-ia.test.mjs",
-    "test:fase6": "node --test test/fase-06-biblioteca.test.mjs"
+    "test:fase6": "node --test test/fase-06-biblioteca.test.mjs",
+    "test:fase7": "node --test test/fase-07-templates.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

@@ -14,6 +14,7 @@ import {
 } from "@/lib/projetos-locais";
 import { consumirTransferenciaBibliotecaParaEstudio } from "@/lib/biblioteca-local";
 import { consumirTransferenciaLaboratorioParaEstudio } from "@/lib/laboratorio-ia-local";
+import { consumirTransferenciaTemplateParaEstudio, criarTemplateLocal } from "@/lib/templates-locais";
 import { criarTarefaProducaoLocal } from "@/lib/producao-local";
 import type {
   AtualizarConfiguracaoVideo,
@@ -133,6 +134,18 @@ function aplicarTransferenciaBiblioteca() {
   return { configuracao, etapa: "ideia" as IdEtapaCriacao };
 }
 
+function aplicarTransferenciaTemplate() {
+  const transferencia = consumirTransferenciaTemplateParaEstudio();
+  if (!transferencia) return { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+
+  const configuracao: ConfiguracaoCriacaoVideo = {
+    ...transferencia.configuracao,
+    nomeProjeto: `${transferencia.nome} · novo projeto`,
+    cenas: transferencia.configuracao.cenas.map((cena) => ({ ...cena })),
+  };
+  return { configuracao, etapa: "ideia" as IdEtapaCriacao };
+}
+
 export function EstudioCriacaoVideo() {
   const router = useRouter();
   const [etapaAtual, setEtapaAtual] = useState<IdEtapaCriacao>("ideia");
@@ -161,11 +174,14 @@ export function EstudioCriacaoVideo() {
         const origem = new URLSearchParams(window.location.search).get("origem");
         const origemLaboratorio = origem === "laboratorio";
         const origemBiblioteca = origem === "biblioteca";
+        const origemTemplate = origem === "template";
         const transferencia = origemLaboratorio
           ? aplicarTransferenciaLaboratorio()
           : origemBiblioteca
             ? aplicarTransferenciaBiblioteca()
-            : { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
+            : origemTemplate
+              ? aplicarTransferenciaTemplate()
+              : { configuracao: configuracaoInicialVideo, etapa: "ideia" as IdEtapaCriacao };
         const criado = criarProjetoLocal(transferencia.configuracao);
         setProjetoId(criado.id);
         setConfiguracao(transferencia.configuracao);
@@ -245,6 +261,18 @@ export function EstudioCriacaoVideo() {
     }
   }
 
+  function salvarComoTemplate() {
+    const template = criarTemplateLocal({
+      nome: configuracao.nomeProjeto || "Template sem título",
+      descricao: configuracao.tema || "Template criado a partir do estúdio de criação.",
+      categoria: "personalizado",
+      tags: [configuracao.plataforma, configuracao.formato, configuracao.objetivo],
+      configuracao,
+      projetoOrigemId: projetoId ?? undefined,
+    });
+    notificar(`Template “${template.nome}” salvo e disponível no módulo Templates.`);
+  }
+
   function irParaAnterior() {
     const anterior = etapasCriacaoVideo[indiceAtual - 1];
     if (anterior) setEtapaAtual(anterior.id);
@@ -311,6 +339,7 @@ export function EstudioCriacaoVideo() {
         estadoSalvamento={estadoSalvamento}
         salvoEm={salvoEm}
         aoSalvar={salvarVersao}
+        aoSalvarComoTemplate={salvarComoTemplate}
       />
       <div className="border-b border-[#e4e8e8] bg-[#f7f8f9] px-8">
         <NavegacaoEtapas etapaAtual={etapaAtual} aoSelecionar={setEtapaAtual} />
