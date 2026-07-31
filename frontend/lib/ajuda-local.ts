@@ -1,3 +1,5 @@
+import { detectarCapacidadesSistema, emAmbienteTauri, verificarMoneyPrinter } from "@/lib/runtime-nativo";
+
 import type {
   ItemDiagnostico,
   PacoteSuporteMakeFlux,
@@ -272,7 +274,7 @@ export async function executarDiagnosticoLocal(): Promise<ResultadoDiagnostico> 
     armazenamento.totalBytes > limiteAtencao ? "/configuracoes?secao=armazenamento" : undefined,
   ));
 
-  const tauriDetectado = "__TAURI_INTERNALS__" in window;
+  const tauriDetectado = emAmbienteTauri();
   itens.push(item(
     "ambiente-desktop",
     "Ambiente desktop",
@@ -281,6 +283,43 @@ export async function executarDiagnosticoLocal(): Promise<ResultadoDiagnostico> 
     tauriDetectado ? "aprovado" : "atencao",
     tauriDetectado ? "Runtime desktop Tauri detectado." : "Executando na prévia web; recursos nativos ficam limitados.",
   ));
+
+  if (tauriDetectado) {
+    try {
+      const capacidades = await detectarCapacidadesSistema();
+      itens.push(item(
+        "runtime-offline",
+        "Runtime offline",
+        "Python, FFmpeg e recursos do computador.",
+        "aplicativo",
+        capacidades.modoOfflinePronto ? "aprovado" : "atencao",
+        capacidades.modoOfflinePronto
+          ? `Python e FFmpeg detectados; ${capacidades.nucleosLogicos} threads e ${Math.round(capacidades.memoriaTotalMb / 1024)} GB de RAM disponíveis.`
+          : "Python ou FFmpeg não foi detectado pelo backend nativo.",
+        capacidades.modoOfflinePronto ? undefined : "/integracoes",
+      ));
+    } catch (falha) {
+      itens.push(item("runtime-offline", "Runtime offline", "Python, FFmpeg e recursos do computador.", "aplicativo", "erro", falha instanceof Error ? falha.message : String(falha), "/integracoes"));
+    }
+
+    const moneyPrinter = integracoes.valor?.integracoes?.find((registro) => registro.id === "moneyprinter-turbo");
+    if (moneyPrinter?.endpoint) {
+      try {
+        const diagnosticoMotor = await verificarMoneyPrinter(moneyPrinter.endpoint);
+        itens.push(item(
+          "api-moneyprinter-real",
+          "API real do MoneyPrinterTurbo",
+          "OpenAPI e resposta do endpoint local.",
+          "integracoes",
+          diagnosticoMotor.disponivel ? "aprovado" : "atencao",
+          diagnosticoMotor.mensagem,
+          diagnosticoMotor.disponivel ? undefined : "/integracoes",
+        ));
+      } catch (falha) {
+        itens.push(item("api-moneyprinter-real", "API real do MoneyPrinterTurbo", "OpenAPI e resposta do endpoint local.", "integracoes", "atencao", falha instanceof Error ? falha.message : String(falha), "/integracoes"));
+      }
+    }
+  }
 
   const webCryptoDisponivel = Boolean(globalThis.crypto?.subtle);
   itens.push(item(
@@ -343,7 +382,7 @@ export function criarPacoteSuporteLocal(diagnostico?: ResultadoDiagnostico): Pac
     versao: 1,
     criadoEm: agoraIso(),
     aplicativo: {
-      versao: "0.11.0",
+      versao: "0.12.0",
       ambiente: "__TAURI_INTERNALS__" in window ? "tauri" : "web",
       idioma: navigator.language,
       userAgent: sanitizarTexto(navigator.userAgent),
@@ -386,7 +425,7 @@ export function baixarPacoteSuporteLocal(diagnostico?: ResultadoDiagnostico) {
 
 export function copiarResumoDiagnosticoLocal(resultado: ResultadoDiagnostico) {
   const linhas = [
-    `MakeFlux Studio 0.11.0 — diagnóstico ${resultado.statusGeral}`,
+    `MakeFlux Studio 0.12.0 — diagnóstico ${resultado.statusGeral}`,
     `Executado em: ${new Date(resultado.executadoEm).toLocaleString("pt-BR")}`,
     `Aprovados: ${resultado.resumo.aprovados} | Atenções: ${resultado.resumo.atencoes} | Erros: ${resultado.resumo.erros}`,
     "",

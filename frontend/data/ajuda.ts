@@ -329,10 +329,23 @@ export const problemasConhecidos: ProblemaConhecido[] = [
 
 export const novidadesMakeFlux: VersaoNovidade[] = [
   {
+    versao: "0.12.0",
+    titulo: "Integração nativa e modo offline",
+    data: "2026-07-31",
+    atual: true,
+    itens: [
+      "Adaptador Tauri para a API do MoneyPrinterTurbo.",
+      "Detecção real de Python, FFmpeg, Git, GPU, CPU e memória.",
+      "Inicialização e encerramento controlados do motor local.",
+      "Fila de produção conectada às tarefas reais da API.",
+      "Atualização por fast-forward com backup e rollback seguro.",
+    ],
+  },
+  {
     versao: "0.11.0",
     titulo: "Central de ajuda e diagnóstico",
     data: "2026-07-31",
-    atual: true,
+    atual: false,
     itens: [
       "Onboarding persistente com seis etapas.",
       "Biblioteca de guias e perguntas frequentes.",

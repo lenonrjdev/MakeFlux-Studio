@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { cancelarTarefaMoneyPrinterLocal, sincronizarProducaoMoneyPrinterLocal } from "@/lib/sincronizacao-producao-moneyprinter";
+
 import {
   avancarSimulacaoProducaoLocal,
   alterarPrioridadeTarefaProducaoLocal,
@@ -36,7 +38,10 @@ export function useProducaoLocal() {
 
   useEffect(() => {
     const temporizadorInicial = window.setTimeout(recarregar, 0);
-    const temporizadorProducao = window.setInterval(avancarSimulacaoProducaoLocal, 1800);
+    const temporizadorProducao = window.setInterval(() => {
+      avancarSimulacaoProducaoLocal();
+      void sincronizarProducaoMoneyPrinterLocal();
+    }, 1800);
     window.addEventListener(EVENTO_WORKSPACE_PRODUCAO, recarregar);
     window.addEventListener("storage", recarregar);
     return () => {
@@ -73,7 +78,11 @@ export function useProducaoLocal() {
     alternarFila: useCallback(() => alternarFilaProducaoLocal(), []),
     pausar: useCallback((id: string) => pausarTarefaProducaoLocal(id), []),
     retomar: useCallback((id: string) => retomarTarefaProducaoLocal(id), []),
-    cancelar: useCallback((id: string) => cancelarTarefaProducaoLocal(id), []),
+    cancelar: useCallback((id: string) => {
+      const tarefa = carregarWorkspaceProducao().tarefas.find((item) => item.id === id);
+      if (tarefa) void cancelarTarefaMoneyPrinterLocal(tarefa);
+      return cancelarTarefaProducaoLocal(id);
+    }, []),
     tentarNovamente: useCallback((id: string) => tentarNovamenteTarefaProducaoLocal(id), []),
     duplicar: useCallback((id: string) => duplicarTarefaProducaoLocal(id), []),
     excluir: useCallback((id: string) => excluirTarefaProducaoLocal(id), []),

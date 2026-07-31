@@ -17,6 +17,7 @@ import { GradeIntegracoes } from "./grade-integracoes";
 import { PainelCategoriasIntegracoes } from "./painel-categorias-integracoes";
 import { PainelDetalhesIntegracao } from "./painel-detalhes-integracao";
 import { PainelModoProcessamento } from "./painel-modo-processamento";
+import { PainelRuntimeNativo } from "./painel-runtime-nativo";
 import { ResumoIntegracoes } from "./resumo-integracoes";
 
 export function CentralIntegracoes() {
@@ -141,6 +142,11 @@ export function CentralIntegracoes() {
       />
       <div className="space-y-4 px-8 py-5">
         <ResumoIntegracoes integracoes={integracoes} />
+        <PainelRuntimeNativo
+          integracao={integracoes.find((item) => item.id === "moneyprinter-turbo") ?? null}
+          aoAtualizar={(dados) => atualizar("moneyprinter-turbo", dados)}
+          aoNotificar={notificar}
+        />
         <PainelModoProcessamento
           modo={modoProcessamento}
           integracoes={integracoes}

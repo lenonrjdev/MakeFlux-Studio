@@ -243,7 +243,7 @@ export function PainelDetalhesIntegracao({
 
           <div className="flex items-start gap-2 rounded-md border border-[#e8dfca] bg-[#fffaf0] p-3 text-[7.5px] leading-4 text-[#876b37]">
             <CircleAlert className="mt-0.5 size-3.5 shrink-0" />
-            As verificações desta fase são demonstrativas. A conexão real e o cofre seguro serão ativados pelo adaptador Tauri e pela API do MoneyPrinterTurbo.
+            As integrações locais usam o adaptador Tauri quando o aplicativo desktop está ativo. Serviços em nuvem continuam exigindo credenciais válidas no provedor.
           </div>
         </div>
 

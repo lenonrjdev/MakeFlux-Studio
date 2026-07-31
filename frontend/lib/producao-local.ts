@@ -1,4 +1,5 @@
 import { etapasProducao, pesosPrioridade } from "@/data/producao";
+import { obterConfiguracaoMoneyPrinter, motorRealDisponivel } from "@/lib/motor-moneyprinter";
 import { alterarStatusProjetoLocal } from "@/lib/projetos-locais";
 import type { ProjetoStudio } from "@/types/projeto";
 import type {
@@ -55,7 +56,10 @@ function normalizarWorkspace(valor: unknown): WorkspaceProducao {
   return {
     versao: 1,
     filaPausada: Boolean(candidato.filaPausada),
-    tarefas: candidato.tarefas.map(copiarTarefa),
+    tarefas: candidato.tarefas.map((tarefa) => ({
+      ...copiarTarefa(tarefa),
+      modoExecucao: tarefa.modoExecucao === "moneyprinter" ? "moneyprinter" : "simulada",
+    })),
   };
 }
 
@@ -88,7 +92,7 @@ function transformarWorkspace(
 function atualizarTarefa(
   id: string,
   atualizacao: (tarefa: TarefaProducao) => TarefaProducao,
-) {
+): TarefaProducao | null {
   let resultado: TarefaProducao | null = null;
   transformarWorkspace((workspace) => ({
     ...workspace,
@@ -119,6 +123,8 @@ export function criarTarefaProducaoLocal(
   if (existente) return existente;
 
   const agora = new Date().toISOString();
+  const configuracaoMotor = obterConfiguracaoMoneyPrinter();
+  const usarMotorReal = motorRealDisponivel();
   const tarefa: TarefaProducao = {
     id: criarId("tarefa"),
     projetoId: projeto.id,
@@ -140,7 +146,17 @@ export function criarTarefaProducaoLocal(
     criadaEm: agora,
     atualizadaEm: agora,
     pastaSaida: "Pasta de exportações do MakeFlux Studio",
-    logs: [criarLog("Tarefa adicionada à fila de produção.", "sucesso", agora)],
+    modoExecucao: usarMotorReal ? "moneyprinter" : "simulada",
+    motorEndpoint: usarMotorReal ? configuracaoMotor?.endpoint : undefined,
+    logs: [
+      criarLog(
+        usarMotorReal
+          ? "Tarefa adicionada à fila real do MoneyPrinterTurbo."
+          : "Tarefa adicionada à fila de produção simulada.",
+        "sucesso",
+        agora,
+      ),
+    ],
     arquivos: [],
   };
 
@@ -175,7 +191,10 @@ export function pausarTarefaProducaoLocal(id: string) {
 export function retomarTarefaProducaoLocal(id: string) {
   return atualizarTarefa(id, (tarefa) => ({
     ...tarefa,
-    status: "na-fila",
+    status:
+      tarefa.modoExecucao === "moneyprinter" && tarefa.motorTarefaId
+        ? "processando"
+        : "na-fila",
     atualizadaEm: new Date().toISOString(),
     erro: undefined,
     logs: [criarLog("Tarefa devolvida à fila para continuar.", "info"), ...tarefa.logs].slice(0, 120),
@@ -204,6 +223,8 @@ export function tentarNovamenteTarefaProducaoLocal(id: string) {
     atualizadaEm: new Date().toISOString(),
     erro: undefined,
     arquivos: [],
+    motorTarefaId: undefined,
+    ultimaSincronizacaoEm: undefined,
     logs: [criarLog("Nova tentativa adicionada à fila.", "info"), ...tarefa.logs].slice(0, 120),
   }));
 }
@@ -226,6 +247,8 @@ export function duplicarTarefaProducaoLocal(id: string) {
     concluidaEm: undefined,
     erro: undefined,
     arquivos: [],
+    motorTarefaId: undefined,
+    ultimaSincronizacaoEm: undefined,
     logs: [criarLog("Nova renderização criada a partir da tarefa anterior.", "sucesso", agora)],
   };
   transformarWorkspace((workspace) => ({ ...workspace, tarefas: [duplicada, ...workspace.tarefas] }));
@@ -346,8 +369,9 @@ export function avancarSimulacaoProducaoLocal() {
   const workspace = carregarWorkspaceProducao();
   if (workspace.filaPausada) return;
 
-  const ativa = workspace.tarefas.find((tarefa) => tarefa.status === "processando");
-  const proxima = ativa ?? [...workspace.tarefas].filter((tarefa) => tarefa.status === "na-fila").sort(ordenarFila)[0];
+  const simuladas = workspace.tarefas.filter((tarefa) => tarefa.modoExecucao !== "moneyprinter");
+  const ativa = simuladas.find((tarefa) => tarefa.status === "processando");
+  const proxima = ativa ?? [...simuladas].filter((tarefa) => tarefa.status === "na-fila").sort(ordenarFila)[0];
   if (!proxima) return;
 
   const agora = new Date().toISOString();
@@ -384,6 +408,81 @@ export function avancarSimulacaoProducaoLocal() {
   }));
 
   if (concluida) alterarStatusProjetoLocal(proxima.projetoId, "concluido");
+}
+
+export function marcarTarefaEnviadaAoMotorLocal(
+  id: string,
+  motorTarefaId: string,
+  endpoint: string,
+) {
+  const agora = new Date().toISOString();
+  return atualizarTarefa(id, (tarefa) => ({
+    ...tarefa,
+    status: "processando",
+    motorTarefaId,
+    motorEndpoint: endpoint,
+    iniciadaEm: tarefa.iniciadaEm ?? agora,
+    atualizadaEm: agora,
+    ultimaSincronizacaoEm: agora,
+    logs: [criarLog(`Tarefa enviada ao MoneyPrinterTurbo: ${motorTarefaId}.`, "sucesso", agora), ...tarefa.logs].slice(0, 120),
+  }));
+}
+
+export function atualizarProgressoMotorLocal(id: string, progresso: number) {
+  const agora = new Date().toISOString();
+  const normalizado = Math.max(0, Math.min(99, Math.round(progresso)));
+  return atualizarTarefa(id, (tarefa) => {
+    const etapas = atualizarEtapasPorProgresso(tarefa.etapas, normalizado, agora);
+    return {
+      ...tarefa,
+      status: "processando",
+      progresso: normalizado,
+      etapaAtual: etapas.find((etapa) => etapa.status === "processando")?.id ?? tarefa.etapaAtual,
+      etapas,
+      tempoDecorridoSegundos: tarefa.tempoDecorridoSegundos + 2,
+      atualizadaEm: agora,
+      ultimaSincronizacaoEm: agora,
+    };
+  });
+}
+
+export function concluirTarefaMotorLocal(
+  id: string,
+  arquivos: Array<{ nome: string; tipo: ArquivoTarefaProducao["tipo"]; caminho: string }>,
+) {
+  const agora = new Date().toISOString();
+  const tarefa = atualizarTarefa(id, (atual) => ({
+    ...atual,
+    status: "concluida",
+    progresso: 100,
+    etapaAtual: "finalizacao",
+    etapas: atualizarEtapasPorProgresso(atual.etapas, 100, agora),
+    concluidaEm: agora,
+    atualizadaEm: agora,
+    ultimaSincronizacaoEm: agora,
+    arquivos: arquivos.map((arquivo) => ({ id: criarId("arquivo"), tamanho: "Gerado pelo motor", ...arquivo })),
+    logs: [criarLog("MoneyPrinterTurbo concluiu a tarefa e retornou os arquivos finais.", "sucesso", agora), ...atual.logs].slice(0, 120),
+  }));
+  if (tarefa) alterarStatusProjetoLocal(tarefa.projetoId, "concluido");
+  return tarefa;
+}
+
+export function falharTarefaMotorLocal(id: string, mensagem: string) {
+  const agora = new Date().toISOString();
+  return atualizarTarefa(id, (tarefa) => ({
+    ...tarefa,
+    status: "erro",
+    atualizadaEm: agora,
+    ultimaSincronizacaoEm: agora,
+    erro: {
+      titulo: "O MoneyPrinterTurbo não concluiu a tarefa",
+      descricao: mensagem,
+      causaProvavel: "Falha no provedor configurado, dependência local ausente ou resposta inválida da API.",
+      acaoSugerida: "Abra Integrações, execute o diagnóstico do motor e tente novamente.",
+      codigoTecnico: "MONEYPRINTER_TASK_FAILED",
+    },
+    logs: [criarLog(mensagem, "erro", agora), ...tarefa.logs].slice(0, 120),
+  }));
 }
 
 export function formatarTempoProducao(segundos: number) {

@@ -1,0 +1,8 @@
+MAKEFLUX STUDIO - FASE 12
+
+1. Extraia este ZIP na raiz C:\projetos\makeFluxStudio.
+2. Nao extraia dentro da pasta frontend.
+3. Execute .\VALIDAR_FASE_ATUAL.cmd.
+4. Somente consolide o commit quando aparecer FASE APROVADA.
+
+Esta fase conecta o Tauri ao MoneyPrinterTurbo e preserva a simulacao como fallback seguro.

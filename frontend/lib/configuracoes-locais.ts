@@ -105,7 +105,7 @@ export function criarConfiguracoesPadrao(): WorkspaceConfiguracoes {
       incluirMotor: true,
       permitirRollback: true,
       ultimaVerificacaoEm: null,
-      versaoAplicativo: "0.11.0",
+      versaoAplicativo: "0.12.0",
       versaoMotor: "não detectado",
     },
     atualizadoEm: agoraIso(),
@@ -125,7 +125,7 @@ function mesclarWorkspace(valor: Partial<WorkspaceConfiguracoes>): WorkspaceConf
     aparencia: { ...padrao.aparencia, ...valor.aparencia },
     backup: { ...padrao.backup, ...valor.backup },
     seguranca: { ...padrao.seguranca, ...valor.seguranca },
-    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "0.11.0" },
+    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "0.12.0" },
     versao: 1,
   };
 }
@@ -317,6 +317,6 @@ export async function verificarAtualizacoesLocal() {
   return {
     verificadoEm,
     atualizacaoDisponivel: false,
-    mensagem: "O MakeFlux Studio 0.11.0 é a versão instalada mais recente deste canal local.",
+    mensagem: "O MakeFlux Studio 0.12.0 é a versão instalada mais recente deste canal local.",
   };
 }

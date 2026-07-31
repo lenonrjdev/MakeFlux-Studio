@@ -1,3 +1,5 @@
+import { emAmbienteTauri, detectarCapacidadesSistema, testarHttpNativo, verificarMoneyPrinter } from "@/lib/runtime-nativo";
+
 import type {
   AtualizacaoIntegracao,
   CapacidadeIntegracao,
@@ -94,14 +96,18 @@ function criarCatalogoInicial(): IntegracaoStudio[] {
       versao: "Não detectada",
       modelo: "API FastAPI",
       capacidades: ["motor-video"],
-      configuracoes: { timeout: 120, tarefasSimultaneas: 1, iniciarComAplicativo: true },
+      configuracoes: { timeout: 120, tarefasSimultaneas: 1, iniciarComAplicativo: true, diretorioProjeto: "", pythonExecutavel: "python", threads: 2, branchAtualizacao: "main" },
       campos: [
         campoEndpoint("http://127.0.0.1:8080"),
+        { id: "diretorioProjeto", rotulo: "Pasta do MoneyPrinterTurbo", descricao: "Diretório que contém main.py e o repositório Git do motor.", tipo: "texto", placeholder: "C:\\Ferramentas\\MoneyPrinterTurbo" },
+        { id: "pythonExecutavel", rotulo: "Python", descricao: "Executável usado para iniciar main.py.", tipo: "texto", placeholder: "python" },
+        { id: "threads", rotulo: "Threads de renderização", tipo: "numero", minimo: 1, maximo: 32, passo: 1 },
+        { id: "branchAtualizacao", rotulo: "Branch de atualização", tipo: "texto", placeholder: "main" },
         { id: "timeout", rotulo: "Timeout", descricao: "Tempo máximo de espera em segundos.", tipo: "numero", minimo: 10, maximo: 600, passo: 10 },
         { id: "tarefasSimultaneas", rotulo: "Tarefas simultâneas", tipo: "numero", minimo: 1, maximo: 8, passo: 1 },
         { id: "iniciarComAplicativo", rotulo: "Iniciar com o aplicativo", tipo: "interruptor" },
       ],
-      mensagemStatus: "Motor cadastrado, aguardando o adaptador nativo para detecção real.",
+      mensagemStatus: "Motor cadastrado. Use o diagnóstico nativo para detectar a API real.",
     }),
     criarIntegracao({
       id: "openai",
@@ -538,6 +544,24 @@ function validarWorkspace(valor: unknown): valor is WorkspaceIntegracoes {
   );
 }
 
+function migrarWorkspaceIntegracoes(workspace: WorkspaceIntegracoes): WorkspaceIntegracoes {
+  const catalogo = criarCatalogoInicial();
+  const salvasPorId = new Map(workspace.integracoes.map((integracao) => [integracao.id, integracao]));
+  const integracoes = catalogo.map((padrao) => {
+    const salva = salvasPorId.get(padrao.id);
+    if (!salva) return padrao;
+    return {
+      ...padrao,
+      ...salva,
+      configuracoes: { ...padrao.configuracoes, ...salva.configuracoes },
+      campos: padrao.campos,
+      capacidades: padrao.capacidades,
+      historico: Array.isArray(salva.historico) ? salva.historico : padrao.historico,
+    };
+  });
+  return { ...workspace, versao: 1, integracoes };
+}
+
 export function carregarWorkspaceIntegracoes(): WorkspaceIntegracoes {
   if (typeof window === "undefined") return criarWorkspaceInicial();
   const salvo = window.localStorage.getItem(CHAVE_WORKSPACE_INTEGRACOES);
@@ -548,7 +572,11 @@ export function carregarWorkspaceIntegracoes(): WorkspaceIntegracoes {
   }
   try {
     const valor: unknown = JSON.parse(salvo);
-    if (validarWorkspace(valor)) return copiarWorkspace(valor);
+    if (validarWorkspace(valor)) {
+      const migrado = migrarWorkspaceIntegracoes(valor);
+      if (JSON.stringify(migrado) !== JSON.stringify(valor)) salvarWorkspaceIntegracoes(migrado);
+      return copiarWorkspace(migrado);
+    }
   } catch {
     // Um catálogo íntegro é restaurado abaixo.
   }
@@ -702,65 +730,86 @@ export function integracaoCompativelComModo(
   return true;
 }
 
-function calcularResultadoTeste(
+function calcularResultadoTesteDemonstrativo(
   integracao: IntegracaoStudio,
   modo: ModoProcessamento,
 ): ResultadoTesteIntegracao {
   if (!integracao.ativa) {
-    return {
-      sucesso: false,
-      status: "atencao",
-      mensagem: "Ative a integração antes de executar o teste.",
-      latenciaMs: null,
-    };
+    return { sucesso: false, status: "atencao", mensagem: "Ative a integração antes de executar o teste.", latenciaMs: null };
   }
   if (!integracaoCompativelComModo(integracao, modo)) {
-    return {
-      sucesso: false,
-      status: "indisponivel",
-      mensagem: "A integração depende de internet e o modo Offline está ativo.",
-      latenciaMs: null,
-    };
+    return { sucesso: false, status: "indisponivel", mensagem: "A integração depende de internet e o modo Offline está ativo.", latenciaMs: null };
   }
   if (integracao.requerCredencial && !integracao.credencialConfigurada) {
-    return {
-      sucesso: false,
-      status: "nao-configurada",
-      mensagem: "Configure uma credencial antes de testar a conexão.",
-      latenciaMs: null,
-    };
+    return { sucesso: false, status: "nao-configurada", mensagem: "Configure uma credencial antes de testar a conexão.", latenciaMs: null };
   }
   if (integracao.execucao === "local" && !integracao.instalada) {
-    return {
-      sucesso: false,
-      status: "atencao",
-      mensagem: "O serviço local ainda não foi detectado neste computador.",
-      latenciaMs: null,
-    };
+    return { sucesso: false, status: "atencao", mensagem: "O serviço local ainda não foi detectado neste computador.", latenciaMs: null };
   }
-  const latenciaBase = integracao.execucao === "local" ? 18 : 146;
-  const variacao = integracao.id.length * 7;
   return {
     sucesso: true,
     status: "conectada",
-    mensagem:
-      integracao.execucao === "local"
-        ? "Serviço local respondeu ao diagnóstico demonstrativo."
-        : "Credenciais e endpoint passaram pela verificação demonstrativa.",
-    latenciaMs: latenciaBase + variacao,
+    mensagem: integracao.execucao === "local" ? "Serviço local pronto no perfil atual." : "Configuração lógica aprovada; o segredo permanece fora do navegador.",
+    latenciaMs: null,
   };
+}
+
+async function calcularResultadoTesteNativo(
+  integracao: IntegracaoStudio,
+  modo: ModoProcessamento,
+): Promise<ResultadoTesteIntegracao> {
+  const preValidacao = calcularResultadoTesteDemonstrativo(integracao, modo);
+  if (!preValidacao.sucesso && !["moneyprinter-turbo", "ollama", "ffmpeg"].includes(integracao.id)) return preValidacao;
+  if (!emAmbienteTauri()) return preValidacao;
+
+  try {
+    if (integracao.id === "moneyprinter-turbo") {
+      const diagnostico = await verificarMoneyPrinter(integracao.endpoint);
+      return {
+        sucesso: diagnostico.disponivel,
+        status: diagnostico.disponivel ? "conectada" : "atencao",
+        mensagem: diagnostico.mensagem,
+        latenciaMs: diagnostico.latenciaMs,
+      };
+    }
+    if (integracao.id === "ollama") {
+      const resposta = await testarHttpNativo({ url: `${integracao.endpoint.replace(/\/$/, "")}/api/tags`, timeoutMs: 8_000 });
+      return { sucesso: resposta.sucesso, status: resposta.sucesso ? "conectada" : "atencao", mensagem: resposta.mensagem, latenciaMs: resposta.latenciaMs };
+    }
+    if (integracao.id === "ffmpeg") {
+      const capacidades = await detectarCapacidadesSistema();
+      return {
+        sucesso: capacidades.ffmpeg.disponivel,
+        status: capacidades.ffmpeg.disponivel ? "conectada" : "atencao",
+        mensagem: capacidades.ffmpeg.disponivel ? `FFmpeg detectado em ${capacidades.ffmpeg.caminho ?? "PATH"}.` : "FFmpeg não foi encontrado no PATH do sistema.",
+        latenciaMs: null,
+      };
+    }
+    if (integracao.execucao === "local" && /^https?:\/\//.test(integracao.endpoint)) {
+      const resposta = await testarHttpNativo({ url: integracao.endpoint, timeoutMs: 8_000 });
+      return { sucesso: resposta.sucesso, status: resposta.sucesso ? "conectada" : "atencao", mensagem: resposta.mensagem, latenciaMs: resposta.latenciaMs };
+    }
+    return preValidacao;
+  } catch (falha) {
+    return {
+      sucesso: false,
+      status: "atencao",
+      mensagem: falha instanceof Error ? falha.message : String(falha),
+      latenciaMs: null,
+    };
+  }
 }
 
 export async function testarIntegracaoLocal(id: string) {
   const workspace = carregarWorkspaceIntegracoes();
   const integracao = workspace.integracoes.find((item) => item.id === id);
   if (!integracao) return null;
-  await new Promise((resolver) => window.setTimeout(resolver, 520));
-  const resultado = calcularResultadoTeste(integracao, workspace.modoProcessamento);
+  const resultado = await calcularResultadoTesteNativo(integracao, workspace.modoProcessamento);
   const verificadoEm = agoraIso();
   transformarWorkspace((atual) =>
     atualizarIntegracaoInterna(atual, id, (item) => ({
       ...item,
+      instalada: item.execucao !== "local" ? item.instalada : resultado.sucesso || item.instalada,
       status: resultado.status,
       ultimaVerificacaoEm: verificadoEm,
       latenciaMs: resultado.latenciaMs,
@@ -768,11 +817,7 @@ export async function testarIntegracaoLocal(id: string) {
       atualizadoEm: verificadoEm,
       historico: [
         ...item.historico,
-        criarEvento(
-          resultado.sucesso ? "testada" : "falha",
-          resultado.mensagem,
-          verificadoEm,
-        ),
+        criarEvento(resultado.sucesso ? "testada" : "falha", resultado.mensagem, verificadoEm),
       ],
     })),
   );

@@ -141,3 +141,8 @@ Valida perfil local, workspace, padrões de criação, desempenho, armazenamento
 ## Fase 11 — Central de ajuda
 
 Valida onboarding, biblioteca de guias, perguntas frequentes, diagnóstico local, checklists de solução de problemas, sanitização do pacote de suporte, rota `/central-de-ajuda`, build estático e instalador Tauri. O manifesto oficial é `scripts/validacao/fases/fase-11.json`.
+
+
+## Fase 12
+
+A Fase 12 adiciona validação dos comandos Rust, adaptador REST, fila híbrida, detecção offline e atualização segura do MoneyPrinterTurbo. O manifesto oficial é `scripts/validacao/fases/fase-12.json`.

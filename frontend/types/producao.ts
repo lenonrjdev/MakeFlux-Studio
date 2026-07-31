@@ -60,6 +60,8 @@ export type ErroTarefaProducao = {
   codigoTecnico?: string;
 };
 
+export type ModoExecucaoProducao = "simulada" | "moneyprinter";
+
 export type TarefaProducao = {
   id: string;
   projetoId: string;
@@ -83,6 +85,10 @@ export type TarefaProducao = {
   iniciadaEm?: string;
   concluidaEm?: string;
   pastaSaida: string;
+  modoExecucao: ModoExecucaoProducao;
+  motorTarefaId?: string;
+  motorEndpoint?: string;
+  ultimaSincronizacaoEm?: string;
   logs: LogTarefaProducao[];
   arquivos: ArquivoTarefaProducao[];
   erro?: ErroTarefaProducao;

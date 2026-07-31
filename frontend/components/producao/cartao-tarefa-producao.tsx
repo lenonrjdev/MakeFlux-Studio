@@ -94,7 +94,7 @@ export function CartaoTarefaProducao({
 
           <div className="mt-3">
             <div className="mb-1.5 flex items-center justify-between text-[8px] text-[#838b8c]">
-              <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3" /> Prioridade {rotulosPrioridade[tarefa.prioridade].toLowerCase()}</span>
+              <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3" /> Prioridade {rotulosPrioridade[tarefa.prioridade].toLowerCase()} · {tarefa.modoExecucao === "moneyprinter" ? "Motor real" : "Simulação local"}</span>
               <strong className="font-medium text-[#4d5556]">{tarefa.progresso}%</strong>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-[#edf0f0]">

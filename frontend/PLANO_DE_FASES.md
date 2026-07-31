@@ -88,5 +88,14 @@
 - Pacote de suporte JSON com credenciais, PIN, foto e caminhos pessoais sanitizados.
 - Histórico de novidades e atalhos internos para cada módulo relacionado.
 
-## Fase 12 — Integração completa e modo offline
-Adaptador de API, verificação de capacidades, atualização segura do motor e rollback.
+## Fase 12 — Integração completa e modo offline — concluída
+- Ponte Tauri com comandos Rust para HTTP local, capacidades do sistema e processo do motor.
+- Detecção real de Python, FFmpeg, Git, uv, CPU, RAM e GPU.
+- Diagnóstico OpenAPI e adaptador REST para criar e acompanhar tarefas do MoneyPrinterTurbo.
+- Fila híbrida: motor real quando conectado e simulação local como fallback seguro.
+- Inicialização, status, logs e encerramento controlado do processo `main.py`.
+- Atualização Git por fast-forward, bloqueio de alterações locais, branch de backup e rollback.
+- Diagnóstico da Central de ajuda conectado ao runtime nativo.
+
+## Fase 13 — Qualidade, migrações e distribuição
+Testes de ponta a ponta, migração do localStorage para SQLite, cofre de credenciais, telemetria local opcional, instalador assinado e preparação da versão 1.0.
