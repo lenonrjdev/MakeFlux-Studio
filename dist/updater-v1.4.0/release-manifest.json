@@ -1,0 +1,10 @@
+﻿{
+    "produto":  "MakeFlux Studio",
+    "versao":  "1.4.0",
+    "alvo":  "windows-x86_64",
+    "endpoint":  "https://github.com/lenonrjdev/MakeFlux-Studio/releases/latest/download/latest.json",
+    "artefato":  "MakeFlux Studio_1.4.0_x64-setup.exe",
+    "url":  "https://github.com/lenonrjdev/MakeFlux-Studio/releases/download/v1.4.0/MakeFlux%20Studio_1.4.0_x64-setup.exe",
+    "rollbackIncluido":  false,
+    "criadoEm":  "2026-08-01T02:02:18.0023099Z"
+}

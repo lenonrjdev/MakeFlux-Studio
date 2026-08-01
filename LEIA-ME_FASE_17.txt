@@ -1,0 +1,9 @@
+MAKEFLUX STUDIO — FASE 17
+
+Versão: 1.4.0
+Módulo: Atualizações assinadas
+Rota: /atualizacoes
+
+Aplique o ZIP na raiz do repositório, execute npm install em frontend, formate o Rust e rode VALIDAR_FASE_ATUAL.cmd.
+
+A chave privada do atualizador nunca deve ser adicionada ao projeto ou enviada ao GitHub.
