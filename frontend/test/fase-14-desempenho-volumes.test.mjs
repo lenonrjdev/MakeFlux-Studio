@@ -22,17 +22,17 @@ test("a Fase 14 possui a Central de desempenho e grandes volumes", () => {
   ]) assert.equal(existsSync(join(raiz, arquivo)), true, `Arquivo ausente: ${arquivo}`);
 });
 
-test("a versão 1.1.0 está sincronizada", () => {
+test("a linha 1.1+ permanece sincronizada", () => {
   const pacote = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
-  assert.equal(pacote.version, "1.1.0");
-  assert.equal(tauri.version, "1.1.0");
-  assert.match(ler("src-tauri/Cargo.toml"), /version\s*=\s*"1\.1\.0"/);
+  assert.match(pacote.version, /^1\./);
+  assert.equal(pacote.version, tauri.version);
+  assert.match(ler("src-tauri/Cargo.toml"), new RegExp(`version\\s*=\\s*"${pacote.version.replaceAll(".", "\\.")}"`));
 });
 
 test("o schema v2 possui índices, métricas e operações persistentes", () => {
   const dados = ler("src-tauri/src/commands/dados.rs");
-  for (const contrato of ["metricas_consulta", "operacoes_lote", "manutencao_banco", "idx_workspace_store_atualizado", "PRAGMA user_version = 2"]) assert.match(dados, new RegExp(contrato));
+  for (const contrato of ["metricas_consulta", "operacoes_lote", "manutencao_banco", "idx_workspace_store_atualizado", "índices, métricas e operações em lote v2"]) assert.match(dados, new RegExp(contrato));
 });
 
 test("a consulta nativa é paginada, filtrável e instrumentada", () => {

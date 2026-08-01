@@ -1,8 +1,9 @@
 "use client";
 
-import { Bell, CircleHelp, Plus, Search, UsersRound } from "lucide-react";
+import { CircleHelp, Plus, Search, UsersRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { CentralNotificacoesCompacta } from "@/components/rotinas/central-notificacoes-compacta";
 import { Botao, BotaoLink } from "@/components/ui/botao";
 import { useConfiguracoesLocais } from "@/hooks/use-configuracoes-locais";
 
@@ -19,6 +20,7 @@ const titulosRotas: Record<string, string> = {
   "/configuracoes": "Configurações",
   "/qualidade": "Qualidade e distribuição",
   "/desempenho": "Desempenho e grandes volumes",
+  "/rotinas": "Rotinas e notificações",
   "/central-de-ajuda": "Central de ajuda",
 };
 
@@ -52,14 +54,7 @@ export function CabecalhoAplicacao() {
         >
           <CircleHelp className="size-4" />
         </button>
-        <button
-          type="button"
-          aria-label="Abrir notificações"
-          className="foco-acessivel relative grid size-8 place-items-center rounded-md text-[#697172] hover:bg-[#f2f4f4]"
-        >
-          <Bell className="size-4" />
-          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-[#d85e5e] ring-2 ring-white" />
-        </button>
+        <CentralNotificacoesCompacta />
         <Botao className="ml-1 h-8 px-2.5">
           <UsersRound className="size-3.5" />
           {workspace.workspace.nome || "Workspace"}

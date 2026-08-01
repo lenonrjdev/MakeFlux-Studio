@@ -54,6 +54,11 @@ export const modulosPlanejados = {
     fase: "Fase 14",
     descricao: "Paginação SQLite, operações em lote, cancelamento, métricas e manutenção do banco.",
   },
+  "/rotinas": {
+    titulo: "Rotinas e notificações",
+    fase: "Fase 15",
+    descricao: "Agendamentos persistentes, repetição, recuperação após reinicialização e alertas nativos.",
+  },
   "/central-de-ajuda": {
     titulo: "Central de ajuda",
     fase: "Fase 11",

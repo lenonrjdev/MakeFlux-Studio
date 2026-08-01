@@ -277,3 +277,86 @@ pub struct ResultadoManutencao {
     pub duracao_ms: f64,
     pub mensagem: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RotinaAgendada {
+    pub id: String,
+    pub nome: String,
+    pub descricao: String,
+    #[serde(rename = "tipo")]
+    pub tipo: String,
+    pub frequencia: String,
+    pub intervalo_minutos: Option<u32>,
+    pub proxima_execucao_em: Option<u64>,
+    pub ativa: bool,
+    pub notificar: bool,
+    pub parametros: String,
+    pub criado_em: u64,
+    pub atualizado_em: u64,
+    pub ultima_execucao_em: Option<u64>,
+    pub ultimo_status: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntradaRotinaAgendada {
+    pub id: Option<String>,
+    pub nome: String,
+    pub descricao: String,
+    #[serde(rename = "tipo")]
+    pub tipo_rotina: String,
+    pub frequencia: String,
+    pub intervalo_minutos: Option<u32>,
+    pub proxima_execucao_em: Option<u64>,
+    pub ativa: bool,
+    pub notificar: bool,
+    pub parametros: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExecucaoRotina {
+    pub id: String,
+    pub rotina_id: String,
+    pub rotina_nome: String,
+    pub status: String,
+    pub iniciada_em: u64,
+    pub concluida_em: Option<u64>,
+    pub duracao_ms: u64,
+    pub mensagem: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotificacaoLocal {
+    pub id: String,
+    pub titulo: String,
+    pub corpo: String,
+    pub nivel: String,
+    pub rota: Option<String>,
+    pub lida: bool,
+    pub criada_em: u64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusAgendadorRotinas {
+    pub disponivel: bool,
+    pub worker_ativo: bool,
+    pub ultimo_ciclo_em: Option<u64>,
+    pub rotinas_ativas: u64,
+    pub rotinas_pendentes: u64,
+    pub notificacoes_nao_lidas: u64,
+    pub proxima_execucao_em: Option<u64>,
+    pub mensagem: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResultadoProcessamentoRotinas {
+    pub verificadas: u64,
+    pub executadas: u64,
+    pub falhas: u64,
+    pub mensagem: String,
+}

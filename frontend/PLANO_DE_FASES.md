@@ -117,5 +117,15 @@
 - Central `/desempenho` com saúde do banco, fragmentação e consultas lentas.
 - Versão `1.1.0` sincronizada em Next.js, Cargo e Tauri.
 
-## Pós-1.1 — Evolução contínua
-Rotinas locais, notificações nativas, publicação real por OAuth e atualização automática assinada serão entregues por versões incrementais.
+## Fase 15 — Rotinas locais e notificações — concluída
+- Schema SQLite v3 com rotinas, execuções e notificações persistentes.
+- Agendador nativo em thread própria com ciclo seguro a cada 15 segundos.
+- Repetição única, diária, semanal, mensal ou por intervalo configurável.
+- Recuperação limitada de rotinas vencidas ao reabrir o aplicativo.
+- Ações locais para lembretes, integridade, otimização, WAL, telemetria e resumo do workspace.
+- Histórico completo, pausa, retomada, execução imediata e remoção segura.
+- Notificações nativas pelo plugin oficial do Tauri e central interna no cabeçalho.
+- Versão `1.2.0` sincronizada em Next.js, Cargo e Tauri.
+
+## Pós-1.2 — Evolução contínua
+Publicação real por OAuth, atualização automática assinada e novos provedores serão entregues por versões incrementais.

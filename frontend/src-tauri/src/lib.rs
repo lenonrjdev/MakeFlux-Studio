@@ -2,15 +2,17 @@ mod commands;
 mod models;
 mod state;
 
-use state::{EstadoCofre, EstadoOperacoesLote, EstadoProcessoMotor};
+use state::{EstadoAgendadorRotinas, EstadoCofre, EstadoOperacoesLote, EstadoProcessoMotor};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(EstadoProcessoMotor::default())
         .manage(EstadoCofre::default())
         .manage(EstadoOperacoesLote::default())
+        .manage(EstadoAgendadorRotinas::default())
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
@@ -44,7 +46,26 @@ pub fn run() {
             commands::desempenho::cancelar_operacao_lote,
             commands::desempenho::listar_operacoes_lote,
             commands::desempenho::executar_manutencao_banco,
+            commands::rotinas::listar_rotinas_agendadas,
+            commands::rotinas::salvar_rotina_agendada,
+            commands::rotinas::alterar_status_rotina,
+            commands::rotinas::remover_rotina_agendada,
+            commands::rotinas::executar_rotina_agora,
+            commands::rotinas::processar_rotinas_pendentes,
+            commands::rotinas::listar_execucoes_rotinas,
+            commands::rotinas::listar_notificacoes_locais,
+            commands::rotinas::marcar_notificacao_lida,
+            commands::rotinas::marcar_todas_notificacoes_lidas,
+            commands::rotinas::remover_notificacoes_lidas,
+            commands::rotinas::enviar_notificacao_teste,
+            commands::rotinas::status_agendador_rotinas,
         ])
+        .setup(|app| {
+            use tauri::Manager;
+            let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
+            commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
+            Ok(())
+        })
         .on_window_event(|janela, evento| {
             if let tauri::WindowEvent::Destroyed = evento {
                 use tauri::Manager;
@@ -62,6 +83,10 @@ pub fn run() {
                         chave.zeroize();
                     }
                 };
+                let agendador = janela.state::<EstadoAgendadorRotinas>();
+                agendador
+                    .parar
+                    .store(true, std::sync::atomic::Ordering::SeqCst);
             }
         })
         .run(tauri::generate_context!())

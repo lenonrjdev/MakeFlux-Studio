@@ -67,6 +67,8 @@ frontend\src-tauri\target\release\bundle
 .\VALIDAR_FASE_11.cmd
 .\VALIDAR_FASE_12.cmd
 .\VALIDAR_FASE_13.cmd
+.\VALIDAR_FASE_14.cmd
+.\VALIDAR_FASE_15.cmd
 ```
 
 Cada comando usa o contrato imutável correspondente em `scripts/validacao/fases`.
@@ -158,3 +160,8 @@ Valida a migração para SQLite, o cofre criptografado, a telemetria local opcio
 ## Fase 14 — Desempenho e grandes volumes
 
 Valida a versão 1.1.0, schema SQLite v2, paginação, virtualização, lotes canceláveis, métricas, manutenção e build desktop completo.
+
+
+## Fase 15 — Rotinas locais e notificações
+
+Valida a versão 1.2.0, schema SQLite v3, rotinas persistentes, repetição, recuperação de pendências, histórico, central de notificações, plugin nativo do Tauri, rota `/rotinas` e instalador desktop completo.

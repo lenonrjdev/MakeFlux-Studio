@@ -86,7 +86,45 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             CREATE INDEX IF NOT EXISTS idx_workspace_store_origem ON workspace_store(origem);
             CREATE INDEX IF NOT EXISTS idx_telemetria_criado ON telemetria_local(criado_em DESC);
             CREATE INDEX IF NOT EXISTS idx_operacoes_lote_status ON operacoes_lote(status, atualizado_em DESC);
-            PRAGMA user_version = 2;
+            CREATE TABLE IF NOT EXISTS rotinas_agendadas (
+                id TEXT PRIMARY KEY NOT NULL,
+                nome TEXT NOT NULL,
+                descricao TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                frequencia TEXT NOT NULL,
+                intervalo_minutos INTEGER,
+                proxima_execucao_em INTEGER,
+                ativa INTEGER NOT NULL,
+                notificar INTEGER NOT NULL,
+                parametros TEXT NOT NULL,
+                criado_em INTEGER NOT NULL,
+                atualizado_em INTEGER NOT NULL,
+                ultima_execucao_em INTEGER,
+                ultimo_status TEXT
+            );
+            CREATE TABLE IF NOT EXISTS execucoes_rotinas (
+                id TEXT PRIMARY KEY NOT NULL,
+                rotina_id TEXT NOT NULL,
+                rotina_nome TEXT NOT NULL,
+                status TEXT NOT NULL,
+                iniciada_em INTEGER NOT NULL,
+                concluida_em INTEGER,
+                duracao_ms INTEGER NOT NULL,
+                mensagem TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS notificacoes_locais (
+                id TEXT PRIMARY KEY NOT NULL,
+                titulo TEXT NOT NULL,
+                corpo TEXT NOT NULL,
+                nivel TEXT NOT NULL,
+                rota TEXT,
+                lida INTEGER NOT NULL,
+                criada_em INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_rotinas_proxima ON rotinas_agendadas(ativa, proxima_execucao_em);
+            CREATE INDEX IF NOT EXISTS idx_execucoes_rotina ON execucoes_rotinas(rotina_id, iniciada_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_notificacoes_lidas ON notificacoes_locais(lida, criada_em DESC);
+            PRAGMA user_version = 3;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -96,6 +134,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "índices, métricas e operações em lote v2"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v2: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (3, ?1, ?2)",
+            params![agora_millis() as i64, "rotinas persistentes, histórico e notificações v3"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v3: {erro}"))?;
     Ok(conexao)
 }
 

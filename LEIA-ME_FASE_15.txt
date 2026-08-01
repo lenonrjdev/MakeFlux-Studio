@@ -1,0 +1,10 @@
+MAKEFLUX STUDIO - FASE 15
+
+Versão: 1.2.0
+Tema: rotinas locais, recuperação e notificações nativas
+
+Aplique este pacote na raiz C:\projetos\makeFluxStudio.
+Não extraia o ZIP dentro da pasta frontend.
+
+Após extrair, execute npm install dentro de frontend para instalar o plugin de notificações.
+Em seguida, execute cargo fmt e VALIDAR_FASE_ATUAL.cmd na raiz.

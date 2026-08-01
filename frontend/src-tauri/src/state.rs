@@ -19,3 +19,20 @@ pub struct EstadoCofre(pub Mutex<Option<[u8; 32]>>);
 
 #[derive(Clone, Default)]
 pub struct EstadoOperacoesLote(pub Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>);
+
+#[derive(Clone)]
+pub struct EstadoAgendadorRotinas {
+    pub iniciado: Arc<AtomicBool>,
+    pub parar: Arc<AtomicBool>,
+    pub ultimo_ciclo_em: Arc<Mutex<u64>>,
+}
+
+impl Default for EstadoAgendadorRotinas {
+    fn default() -> Self {
+        Self {
+            iniciado: Arc::new(AtomicBool::new(false)),
+            parar: Arc::new(AtomicBool::new(false)),
+            ultimo_ciclo_em: Arc::new(Mutex::new(0)),
+        }
+    }
+}

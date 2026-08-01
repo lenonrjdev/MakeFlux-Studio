@@ -6,3 +6,5 @@ pub mod desempenho;
 pub mod http;
 pub mod moneyprinter;
 pub mod processo;
+
+pub mod rotinas;
