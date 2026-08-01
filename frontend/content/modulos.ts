@@ -44,6 +44,11 @@ export const modulosPlanejados = {
     fase: "Fase 16",
     descricao: "OAuth, cofre de tokens, upload real e histórico de distribuição social.",
   },
+  "/distribuicao": {
+    titulo: "Distribuição robusta",
+    fase: "Fase 21",
+    descricao: "Hospedagem temporária, upload em blocos, renovação de tokens, retomada, tentativas e limpeza.",
+  },
   "/instalacao": {
     titulo: "Instalação assistida",
     fase: "Fase 19",

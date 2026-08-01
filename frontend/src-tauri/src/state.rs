@@ -14,8 +14,8 @@ pub struct ProcessoMotor {
 #[derive(Default)]
 pub struct EstadoProcessoMotor(pub Mutex<Option<ProcessoMotor>>);
 
-#[derive(Default)]
-pub struct EstadoCofre(pub Mutex<Option<[u8; 32]>>);
+#[derive(Clone, Default)]
+pub struct EstadoCofre(pub Arc<Mutex<Option<[u8; 32]>>>);
 
 #[derive(Clone, Default)]
 pub struct EstadoOperacoesLote(pub Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>);
@@ -53,3 +53,6 @@ pub struct EstadoOauthPublicacao(pub Arc<Mutex<HashMap<String, SessaoOauthPenden
 
 #[derive(Clone, Default)]
 pub struct EstadoRequisicoesIa(pub Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>);
+
+#[derive(Clone, Default)]
+pub struct EstadoEnviosPublicacao(pub Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>);

@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  cancelarEnvioSocial,
   concluirOauthCanal,
   desconectarCanal,
   iniciarOauthCanal,
   listarConexoesCanais,
   listarEnviosSociais,
   publicarEmCanal,
+  renovarTokenCanal,
+  repetirEnvioSocial,
 } from "@/lib/canais-publicacao-nativos";
 import type {
   ConexaoCanalPublicacao,
@@ -83,6 +86,20 @@ export function useCanaisPublicacao() {
     }, [recarregar]),
     publicar: useCallback(async (entrada: EntradaPublicacaoSocial) => {
       const resultado = await publicarEmCanal(entrada);
+      await recarregar();
+      return resultado;
+    }, [recarregar]),
+    renovarToken: useCallback(async (provedor: CredenciaisAplicativoCanal["provedor"]) => {
+      const resultado = await renovarTokenCanal(provedor);
+      await recarregar();
+      return resultado;
+    }, [recarregar]),
+    cancelarEnvio: useCallback(async (envioId: string) => {
+      await cancelarEnvioSocial(envioId);
+      await recarregar();
+    }, [recarregar]),
+    repetirEnvio: useCallback(async (envioId: string) => {
+      const resultado = await repetirEnvioSocial(envioId);
       await recarregar();
       return resultado;
     }, [recarregar]),

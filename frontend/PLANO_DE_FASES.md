@@ -181,3 +181,13 @@ Renovação avançada de tokens, novos provedores, observabilidade e colaboraç�
 
 ## Fase 20 — Provedores reais de IA
 OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancelamento.
+
+## Fase 21 — Hospedagem temporária e publicação robusta
+- Cloudinary temporário protegido pelo cofre e upload manual em blocos.
+- URLs HTTPS para Reels com remoção automática após a publicação.
+- Sessão retomável e offset persistido para YouTube.
+- Acompanhamento do contêiner do Instagram até `FINISHED`.
+- TikTok Direct Post por `FILE_UPLOAD`, consentimento e consulta de status.
+- Renovação automática e manual de tokens OAuth.
+- Fila SQLite v7 com tentativas, cancelamento, repetição e recuperação.
+- Central `/distribuicao` em tema claro e versão `1.8.0`.

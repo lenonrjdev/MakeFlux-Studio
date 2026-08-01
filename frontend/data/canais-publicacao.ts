@@ -32,10 +32,10 @@ export const provedoresCanais: Array<{
   {
     id: "tiktok",
     titulo: "TikTok",
-    descricao: "Direct Post usando a Content Posting API e mídia hospedada em URL verificada.",
+    descricao: "Direct Post com upload direto do arquivo local, consentimento e acompanhamento de status.",
     icone: Music2,
     cor: "#222728",
-    exigeUrlPublica: true,
+    exigeUrlPublica: false,
     escopos: ["user.info.basic", "video.publish", "video.upload"],
   },
 ];
@@ -47,9 +47,15 @@ export const rotulosStatusConexao: Record<StatusConexaoCanal, string> = {
 };
 
 export const rotulosStatusEnvio: Record<StatusEnvioSocial, string> = {
+  "na-fila": "Na fila",
   preparando: "Preparando",
+  hospedando: "Hospedando",
   enviando: "Enviando",
   processando: "Processando",
+  "aguardando-nova-tentativa": "Nova tentativa",
+  cancelando: "Cancelando",
+  cancelada: "Cancelada",
+  interrompida: "Interrompida",
   publicada: "Publicada",
   falha: "Falha",
 };

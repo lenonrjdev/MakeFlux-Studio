@@ -3,8 +3,8 @@ mod models;
 mod state;
 
 use state::{
-    EstadoAgendadorRotinas, EstadoCofre, EstadoOauthPublicacao, EstadoOperacoesLote,
-    EstadoProcessoMotor, EstadoRequisicoesIa,
+    EstadoAgendadorRotinas, EstadoCofre, EstadoEnviosPublicacao, EstadoOauthPublicacao,
+    EstadoOperacoesLote, EstadoProcessoMotor, EstadoRequisicoesIa,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -20,6 +20,7 @@ pub fn run() {
         .manage(EstadoAgendadorRotinas::default())
         .manage(EstadoOauthPublicacao::default())
         .manage(EstadoRequisicoesIa::default())
+        .manage(EstadoEnviosPublicacao::default())
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
@@ -81,8 +82,18 @@ pub fn run() {
             commands::oauth::concluir_oauth_publicacao,
             commands::oauth::listar_conexoes_publicacao,
             commands::oauth::desconectar_canal_publicacao,
+            commands::oauth::renovar_token_canal_publicacao,
             commands::publicacao_social::publicar_conteudo_social,
             commands::publicacao_social::listar_envios_publicacao,
+            commands::publicacao_social::cancelar_envio_publicacao,
+            commands::publicacao_social::repetir_envio_publicacao,
+            commands::armazenamento_publicacao::consultar_configuracao_armazenamento_publicacao,
+            commands::armazenamento_publicacao::salvar_configuracao_armazenamento_publicacao,
+            commands::armazenamento_publicacao::testar_armazenamento_publicacao,
+            commands::armazenamento_publicacao::enviar_ativo_temporario_publicacao,
+            commands::armazenamento_publicacao::listar_ativos_temporarios_publicacao,
+            commands::armazenamento_publicacao::remover_ativo_temporario_publicacao,
+            commands::armazenamento_publicacao::limpar_ativos_temporarios_expirados,
             commands::atualizador::status_atualizador_nativo,
             commands::observabilidade::registrar_log_estruturado,
             commands::observabilidade::listar_logs_estruturados,
@@ -114,6 +125,7 @@ pub fn run() {
             let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
             commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
             let _ = commands::observabilidade::limpar_logs_estruturados(app.handle().clone(), 30);
+            let _ = commands::publicacao_social::recuperar_envios_interrompidos(app.handle());
             let _ = commands::observabilidade::registrar_log_interno(
                 app.handle(),
                 "info",

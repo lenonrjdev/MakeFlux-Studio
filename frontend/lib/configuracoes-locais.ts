@@ -105,7 +105,7 @@ export function criarConfiguracoesPadrao(): WorkspaceConfiguracoes {
       incluirMotor: true,
       permitirRollback: true,
       ultimaVerificacaoEm: null,
-      versaoAplicativo: "1.5.0",
+      versaoAplicativo: "1.8.0",
       versaoMotor: "não detectado",
     },
     atualizadoEm: agoraIso(),
@@ -125,7 +125,7 @@ function mesclarWorkspace(valor: Partial<WorkspaceConfiguracoes>): WorkspaceConf
     aparencia: { ...padrao.aparencia, ...valor.aparencia, tema: "claro" },
     backup: { ...padrao.backup, ...valor.backup },
     seguranca: { ...padrao.seguranca, ...valor.seguranca },
-    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "1.5.0" },
+    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "1.8.0" },
     versao: 1,
   };
 }

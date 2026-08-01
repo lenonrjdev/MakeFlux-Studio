@@ -51,3 +51,18 @@ export async function listarEnviosSociais() {
   if (!emAmbienteTauri()) return [] satisfies EnvioPublicacaoSocial[];
   return invoke<EnvioPublicacaoSocial[]>("listar_envios_publicacao");
 }
+
+export async function renovarTokenCanal(provedor: CredenciaisAplicativoCanal["provedor"]) {
+  exigirDesktop();
+  return invoke<ConexaoCanalPublicacao>("renovar_token_canal_publicacao", { provedor });
+}
+
+export async function cancelarEnvioSocial(envioId: string) {
+  exigirDesktop();
+  return invoke<boolean>("cancelar_envio_publicacao", { envioId });
+}
+
+export async function repetirEnvioSocial(envioId: string) {
+  exigirDesktop();
+  return invoke<EnvioPublicacaoSocial>("repetir_envio_publicacao", { envioId });
+}

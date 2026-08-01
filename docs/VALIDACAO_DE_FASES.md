@@ -195,3 +195,7 @@ Valida a rota `/observabilidade`, schema SQLite v5, sanitização, correlação,
 Valida a versão 1.6.0, rota `/instalacao`, diagnóstico do Windows e WinGet, criação do workspace permanente, instalação restrita de dependências aprovadas, preparação do MoneyPrinterTurbo, configuração de FFmpeg e ImageMagick, homologação do ambiente Python e teste da API local.
 
 - Fase 20: provedores reais de IA, cofre, fallback, limites, custos e cancelamento.
+
+## Fase 21 — Hospedagem temporária e publicação robusta
+
+Valida a versão 1.8.0, rota `/distribuicao`, schema SQLite v7, armazenamento Cloudinary protegido pelo cofre, upload em blocos, sessões retomáveis, processamento de Reels, TikTok FILE_UPLOAD, renovação de tokens, cancelamento, repetição e recuperação da fila.

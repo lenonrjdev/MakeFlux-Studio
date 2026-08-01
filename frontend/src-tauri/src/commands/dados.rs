@@ -176,7 +176,58 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             );
             CREATE INDEX IF NOT EXISTS idx_execucoes_ia_criado ON execucoes_ia(criado_em DESC);
             CREATE INDEX IF NOT EXISTS idx_execucoes_ia_provedor ON execucoes_ia(provedor, criado_em DESC);
-            PRAGMA user_version = 6;
+            CREATE TABLE IF NOT EXISTS configuracoes_armazenamento_publicacao (
+                provedor TEXT PRIMARY KEY NOT NULL,
+                cloud_name TEXT NOT NULL,
+                tamanho_bloco_mb INTEGER NOT NULL,
+                retencao_horas INTEGER NOT NULL,
+                limpeza_automatica INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                ultima_verificacao_em INTEGER,
+                mensagem TEXT NOT NULL,
+                atualizado_em INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ativos_temporarios_publicacao (
+                id TEXT PRIMARY KEY NOT NULL,
+                provedor TEXT NOT NULL,
+                public_id TEXT NOT NULL,
+                url_publica TEXT NOT NULL,
+                caminho_local TEXT NOT NULL,
+                status TEXT NOT NULL,
+                bytes INTEGER NOT NULL,
+                criado_em INTEGER NOT NULL,
+                atualizado_em INTEGER NOT NULL,
+                expira_em INTEGER NOT NULL,
+                removido_em INTEGER,
+                mensagem TEXT NOT NULL,
+                correlacao_id TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_ativos_temporarios_expiracao ON ativos_temporarios_publicacao(status, expira_em);
+            CREATE TABLE IF NOT EXISTS fila_publicacao_v2 (
+                id TEXT PRIMARY KEY NOT NULL,
+                publicacao_id TEXT NOT NULL,
+                provedor TEXT NOT NULL,
+                status TEXT NOT NULL,
+                progresso INTEGER NOT NULL,
+                tentativas INTEGER NOT NULL,
+                max_tentativas INTEGER NOT NULL,
+                proxima_tentativa_em INTEGER,
+                sessao_upload_url TEXT,
+                bytes_enviados INTEGER NOT NULL,
+                bytes_totais INTEGER NOT NULL,
+                remoto_id TEXT,
+                link TEXT,
+                ativo_temporario_id TEXT,
+                criado_em INTEGER NOT NULL,
+                atualizado_em INTEGER NOT NULL,
+                mensagem TEXT NOT NULL,
+                correlacao_id TEXT NOT NULL,
+                entrada_json TEXT NOT NULL,
+                cancelado INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_fila_publicacao_status ON fila_publicacao_v2(status, atualizado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_fila_publicacao_provedor ON fila_publicacao_v2(provedor, atualizado_em DESC);
+            PRAGMA user_version = 7;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -210,6 +261,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "provedores reais, limites e execuções de IA v6"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v6: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (7, ?1, ?2)",
+            params![agora_millis() as i64, "hospedagem temporária, fila robusta e retomada de publicações v7"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v7: {erro}"))?;
     Ok(conexao)
 }
 

@@ -1,0 +1,7 @@
+MAKEFLUX STUDIO 1.8.0 — FASE 21
+
+1. Extraia este pacote na raiz C:\projetos\makeFluxStudio.
+2. Não extraia dentro de frontend.
+3. Execute cargo fmt e VALIDAR_FASE_ATUAL.cmd.
+4. Configure o Cloudinary em Distribuição robusta para publicar Reels a partir de arquivos locais.
+5. Consolide o commit somente após FASE APROVADA.

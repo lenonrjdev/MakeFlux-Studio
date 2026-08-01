@@ -4,6 +4,7 @@ import {
   Boxes,
   CircleHelp,
   CloudDownload,
+  CloudUpload,
   Clock3,
   Clapperboard,
   FolderKanban,
@@ -57,6 +58,7 @@ export const gruposNavegacao: GrupoNavegacao[] = [
     itens: [
       { titulo: "Publicação", href: "/publicacao", icone: Rocket },
       { titulo: "Contas e canais", href: "/canais", icone: RadioTower },
+      { titulo: "Distribuição robusta", href: "/distribuicao", icone: CloudUpload },
     ],
   },
   {

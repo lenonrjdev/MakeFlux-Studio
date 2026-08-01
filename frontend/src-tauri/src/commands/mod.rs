@@ -1,3 +1,4 @@
+pub mod armazenamento_publicacao;
 pub mod atualizacao;
 pub mod capacidades;
 pub mod cofre;

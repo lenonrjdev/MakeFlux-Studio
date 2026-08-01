@@ -20,8 +20,9 @@ use url::Url;
 
 use crate::{
     commands::{
-        cofre::{remover_segredo_interno, salvar_segredo_interno},
+        cofre::{ler_segredo_interno, remover_segredo_interno, salvar_segredo_interno},
         dados::{abrir_banco, agora_millis},
+        observabilidade::registrar_log_interno,
     },
     state::{EstadoCofre, EstadoOauthPublicacao, SessaoOauthPendente},
 };
@@ -74,7 +75,7 @@ pub struct ResultadoOauthPublicacao {
     pub conexao: Option<ConexaoCanalPublicacao>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct TokenCanal {
     pub access_token: String,
     pub refresh_token: Option<String>,
@@ -82,6 +83,12 @@ pub(crate) struct TokenCanal {
     pub expires_at: Option<u64>,
     pub account_id: String,
     pub scopes: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct CredenciaisOauthCanal {
+    client_id: String,
+    client_secret: Option<String>,
 }
 
 fn token_aleatorio(bytes: usize) -> String {
@@ -276,6 +283,13 @@ pub fn iniciar_oauth_publicacao(
     })
 }
 
+fn cliente_oauth() -> Result<Client, String> {
+    Client::builder()
+        .timeout(Duration::from_secs(45))
+        .build()
+        .map_err(|erro| erro.to_string())
+}
+
 fn trocar_token(
     sessao: &SessaoOauthPendente,
     client_id: &str,
@@ -305,10 +319,7 @@ fn trocar_token(
     if let Some(segredo) = client_secret.filter(|valor| !valor.trim().is_empty()) {
         formulario.push(("client_secret", segredo.to_owned()));
     }
-    let resposta = Client::builder()
-        .timeout(Duration::from_secs(45))
-        .build()
-        .map_err(|erro| erro.to_string())?
+    let resposta = cliente_oauth()?
         .post(token_url)
         .form(&formulario)
         .send()
@@ -363,19 +374,66 @@ fn trocar_token(
 
 fn mapear_conexao(linha: &Row<'_>) -> rusqlite::Result<ConexaoCanalPublicacao> {
     let escopos: String = linha.get(3)?;
+    let expira_em = linha
+        .get::<_, Option<i64>>(5)?
+        .map(|valor| valor.max(0) as u64);
+    let agora = agora_millis();
+    let status_salvo: String = linha.get(4)?;
+    let status = match expira_em {
+        Some(expira) if expira <= agora => "expirada".to_owned(),
+        Some(expira) if expira <= agora.saturating_add(3_600_000) => "atencao".to_owned(),
+        _ => status_salvo,
+    };
     Ok(ConexaoCanalPublicacao {
         provedor: linha.get(0)?,
         conta_id: linha.get(1)?,
         conta_nome: linha.get(2)?,
         escopos: serde_json::from_str(&escopos).unwrap_or_default(),
-        status: linha.get(4)?,
-        expira_em: linha
-            .get::<_, Option<i64>>(5)?
-            .map(|valor| valor.max(0) as u64),
+        status,
+        expira_em,
         conectada_em: linha.get::<_, i64>(6)?.max(0) as u64,
         atualizada_em: linha.get::<_, i64>(7)?.max(0) as u64,
         detalhes: linha.get(8)?,
     })
+}
+
+fn salvar_token_e_conexao(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    provedor: &str,
+    token: &TokenCanal,
+    mensagem: &str,
+) -> Result<ConexaoCanalPublicacao, String> {
+    salvar_segredo_interno(
+        app,
+        estado,
+        &format!("oauth:{provedor}"),
+        &serde_json::to_string(token).map_err(|erro| erro.to_string())?,
+    )?;
+    let agora = agora_millis();
+    let conexao = ConexaoCanalPublicacao {
+        provedor: provedor.to_owned(),
+        conta_id: token.account_id.clone(),
+        conta_nome: if token.account_id.is_empty() {
+            "Conta autorizada".to_owned()
+        } else {
+            token.account_id.clone()
+        },
+        escopos: token.scopes.clone(),
+        status: "conectada".to_owned(),
+        expira_em: token.expires_at,
+        conectada_em: agora,
+        atualizada_em: agora,
+        detalhes: mensagem.to_owned(),
+    };
+    let escopos_json = serde_json::to_string(&conexao.escopos).unwrap_or_default();
+    abrir_banco(app)?
+        .execute(
+            r#"INSERT INTO conexoes_publicacao (provedor, conta_id, conta_nome, escopos, status, expira_em, conectada_em, atualizada_em, detalhes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9) ON CONFLICT(provedor) DO UPDATE SET conta_id=excluded.conta_id, conta_nome=excluded.conta_nome, escopos=excluded.escopos, status=excluded.status, expira_em=excluded.expira_em, atualizada_em=excluded.atualizada_em, detalhes=excluded.detalhes"#,
+            params![&conexao.provedor, &conexao.conta_id, &conexao.conta_nome, escopos_json, &conexao.status, conexao.expira_em.map(|valor| valor as i64), agora as i64, agora as i64, &conexao.detalhes],
+        )
+        .map_err(|erro| format!("Falha ao registrar a conexão: {erro}"))?;
+    Ok(conexao)
 }
 
 #[tauri::command]
@@ -428,29 +486,28 @@ pub fn concluir_oauth_publicacao(
         entrada.client_id.trim(),
         entrada.client_secret.as_deref(),
     )?;
+    let credenciais = CredenciaisOauthCanal {
+        client_id: entrada.client_id.trim().to_owned(),
+        client_secret: entrada
+            .client_secret
+            .as_deref()
+            .map(str::trim)
+            .filter(|valor| !valor.is_empty())
+            .map(str::to_owned),
+    };
     salvar_segredo_interno(
         &app,
         estado_cofre.inner(),
-        &format!("oauth:{}", sessao.provedor),
-        &serde_json::to_string(&token).map_err(|erro| erro.to_string())?,
+        &format!("oauth-app:{}", sessao.provedor),
+        &serde_json::to_string(&credenciais).map_err(|erro| erro.to_string())?,
     )?;
-    let agora = agora_millis();
-    let conexao = ConexaoCanalPublicacao {
-        provedor: sessao.provedor.clone(),
-        conta_id: token.account_id.clone(),
-        conta_nome: if token.account_id.is_empty() {
-            "Conta autorizada".to_owned()
-        } else {
-            token.account_id.clone()
-        },
-        escopos: token.scopes.clone(),
-        status: "conectada".to_owned(),
-        expira_em: token.expires_at,
-        conectada_em: agora,
-        atualizada_em: agora,
-        detalhes: "Token armazenado no cofre criptografado.".to_owned(),
-    };
-    abrir_banco(&app)?.execute(r#"INSERT INTO conexoes_publicacao (provedor, conta_id, conta_nome, escopos, status, expira_em, conectada_em, atualizada_em, detalhes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9) ON CONFLICT(provedor) DO UPDATE SET conta_id=excluded.conta_id, conta_nome=excluded.conta_nome, escopos=excluded.escopos, status=excluded.status, expira_em=excluded.expira_em, atualizada_em=excluded.atualizada_em, detalhes=excluded.detalhes"#, params![conexao.provedor, conexao.conta_id, conexao.conta_nome, serde_json::to_string(&conexao.escopos).unwrap_or_default(), conexao.status, conexao.expira_em.map(|v| v as i64), agora as i64, agora as i64, conexao.detalhes]).map_err(|erro| format!("Falha ao registrar a conexão: {erro}"))?;
+    let conexao = salvar_token_e_conexao(
+        &app,
+        estado_cofre.inner(),
+        &sessao.provedor,
+        &token,
+        "Token e credenciais do aplicativo protegidos no cofre.",
+    )?;
     estado_oauth
         .0
         .lock()
@@ -459,15 +516,187 @@ pub fn concluir_oauth_publicacao(
     Ok(ResultadoOauthPublicacao {
         concluido: true,
         pendente: false,
-        mensagem: "Conta conectada e token protegido no cofre.".to_owned(),
+        mensagem: "Conta conectada e renovação automática preparada.".to_owned(),
         conexao: Some(conexao),
     })
+}
+
+fn renovar_token(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    provedor: &str,
+    token_atual: &TokenCanal,
+) -> Result<TokenCanal, String> {
+    let cliente = cliente_oauth()?;
+    let credenciais_texto = ler_segredo_interno(app, estado, &format!("oauth-app:{provedor}"))?;
+    let credenciais: CredenciaisOauthCanal = serde_json::from_str(&credenciais_texto)
+        .map_err(|erro| format!("Credenciais OAuth inválidas: {erro}"))?;
+    let (resposta, usa_refresh_rotativo) = match provedor {
+        "youtube" => {
+            let refresh_token = token_atual.refresh_token.as_deref().ok_or_else(|| {
+                "O YouTube não forneceu refresh token. Reconecte a conta com acesso offline."
+                    .to_owned()
+            })?;
+            let mut formulario = vec![
+                ("client_id", credenciais.client_id.clone()),
+                ("refresh_token", refresh_token.to_owned()),
+                ("grant_type", "refresh_token".to_owned()),
+            ];
+            if let Some(segredo) = credenciais.client_secret.clone() {
+                formulario.push(("client_secret", segredo));
+            }
+            (
+                cliente
+                    .post("https://oauth2.googleapis.com/token")
+                    .form(&formulario)
+                    .send(),
+                false,
+            )
+        }
+        "tiktok" => {
+            let refresh_token = token_atual.refresh_token.as_deref().ok_or_else(|| {
+                "O TikTok não forneceu refresh token. Reconecte a conta.".to_owned()
+            })?;
+            let segredo = credenciais
+                .client_secret
+                .clone()
+                .ok_or_else(|| "O Client Secret do TikTok não está no cofre.".to_owned())?;
+            (
+                cliente
+                    .post("https://open.tiktokapis.com/v2/oauth/token/")
+                    .form(&[
+                        ("client_key", credenciais.client_id.clone()),
+                        ("client_secret", segredo),
+                        ("grant_type", "refresh_token".to_owned()),
+                        ("refresh_token", refresh_token.to_owned()),
+                    ])
+                    .send(),
+                true,
+            )
+        }
+        "instagram" => (
+            cliente
+                .get("https://graph.instagram.com/refresh_access_token")
+                .query(&[
+                    ("grant_type", "ig_refresh_token"),
+                    ("access_token", token_atual.access_token.as_str()),
+                ])
+                .send(),
+            false,
+        ),
+        _ => return Err("Canal não reconhecido para renovação.".to_owned()),
+    };
+    let resposta = resposta.map_err(|erro| format!("Falha ao renovar token: {erro}"))?;
+    let status = resposta.status();
+    let valor: Value = resposta
+        .json()
+        .map_err(|erro| format!("Resposta de renovação inválida: {erro}"))?;
+    if !status.is_success() {
+        return Err(valor
+            .get("error_description")
+            .or_else(|| valor.get("message"))
+            .or_else(|| valor.get("error").and_then(|item| item.get("message")))
+            .and_then(Value::as_str)
+            .unwrap_or("A plataforma recusou a renovação do token.")
+            .to_owned());
+    }
+    let access_token = valor
+        .get("access_token")
+        .and_then(Value::as_str)
+        .ok_or_else(|| "A renovação não retornou access_token.".to_owned())?
+        .to_owned();
+    let expires_at = valor
+        .get("expires_in")
+        .and_then(Value::as_u64)
+        .map(|segundos| agora_millis().saturating_add(segundos * 1_000));
+    let refresh_token = if usa_refresh_rotativo {
+        valor
+            .get("refresh_token")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+            .or_else(|| token_atual.refresh_token.clone())
+    } else {
+        token_atual.refresh_token.clone()
+    };
+    Ok(TokenCanal {
+        access_token,
+        refresh_token,
+        token_type: valor
+            .get("token_type")
+            .and_then(Value::as_str)
+            .unwrap_or(token_atual.token_type.as_str())
+            .to_owned(),
+        expires_at: expires_at.or(token_atual.expires_at),
+        account_id: valor
+            .get("open_id")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+            .unwrap_or_else(|| token_atual.account_id.clone()),
+        scopes: valor
+            .get("scope")
+            .and_then(Value::as_str)
+            .map(|escopos| escopos.split(',').map(str::to_owned).collect())
+            .unwrap_or_else(|| token_atual.scopes.clone()),
+    })
+}
+
+pub(crate) fn obter_token_valido(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    provedor: &str,
+) -> Result<TokenCanal, String> {
+    let token_texto = ler_segredo_interno(app, estado, &format!("oauth:{provedor}"))?;
+    let token: TokenCanal = serde_json::from_str(&token_texto)
+        .map_err(|erro| format!("Token OAuth inválido: {erro}"))?;
+    let margem = agora_millis().saturating_add(15 * 60 * 1_000);
+    if token.expires_at.is_none_or(|expira| expira > margem) {
+        return Ok(token);
+    }
+    let renovado = renovar_token(app, estado, provedor, &token)?;
+    let _ = salvar_token_e_conexao(
+        app,
+        estado,
+        provedor,
+        &renovado,
+        "Token renovado automaticamente pelo MakeFlux Studio.",
+    )?;
+    let _ = registrar_log_interno(
+        app,
+        "info",
+        "publicacao",
+        "oauth.token.renovado",
+        "Token do canal renovado automaticamente.",
+        &format!("oauth-{provedor}"),
+        serde_json::json!({ "provedor": provedor, "expiraEm": renovado.expires_at }),
+    );
+    Ok(renovado)
+}
+
+#[tauri::command]
+pub fn renovar_token_canal_publicacao(
+    app: AppHandle,
+    estado: State<'_, EstadoCofre>,
+    provedor: String,
+) -> Result<ConexaoCanalPublicacao, String> {
+    let texto = ler_segredo_interno(&app, estado.inner(), &format!("oauth:{provedor}"))?;
+    let token: TokenCanal =
+        serde_json::from_str(&texto).map_err(|erro| format!("Token OAuth inválido: {erro}"))?;
+    let renovado = renovar_token(&app, estado.inner(), &provedor, &token)?;
+    salvar_token_e_conexao(
+        &app,
+        estado.inner(),
+        &provedor,
+        &renovado,
+        "Token renovado manualmente.",
+    )
 }
 
 #[tauri::command]
 pub fn listar_conexoes_publicacao(app: AppHandle) -> Result<Vec<ConexaoCanalPublicacao>, String> {
     let conexao = abrir_banco(&app)?;
-    let mut consulta = conexao.prepare("SELECT provedor, conta_id, conta_nome, escopos, status, expira_em, conectada_em, atualizada_em, detalhes FROM conexoes_publicacao ORDER BY provedor").map_err(|erro| erro.to_string())?;
+    let mut consulta = conexao
+        .prepare("SELECT provedor, conta_id, conta_nome, escopos, status, expira_em, conectada_em, atualizada_em, detalhes FROM conexoes_publicacao ORDER BY provedor")
+        .map_err(|erro| erro.to_string())?;
     let linhas = consulta
         .query_map([], mapear_conexao)
         .map_err(|erro| erro.to_string())?;
@@ -482,11 +711,13 @@ pub fn desconectar_canal_publicacao(
     estado: State<'_, EstadoCofre>,
     provedor: String,
 ) -> Result<bool, String> {
-    remover_segredo_interno(&app, estado.inner(), &format!("oauth:{}", provedor.trim()))?;
+    let identificador = provedor.trim();
+    remover_segredo_interno(&app, estado.inner(), &format!("oauth:{identificador}"))?;
+    let _ = remover_segredo_interno(&app, estado.inner(), &format!("oauth-app:{identificador}"));
     abrir_banco(&app)?
         .execute(
             "DELETE FROM conexoes_publicacao WHERE provedor = ?1",
-            params![provedor],
+            params![identificador],
         )
         .map_err(|erro| erro.to_string())?;
     Ok(true)

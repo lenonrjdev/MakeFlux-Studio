@@ -1,6 +1,17 @@
 export type ProvedorCanalPublicacao = "youtube" | "instagram" | "tiktok";
 export type StatusConexaoCanal = "conectada" | "expirada" | "atencao";
-export type StatusEnvioSocial = "preparando" | "enviando" | "processando" | "publicada" | "falha";
+export type StatusEnvioSocial =
+  | "na-fila"
+  | "preparando"
+  | "hospedando"
+  | "enviando"
+  | "processando"
+  | "aguardando-nova-tentativa"
+  | "cancelando"
+  | "cancelada"
+  | "interrompida"
+  | "publicada"
+  | "falha";
 
 export type ConexaoCanalPublicacao = {
   provedor: ProvedorCanalPublicacao;
@@ -44,7 +55,12 @@ export type EntradaPublicacaoSocial = {
   caminhoVideo?: string | null;
   mediaUrl?: string | null;
   contaId?: string | null;
-  privacidade?: "publica" | "nao-listada" | "privada";
+  privacidade?: "publica" | "nao-listada" | "privada" | "amigos";
+  hospedarTemporariamente?: boolean;
+  consentimentoTiktok?: boolean;
+  permitirComentarios?: boolean;
+  permitirDueto?: boolean;
+  permitirCostura?: boolean;
 };
 
 export type EnvioPublicacaoSocial = {
@@ -53,9 +69,16 @@ export type EnvioPublicacaoSocial = {
   provedor: ProvedorCanalPublicacao;
   status: StatusEnvioSocial;
   progresso: number;
+  tentativas: number;
+  maxTentativas: number;
+  proximaTentativaEm: number | null;
+  bytesEnviados: number;
+  bytesTotais: number;
   remotoId: string | null;
   link: string | null;
+  ativoTemporarioId: string | null;
   criadoEm: number;
   atualizadoEm: number;
   mensagem: string;
+  correlacaoId: string;
 };
