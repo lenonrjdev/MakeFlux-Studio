@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --fundo-aplicacao: #f7f8f9;
+  color-scheme: light;
+  --fundo-aplicacao: #f3f5f6;
   --fundo-superficie: #ffffff;
-  --fundo-suave: #f1f4f4;
-  --texto-principal: #171a1b;
-  --texto-secundario: #697172;
-  --texto-suave: #92999a;
-  --borda: #e5e9e9;
-  --borda-forte: #d9dede;
-  --verde: #1f9b83;
-  --verde-escuro: #167664;
-  --verde-suave: #e8f5f1;
+  --fundo-suave: #eef2f2;
+  --texto-principal: #1b2222;
+  --texto-secundario: #687271;
+  --texto-suave: #929b9a;
+  --borda: #e1e6e5;
+  --borda-forte: #d4dcda;
+  --verde: #249781;
+  --verde-escuro: #197562;
+  --verde-suave: #e7f4f0;
   --alerta: #b26a35;
   --erro: #b84b4b;
 }
@@ -23,6 +24,11 @@
 html,
 body {
   min-height: 100%;
+  background: var(--fundo-aplicacao);
+}
+
+html {
+  color-scheme: light only;
 }
 
 body {
@@ -122,37 +128,17 @@ html[data-sidebar-compacta="true"] .barra-lateral nav a { justify-content: cente
 html[data-sidebar-compacta="true"] .barra-lateral nav section { margin-bottom: 10px; }
 html[data-sidebar-compacta="true"] .barra-lateral > label { height: 8px; }
 
-html[data-aparencia="escuro"] {
-  --fundo-aplicacao: #111514;
-  --fundo-superficie: #191e1d;
-  --fundo-suave: #202625;
-  --texto-principal: #edf2f0;
-  --texto-secundario: #aeb8b5;
-  --texto-suave: #87918e;
-  --borda: #2b3331;
-  --borda-forte: #39423f;
+/* O produto utiliza somente o tema claro definido no design de referência. */
+html[data-aparencia="claro"],
+html[data-tema-preferido="claro"] {
+  color-scheme: light only;
 }
-html[data-aparencia="escuro"] body,
-html[data-aparencia="escuro"] .aplicacao-shell,
-html[data-aparencia="escuro"] [class*="bg-[#f7f8f9]"] { background-color: #111514 !important; color: #edf2f0; }
-html[data-aparencia="escuro"] .barra-lateral,
-html[data-aparencia="escuro"] [class~="bg-white"],
-html[data-aparencia="escuro"] [class*="bg-white"] { background-color: #191e1d !important; }
-html[data-aparencia="escuro"] [class*="bg-[#fafbfb]"],
-html[data-aparencia="escuro"] [class*="bg-[#f7f9f9]"],
-html[data-aparencia="escuro"] [class*="bg-[#f2f4f4]"],
-html[data-aparencia="escuro"] [class*="bg-[#f1f4f4]"] { background-color: #202625 !important; }
-html[data-aparencia="escuro"] [class*="text-[#202526]"],
-html[data-aparencia="escuro"] [class*="text-[#252a2b]"],
-html[data-aparencia="escuro"] [class*="text-[#303637]"],
-html[data-aparencia="escuro"] [class*="text-[#303536]"],
-html[data-aparencia="escuro"] [class*="text-[#4b5253]"] { color: #edf2f0 !important; }
-html[data-aparencia="escuro"] [class*="text-[#697172]"],
-html[data-aparencia="escuro"] [class*="text-[#697273]"],
-html[data-aparencia="escuro"] [class*="text-[#747c7d]"] { color: #aeb8b5 !important; }
-html[data-aparencia="escuro"] [class*="border-[#e"],
-html[data-aparencia="escuro"] [class*="border-[#df"],
-html[data-aparencia="escuro"] [class*="border-[#dc"] { border-color: #2b3331 !important; }
-html[data-aparencia="escuro"] input,
-html[data-aparencia="escuro"] select,
-html[data-aparencia="escuro"] textarea { background-color: #171c1b !important; color: #edf2f0 !important; }
+
+.aplicacao-shell {
+  background: var(--fundo-aplicacao);
+}
+
+.barra-lateral {
+  background: #ffffff;
+  border-color: var(--borda);
+}

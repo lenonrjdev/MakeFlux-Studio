@@ -1,0 +1,16 @@
+{
+  "bundle": {
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "COLE_AQUI_O_CONTEUDO_DA_CHAVE_PUBLICA",
+      "endpoints": [
+        "https://github.com/lenonrjdev/MakeFlux-Studio/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

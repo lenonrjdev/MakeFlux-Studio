@@ -1,4 +1,10 @@
 import { pesosPrioridade } from "@/data/producao";
+import { carregarConfiguracoesLocais } from "@/lib/configuracoes-locais";
+import {
+  consolidarArquivosExportacao,
+  formatarTamanhoArquivo,
+  prepararPastaExportacao,
+} from "@/lib/exportacoes-nativas";
 import {
   consultarTarefaMoneyPrinter,
   criarVideoMoneyPrinter,
@@ -11,8 +17,10 @@ import {
   falharTarefaMotorLocal,
   marcarTarefaEnviadaAoMotorLocal,
   atualizarProgressoMotorLocal,
+  atualizarPastaSaidaTarefaLocal,
 } from "@/lib/producao-local";
 import { obterProjetoLocal } from "@/lib/projetos-locais";
+import { registrarEventoTecnico } from "@/lib/logger-estruturado";
 import type { EstadoTarefaMoneyPrinter } from "@/types/motor-moneyprinter";
 import type { ArquivoTarefaProducao, TarefaProducao } from "@/types/producao";
 
@@ -53,6 +61,16 @@ async function enviarTarefa(tarefa: TarefaProducao) {
     falharTarefaMotorLocal(tarefa.id, "O endpoint do MoneyPrinterTurbo não está configurado.");
     return;
   }
+  const configuracoes = carregarConfiguracoesLocais();
+  const pasta = await prepararPastaExportacao({
+    projeto,
+    tarefa,
+    pastaPreferida: configuracoes.workspace.pastaExportacoes,
+    organizarPorProjeto: configuracoes.workspace.organizarPorProjeto,
+  });
+  atualizarPastaSaidaTarefaLocal(tarefa.id, pasta.caminho);
+
+  await registrarEventoTecnico("moneyprinter.envio_inicio", "Tarefa enviada ao motor.", { origem: "moneyprinter", correlacaoId: tarefa.id, contexto: { projetoId: tarefa.projetoId, endpoint } });
   const resposta = await criarVideoMoneyPrinter(endpoint, projeto.configuracao, configuracaoMotor?.threads ?? 2);
   const taskId = texto(resposta.dados, ["task_id", "taskId", "id"]);
   if (!resposta.sucesso || !taskId) {
@@ -60,6 +78,7 @@ async function enviarTarefa(tarefa: TarefaProducao) {
     return;
   }
   marcarTarefaEnviadaAoMotorLocal(tarefa.id, taskId, endpoint);
+  await registrarEventoTecnico("moneyprinter.envio_confirmado", "Motor confirmou a tarefa.", { origem: "moneyprinter", correlacaoId: tarefa.id, contexto: { taskId } });
 }
 
 async function consultarTarefa(tarefa: TarefaProducao) {
@@ -69,7 +88,24 @@ async function consultarTarefa(tarefa: TarefaProducao) {
   falhasTransitórias.delete(tarefa.id);
 
   if (estado.state === 1) {
-    concluirTarefaMotorLocal(tarefa.id, arquivosDaTarefa(estado));
+    const arquivosOriginais = arquivosDaTarefa(estado);
+    const configuracaoMotor = obterConfiguracaoMoneyPrinter();
+    const consolidacao = await consolidarArquivosExportacao({
+      pastaSaida: tarefa.pastaSaida,
+      diretorioMotor: configuracaoMotor?.diretorio ?? "",
+      arquivos: arquivosOriginais,
+    });
+    concluirTarefaMotorLocal(
+      tarefa.id,
+      consolidacao.arquivos.map((arquivo) => ({
+        nome: arquivo.nome,
+        tipo: arquivo.tipo,
+        caminho: arquivo.caminho,
+        tamanho: formatarTamanhoArquivo(arquivo.tamanhoBytes),
+      })),
+      consolidacao.pastaSaida,
+    );
+    await registrarEventoTecnico("moneyprinter.renderizacao_concluida", "Arquivos reais consolidados.", { origem: "moneyprinter", correlacaoId: tarefa.id, contexto: { arquivos: consolidacao.arquivos.length, pastaSaida: consolidacao.pastaSaida } });
     return;
   }
   if (estado.state === -1) {
@@ -114,10 +150,9 @@ export async function sincronizarProducaoMoneyPrinterLocal() {
       const tentativas = (falhasTransitórias.get(alvo.id) ?? 0) + 1;
       falhasTransitórias.set(alvo.id, tentativas);
       if (tentativas >= 3) {
-        falharTarefaMotorLocal(
-          alvo.id,
-          falha instanceof Error ? falha.message : String(falha),
-        );
+        const mensagemFalha = falha instanceof Error ? falha.message : String(falha);
+        falharTarefaMotorLocal(alvo.id, mensagemFalha);
+        await registrarEventoTecnico("moneyprinter.sincronizacao_falhou", mensagemFalha, { nivel: "erro", origem: "moneyprinter", correlacaoId: alvo.id, contexto: { tentativas } });
         falhasTransitórias.delete(alvo.id);
       }
     }

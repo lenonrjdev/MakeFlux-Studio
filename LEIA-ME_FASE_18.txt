@@ -1,0 +1,11 @@
+
+MAKEFLUX STUDIO - FASE 18
+OBSERVABILIDADE E DIAGNOSTICO TECNICO
+VERSAO 1.5.0
+
+1. Extraia o ZIP na raiz C:\projetos\makeFluxStudio.
+2. Execute cargo fmt --manifest-path .\frontend\src-tauri\Cargo.toml.
+3. Execute .\VALIDAR_FASE_ATUAL.cmd.
+4. Consolide somente depois de FASE APROVADA.
+
+A nova rota /observabilidade reúne logs estruturados, correlações, retenção e exportação sanitizada.

@@ -13,6 +13,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
         .manage(EstadoProcessoMotor::default())
         .manage(EstadoCofre::default())
         .manage(EstadoOperacoesLote::default())
@@ -51,6 +52,11 @@ pub fn run() {
             commands::desempenho::cancelar_operacao_lote,
             commands::desempenho::listar_operacoes_lote,
             commands::desempenho::executar_manutencao_banco,
+            commands::exportacoes::preparar_pasta_exportacao,
+            commands::exportacoes::consolidar_arquivos_exportacao,
+            commands::exportacoes::abrir_arquivo_exportado,
+            commands::exportacoes::revelar_arquivo_exportado,
+            commands::exportacoes::abrir_pasta_exportacao,
             commands::rotinas::listar_rotinas_agendadas,
             commands::rotinas::salvar_rotina_agendada,
             commands::rotinas::alterar_status_rotina,
@@ -70,11 +76,37 @@ pub fn run() {
             commands::oauth::desconectar_canal_publicacao,
             commands::publicacao_social::publicar_conteudo_social,
             commands::publicacao_social::listar_envios_publicacao,
+            commands::atualizador::status_atualizador_nativo,
+            commands::observabilidade::registrar_log_estruturado,
+            commands::observabilidade::listar_logs_estruturados,
+            commands::observabilidade::consultar_resumo_observabilidade,
+            commands::observabilidade::limpar_logs_estruturados,
+            commands::observabilidade::exportar_pacote_diagnostico,
+            commands::observabilidade::revelar_pacote_diagnostico,
         ])
         .setup(|app| {
             use tauri::Manager;
+
+            // O build comum não possui configuração do updater. Registrar o plugin
+            // somente nas distribuições assinadas evita que `plugins.updater: null`
+            // encerre o aplicativo durante a inicialização.
+            if option_env!("MAKEFLUX_ATUALIZADOR_CONFIGURADO") == Some("1") {
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
+            }
+
             let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
             commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
+            let _ = commands::observabilidade::limpar_logs_estruturados(app.handle().clone(), 30);
+            let _ = commands::observabilidade::registrar_log_interno(
+                app.handle(),
+                "info",
+                "rust",
+                "aplicativo.inicializado",
+                "Runtime nativo iniciado.",
+                "startup",
+                serde_json::json!({ "versao": env!("CARGO_PKG_VERSION") }),
+            );
             Ok(())
         })
         .on_window_event(|janela, evento| {

@@ -22,6 +22,8 @@ const titulosRotas: Record<string, string> = {
   "/qualidade": "Qualidade e distribuição",
   "/desempenho": "Desempenho e grandes volumes",
   "/rotinas": "Rotinas e notificações",
+  "/atualizacoes": "Atualizações assinadas",
+  "/observabilidade": "Observabilidade e diagnóstico",
   "/central-de-ajuda": "Central de ajuda",
 };
 

@@ -9,7 +9,7 @@ export type SecaoConfiguracoes =
   | "seguranca"
   | "atualizacoes";
 
-export type AparenciaAplicacao = "sistema" | "claro" | "escuro";
+export type AparenciaAplicacao = "claro";
 export type DensidadeInterface = "confortavel" | "compacta";
 export type EscalaInterface = "90" | "100" | "110";
 export type CanalAtualizacao = "estavel" | "antecipado";

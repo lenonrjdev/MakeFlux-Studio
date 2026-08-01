@@ -27,7 +27,7 @@ export const secoesConfiguracoes: ItemNavegacaoConfiguracoes[] = [
   { id: "padroes", titulo: "Padrões de criação", descricao: "Preferências do estúdio", icone: WandSparkles },
   { id: "desempenho", titulo: "Desempenho", descricao: "CPU, GPU, fila e limites", icone: Cpu },
   { id: "armazenamento", titulo: "Armazenamento", descricao: "Cache e retenção", icone: HardDrive },
-  { id: "aparencia", titulo: "Aparência", descricao: "Tema, escala e densidade", icone: Palette },
+  { id: "aparencia", titulo: "Aparência", descricao: "Interface clara, escala e densidade", icone: Palette },
   { id: "backup", titulo: "Backup e restauração", descricao: "Cópias locais do workspace", icone: Archive },
   { id: "seguranca", titulo: "Segurança", descricao: "Bloqueio e privacidade", icone: Shield },
   { id: "atualizacoes", titulo: "Atualizações", descricao: "Aplicativo e motor", icone: RefreshCw },
@@ -40,9 +40,7 @@ export const idiomasInterface = [
 ] as const;
 
 export const opcoesTema = [
-  { id: "sistema", titulo: "Sistema", detalhe: "Acompanha o Windows" },
-  { id: "claro", titulo: "Claro", detalhe: "Interface clara" },
-  { id: "escuro", titulo: "Escuro", detalhe: "Menos luminosidade" },
+  { id: "claro", titulo: "Claro padrão", detalhe: "Design oficial do MakeFlux Studio" },
 ] as const;
 
 export const opcoesDensidade = [

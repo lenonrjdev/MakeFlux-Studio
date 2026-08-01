@@ -1,5 +1,6 @@
 import { etapasProducao, pesosPrioridade } from "@/data/producao";
 import { obterConfiguracaoMoneyPrinter, motorRealDisponivel } from "@/lib/motor-moneyprinter";
+import { carregarConfiguracoesLocais } from "@/lib/configuracoes-locais";
 import { alterarStatusProjetoLocal } from "@/lib/projetos-locais";
 import type { ProjetoStudio } from "@/types/projeto";
 import type {
@@ -124,6 +125,7 @@ export function criarTarefaProducaoLocal(
 
   const agora = new Date().toISOString();
   const configuracaoMotor = obterConfiguracaoMoneyPrinter();
+  const configuracoes = carregarConfiguracoesLocais();
   const usarMotorReal = motorRealDisponivel();
   const tarefa: TarefaProducao = {
     id: criarId("tarefa"),
@@ -145,7 +147,9 @@ export function criarTarefaProducaoLocal(
     tempoDecorridoSegundos: 0,
     criadaEm: agora,
     atualizadaEm: agora,
-    pastaSaida: "Pasta de exportações do MakeFlux Studio",
+    pastaSaida: usarMotorReal
+      ? configuracoes.workspace.pastaExportacoes || "Vídeos\\MakeFlux Studio\\Exportacoes"
+      : "Modo simulação — nenhum arquivo será criado",
     modoExecucao: usarMotorReal ? "moneyprinter" : "simulada",
     motorEndpoint: usarMotorReal ? configuracaoMotor?.endpoint : undefined,
     logs: [
@@ -302,33 +306,6 @@ export function simularErroTarefaProducaoLocal(id: string) {
   }));
 }
 
-function arquivosConcluidos(tarefa: TarefaProducao): ArquivoTarefaProducao[] {
-  const base = tarefa.nome.toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "video";
-  return [
-    {
-      id: criarId("arquivo"),
-      nome: `${base}.mp4`,
-      tipo: "video",
-      tamanho: "48,2 MB",
-      caminho: `${tarefa.pastaSaida}\\${base}.mp4`,
-    },
-    {
-      id: criarId("arquivo"),
-      nome: `${base}.srt`,
-      tipo: "legenda",
-      tamanho: "7 KB",
-      caminho: `${tarefa.pastaSaida}\\${base}.srt`,
-    },
-    {
-      id: criarId("arquivo"),
-      nome: `${base}-narracao.mp3`,
-      tipo: "audio",
-      tamanho: "1,8 MB",
-      caminho: `${tarefa.pastaSaida}\\${base}-narracao.mp3`,
-    },
-  ];
-}
-
 function atualizarEtapasPorProgresso(
   etapas: EtapaTarefaProducao[],
   progresso: number,
@@ -392,9 +369,9 @@ export function avancarSimulacaoProducaoLocal() {
     iniciadaEm: tarefa.iniciadaEm ?? agora,
     concluidaEm: concluida ? agora : undefined,
     atualizadaEm: agora,
-    arquivos: concluida ? arquivosConcluidos(tarefa) : tarefa.arquivos,
+    arquivos: tarefa.arquivos,
     logs: concluida
-      ? [criarLog("Renderização concluída e arquivos finalizados.", "sucesso", agora), ...tarefa.logs].slice(0, 120)
+      ? [criarLog("Simulação concluída. Nenhum vídeo ou arquivo foi criado.", "aviso", agora), ...tarefa.logs].slice(0, 120)
       : mudouEtapa
         ? [
             criarLog(
@@ -446,9 +423,20 @@ export function atualizarProgressoMotorLocal(id: string, progresso: number) {
   });
 }
 
+export function atualizarPastaSaidaTarefaLocal(id: string, pastaSaida: string) {
+  const agora = new Date().toISOString();
+  return atualizarTarefa(id, (tarefa) => ({
+    ...tarefa,
+    pastaSaida,
+    atualizadaEm: agora,
+    logs: [criarLog(`Pasta de exportação preparada: ${pastaSaida}`, "info", agora), ...tarefa.logs].slice(0, 120),
+  }));
+}
+
 export function concluirTarefaMotorLocal(
   id: string,
-  arquivos: Array<{ nome: string; tipo: ArquivoTarefaProducao["tipo"]; caminho: string }>,
+  arquivos: Array<{ nome: string; tipo: ArquivoTarefaProducao["tipo"]; caminho: string; tamanho?: string }>,
+  pastaSaida?: string,
 ) {
   const agora = new Date().toISOString();
   const tarefa = atualizarTarefa(id, (atual) => ({
@@ -460,7 +448,8 @@ export function concluirTarefaMotorLocal(
     concluidaEm: agora,
     atualizadaEm: agora,
     ultimaSincronizacaoEm: agora,
-    arquivos: arquivos.map((arquivo) => ({ id: criarId("arquivo"), tamanho: "Gerado pelo motor", ...arquivo })),
+    pastaSaida: pastaSaida || atual.pastaSaida,
+    arquivos: arquivos.map((arquivo) => ({ id: criarId("arquivo"), tamanho: arquivo.tamanho || "Arquivo gerado", ...arquivo })),
     logs: [criarLog("MoneyPrinterTurbo concluiu a tarefa e retornou os arquivos finais.", "sucesso", agora), ...atual.logs].slice(0, 120),
   }));
   if (tarefa) alterarStatusProjetoLocal(tarefa.projetoId, "concluido");

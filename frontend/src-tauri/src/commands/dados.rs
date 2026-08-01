@@ -149,7 +149,20 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
                 mensagem TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_envios_publicacao_status ON envios_publicacao(status, atualizado_em DESC);
-            PRAGMA user_version = 4;
+            CREATE TABLE IF NOT EXISTS logs_estruturados (
+                id TEXT PRIMARY KEY NOT NULL,
+                nivel TEXT NOT NULL,
+                origem TEXT NOT NULL,
+                evento TEXT NOT NULL,
+                mensagem TEXT NOT NULL,
+                correlacao_id TEXT NOT NULL,
+                contexto TEXT NOT NULL,
+                criado_em INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_logs_criado ON logs_estruturados(criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_logs_nivel_origem ON logs_estruturados(nivel, origem, criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_logs_correlacao ON logs_estruturados(correlacao_id, criado_em ASC);
+            PRAGMA user_version = 5;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -171,6 +184,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "conexões OAuth e envios sociais v4"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v4: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (5, ?1, ?2)",
+            params![agora_millis() as i64, "logs estruturados, correlação e diagnóstico sanitizado v5"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v5: {erro}"))?;
     Ok(conexao)
 }
 

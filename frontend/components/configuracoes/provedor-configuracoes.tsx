@@ -10,7 +10,6 @@ import {
   criarConfiguracoesPadrao,
   EVENTO_BLOQUEAR_APLICACAO,
   EVENTO_WORKSPACE_CONFIGURACOES,
-  resolverTemaAparencia,
   validarPinLocal,
 } from "@/lib/configuracoes-locais";
 import type { WorkspaceConfiguracoes } from "@/types/configuracoes";
@@ -25,15 +24,14 @@ export function ProvedorConfiguracoes({ children }: { children: ReactNode }) {
 
   const aplicarPreferencias = useCallback((workspace: WorkspaceConfiguracoes) => {
     const raiz = document.documentElement;
-    const temaResolvido = resolverTemaAparencia(workspace.aparencia.tema);
-    raiz.dataset.aparencia = temaResolvido;
-    raiz.dataset.temaPreferido = workspace.aparencia.tema;
+    raiz.dataset.aparencia = "claro";
+    raiz.dataset.temaPreferido = "claro";
     raiz.dataset.densidade = workspace.aparencia.densidade;
     raiz.dataset.escala = workspace.aparencia.escala;
     raiz.dataset.reduzirAnimacoes = String(workspace.aparencia.reduzirAnimacoes);
     raiz.dataset.altoContraste = String(workspace.aparencia.altoContraste);
     raiz.dataset.sidebarCompacta = String(workspace.aparencia.sidebarCompacta);
-    raiz.style.colorScheme = temaResolvido === "escuro" ? "dark" : "light";
+    raiz.style.colorScheme = "light";
   }, []);
 
   const recarregar = useCallback(() => {
@@ -66,15 +64,6 @@ export function ProvedorConfiguracoes({ children }: { children: ReactNode }) {
       window.removeEventListener(EVENTO_WORKSPACE_CONFIGURACOES, recarregar);
     };
   }, [aplicarPreferencias, recarregar]);
-
-  useEffect(() => {
-    const consulta = window.matchMedia("(prefers-color-scheme: dark)");
-    const atualizarSistema = () => {
-      if (configuracoes.aparencia.tema === "sistema") aplicarPreferencias(configuracoes);
-    };
-    consulta.addEventListener("change", atualizarSistema);
-    return () => consulta.removeEventListener("change", atualizarSistema);
-  }, [aplicarPreferencias, configuracoes]);
 
   useEffect(() => {
     const bloquear = () => {
@@ -114,19 +103,19 @@ export function ProvedorConfiguracoes({ children }: { children: ReactNode }) {
     <>
       {children}
       {bloqueado && (
-        <div className="fixed inset-0 z-[200] grid place-items-center bg-[#111716]/90 px-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] grid place-items-center bg-[#edf1f0]/92 px-5 backdrop-blur-sm">
           <form
             onSubmit={(evento) => {
               evento.preventDefault();
               void desbloquear();
             }}
-            className="w-full max-w-[380px] rounded-lg border border-white/10 bg-[#1b2221] p-6 text-white shadow-[0_30px_90px_rgba(0,0,0,.42)]"
+            className="w-full max-w-[380px] rounded-lg border border-[#dce3e1] bg-white p-6 text-[#202827] shadow-[0_30px_90px_rgba(31,46,42,.16)]"
           >
-            <div className="grid size-11 place-items-center rounded-md bg-[#254b43] text-[#8de0cd]">
+            <div className="grid size-11 place-items-center rounded-md bg-[#e7f4f0] text-[#24816d] ring-1 ring-[#d2e7e1]">
               <Lock className="size-5" />
             </div>
             <h1 className="mt-5 text-[20px] font-semibold tracking-[-0.03em]">MakeFlux Studio bloqueado</h1>
-            <p className="mt-2 text-[10.5px] leading-5 text-[#aab6b3]">
+            <p className="mt-2 text-[10.5px] leading-5 text-[#71807d]">
               Olá, {configuracoes.perfil.nome || "usuário"}. Digite seu PIN local para continuar.
             </p>
             <input
@@ -136,10 +125,10 @@ export function ProvedorConfiguracoes({ children }: { children: ReactNode }) {
               value={pin}
               maxLength={8}
               onChange={(evento) => setPin(evento.target.value.replace(/\D/g, ""))}
-              className="mt-5 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-center text-[18px] tracking-[0.35em] outline-none focus:border-[#5bb6a2]"
+              className="mt-5 h-11 w-full rounded-md border border-[#dce3e1] bg-[#f7f9f9] px-3 text-center text-[18px] tracking-[0.35em] text-[#24302e] outline-none focus:border-[#72b8a8] focus:bg-white"
               aria-label="PIN local"
             />
-            {erro && <p className="mt-2 text-[9.5px] text-[#f2a7a7]">{erro}</p>}
+            {erro && <p className="mt-2 text-[9.5px] text-[#b65454]">{erro}</p>}
             <Botao type="submit" variante="primario" disabled={validando || pin.length < 4} className="mt-4 w-full">
               <Unlock className="size-3.5" />
               {validando ? "Validando..." : "Desbloquear"}

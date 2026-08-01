@@ -11,7 +11,7 @@ import type { ConfiguracaoWorkspace } from "@/types/configuracoes";
 export function SecaoWorkspace({ workspace, aoAtualizar }: { workspace: ConfiguracaoWorkspace; aoAtualizar: (dados: Partial<ConfiguracaoWorkspace>) => void }) {
   const pastas = [
     { campo: "pastaPrincipal", titulo: "Pasta principal", descricao: "Projetos e dados do workspace", chave: "makeflux:pasta-workspace" },
-    { campo: "pastaExportacoes", titulo: "Exportações", descricao: "Vídeos e arquivos finalizados", chave: "makeflux:pasta-exportacoes" },
+    { campo: "pastaExportacoes", titulo: "Exportações", descricao: "Vídeos finalizados. Em branco: Vídeos\\MakeFlux Studio\\Exportacoes", chave: "makeflux:pasta-exportacoes" },
     { campo: "pastaCache", titulo: "Cache", descricao: "Materiais e arquivos temporários", chave: "makeflux:pasta-cache" },
     { campo: "pastaModelos", titulo: "Modelos locais", descricao: "Whisper, TTS e modelos offline", chave: "makeflux:pasta-modelos" },
   ] as const;

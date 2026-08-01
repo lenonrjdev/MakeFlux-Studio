@@ -67,7 +67,9 @@ test("as preferências visuais são aplicadas globalmente", () => {
   assert.match(provedor, /dataset\.aparencia/);
   assert.match(provedor, /dataset\.densidade/);
   assert.match(provedor, /dataset\.sidebarCompacta/);
-  assert.match(estilos, /data-aparencia="escuro"/);
+  assert.match(provedor, /dataset\.aparencia = "claro"/);
+  assert.match(estilos, /color-scheme:\s*light only/);
+  assert.doesNotMatch(estilos, /data-aparencia="escuro"/);
   assert.match(estilos, /data-sidebar-compacta="true"/);
 });
 

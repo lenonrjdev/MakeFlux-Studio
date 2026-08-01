@@ -75,7 +75,7 @@
 - Workspace com pastas reutilizáveis, nomenclatura e organização de exportações.
 - Padrões de criação, desempenho, limites de CPU/GPU, fila e RAM.
 - Medição real do armazenamento local, política de cache e limpeza segura.
-- Tema claro, escuro ou do sistema, densidade, escala, contraste e sidebar compacta.
+- Tema claro oficial, densidade, escala, contraste e sidebar compacta.
 - Backup JSON real, restauração por mesclagem ou substituição e seleção do conteúdo.
 - Bloqueio local por PIN com hash SHA-256 e inatividade configurável.
 - Preferências de atualização preparadas para aplicativo, motor e rollback.
@@ -137,5 +137,33 @@
 - Central `/canais` com contas, status, conteúdos prontos e histórico de distribuição.
 - Versão `1.3.0` sincronizada em Next.js, Cargo e Tauri.
 
-## Pós-1.3 — Evolução contínua
-Atualização automática assinada, renovação avançada de tokens e novos provedores serão entregues por versões incrementais.
+## Fase 17 — Atualizações assinadas — concluída
+- Plugin oficial do Tauri para consulta, download e instalação de releases.
+- Assinatura obrigatória e chave privada mantida fora do repositório.
+- Central `/atualizacoes` com versão, alvo, progresso, notas e histórico local.
+- Download separado da instalação e reinicialização controlada pelo plugin de processo.
+- Alvo customizado de rollback com downgrade permitido somente por ação explícita.
+- Scripts para gerar chaves, build assinado, manifesto estático e checksums.
+- Build comum sem dependência de chave privada e versão `1.4.0` sincronizada.
+
+## Pós-1.4 — Evolução contínua
+Renovação avançada de tokens, novos provedores, observabilidade e colaboração local serão entregues por versões incrementais.
+
+
+## Hotfix 1.4.1 — interface clara e exportações reais — concluído
+- Tema exclusivamente claro, com superfícies brancas, fundo cinza suave e acento verde discreto.
+- Migração automática de preferências antigas de tema escuro ou do sistema.
+- Pasta real de exportação preparada antes do envio ao MoneyPrinterTurbo.
+- Arquivos finais copiados para uma pasta estável por projeto e renderização.
+- Reprodução, abertura da pasta e localização do arquivo diretamente na Produção.
+- Modo simulação identificado sem criar metadados de vídeos inexistentes.
+
+
+## Fase 18 — Observabilidade e diagnóstico — concluída
+
+- logs estruturados no SQLite schema v5;
+- captura de erros globais e navegação;
+- correlação entre frontend, Rust e MoneyPrinterTurbo;
+- retenção configurável;
+- exportação de diagnóstico sanitizado;
+- versão 1.5.0.

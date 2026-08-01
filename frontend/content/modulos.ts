@@ -64,6 +64,16 @@ export const modulosPlanejados = {
     fase: "Fase 15",
     descricao: "Agendamentos persistentes, repetição, recuperação após reinicialização e alertas nativos.",
   },
+  "/atualizacoes": {
+    titulo: "Atualizações assinadas",
+    fase: "Fase 17",
+    descricao: "Manifesto HTTPS, assinatura obrigatória, progresso, instalação e rollback controlado.",
+  },
+  "/observabilidade": {
+    titulo: "Observabilidade e diagnóstico",
+    fase: "Fase 18",
+    descricao: "Logs estruturados, correlação de execuções, retenção e exportação sanitizada de diagnósticos.",
+  },
   "/central-de-ajuda": {
     titulo: "Central de ajuda",
     fase: "Fase 11",

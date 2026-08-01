@@ -41,18 +41,17 @@ test("a publicação real cobre YouTube, Instagram e TikTok", () => {
   assert.match(publicacao, /post\/publish\/video\/init/);
 });
 
-test("o schema v4 persiste conexões e envios", () => {
+test("o schema atual preserva conexões e envios da v4", () => {
   const dados = ler("src-tauri/src/commands/dados.rs");
   assert.match(dados, /conexoes_publicacao/);
   assert.match(dados, /envios_publicacao/);
-  assert.match(dados, /user_version = 4/);
+  assert.match(dados, /user_version = [4-9]/);
 });
 
-test("a versão 1.3.0 permanece sincronizada", () => {
+test("as versões do frontend e do aplicativo desktop permanecem sincronizadas após a Fase 16", () => {
   const pacote = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
   const cargo = ler("src-tauri/Cargo.toml");
-  assert.equal(pacote.version, "1.3.0");
-  assert.equal(tauri.version, "1.3.0");
-  assert.match(cargo, /version = "1\.3\.0"/);
+  assert.equal(pacote.version, tauri.version);
+  assert.ok(cargo.includes(`version = "${pacote.version}"`));
 });

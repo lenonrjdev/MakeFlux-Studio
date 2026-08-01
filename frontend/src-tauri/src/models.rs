@@ -360,3 +360,73 @@ pub struct ResultadoProcessamentoRotinas {
     pub falhas: u64,
     pub mensagem: String,
 }
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntradaLogEstruturado {
+    pub nivel: String,
+    pub origem: String,
+    pub evento: String,
+    pub mensagem: String,
+    pub correlacao_id: String,
+    pub contexto: String,
+    pub criado_em: Option<u64>,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogEstruturado {
+    pub id: String,
+    pub nivel: String,
+    pub origem: String,
+    pub evento: String,
+    pub mensagem: String,
+    pub correlacao_id: String,
+    pub contexto: String,
+    pub criado_em: u64,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FiltrosLogsEstruturados {
+    pub nivel: Option<String>,
+    pub origem: Option<String>,
+    pub termo: Option<String>,
+    pub correlacao_id: Option<String>,
+    pub limite: Option<u32>,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumoObservabilidade {
+    pub disponivel: bool,
+    pub schema_versao: u32,
+    pub total_logs: u64,
+    pub erros_24h: u64,
+    pub avisos_24h: u64,
+    pub correlacoes_24h: u64,
+    pub ultimo_erro_em: Option<u64>,
+    pub tamanho_aproximado_bytes: u64,
+    pub retencao_dias: u32,
+    pub caminho_banco: String,
+    pub mensagem: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResultadoLimpezaLogs {
+    pub removidos: u64,
+    pub restantes: u64,
+    pub limite_em: u64,
+    pub mensagem: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResultadoExportacaoDiagnostico {
+    pub caminho: String,
+    pub registros: u64,
+    pub tamanho_bytes: u64,
+    pub criado_em: u64,
+    pub mensagem: String,
+}

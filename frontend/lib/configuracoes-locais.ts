@@ -73,7 +73,7 @@ export function criarConfiguracoesPadrao(): WorkspaceConfiguracoes {
       avisarEspacoLivreGb: 8,
     },
     aparencia: {
-      tema: "sistema",
+      tema: "claro",
       densidade: "confortavel",
       escala: "100",
       reduzirAnimacoes: false,
@@ -105,7 +105,7 @@ export function criarConfiguracoesPadrao(): WorkspaceConfiguracoes {
       incluirMotor: true,
       permitirRollback: true,
       ultimaVerificacaoEm: null,
-      versaoAplicativo: "0.12.0",
+      versaoAplicativo: "1.5.0",
       versaoMotor: "não detectado",
     },
     atualizadoEm: agoraIso(),
@@ -122,10 +122,10 @@ function mesclarWorkspace(valor: Partial<WorkspaceConfiguracoes>): WorkspaceConf
     padroes: { ...padrao.padroes, ...valor.padroes },
     desempenho: { ...padrao.desempenho, ...valor.desempenho },
     armazenamento: { ...padrao.armazenamento, ...valor.armazenamento },
-    aparencia: { ...padrao.aparencia, ...valor.aparencia },
+    aparencia: { ...padrao.aparencia, ...valor.aparencia, tema: "claro" },
     backup: { ...padrao.backup, ...valor.backup },
     seguranca: { ...padrao.seguranca, ...valor.seguranca },
-    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "0.12.0" },
+    atualizacoes: { ...padrao.atualizacoes, ...valor.atualizacoes, versaoAplicativo: "1.5.0" },
     versao: 1,
   };
 }
@@ -149,8 +149,9 @@ export function carregarConfiguracoesLocais(): WorkspaceConfiguracoes {
 }
 
 export function salvarConfiguracoesLocais(workspace: WorkspaceConfiguracoes) {
-  if (typeof window === "undefined") return workspace;
-  const atualizado = { ...workspace, atualizadoEm: agoraIso() };
+  const normalizado = mesclarWorkspace(workspace);
+  if (typeof window === "undefined") return normalizado;
+  const atualizado = { ...normalizado, atualizadoEm: agoraIso() };
   window.localStorage.setItem(CHAVE_WORKSPACE_CONFIGURACOES, JSON.stringify(atualizado));
   window.dispatchEvent(new CustomEvent(EVENTO_WORKSPACE_CONFIGURACOES));
   return atualizado;
@@ -304,19 +305,24 @@ export function solicitarBloqueioAplicacao() {
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(EVENTO_BLOQUEAR_APLICACAO));
 }
 
-export function resolverTemaAparencia(tema: AparenciaAplicacao): "claro" | "escuro" {
-  if (tema !== "sistema") return tema;
-  if (typeof window === "undefined") return "claro";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
+export function resolverTemaAparencia(tema: AparenciaAplicacao): "claro" {
+  void tema;
+  return "claro";
 }
 
 export async function verificarAtualizacoesLocal() {
-  await new Promise<void>((resolver) => window.setTimeout(() => resolver(), 850));
-  const verificadoEm = agoraIso();
-  atualizarSecaoConfiguracoesLocal("atualizacoes", { ultimaVerificacaoEm: verificadoEm });
-  return {
-    verificadoEm,
-    atualizacaoDisponivel: false,
-    mensagem: "O MakeFlux Studio 0.12.0 é a versão instalada mais recente deste canal local.",
-  };
+  const { verificarAtualizacaoRapida } = await import("@/lib/atualizador-assinado");
+  try {
+    const resultado = await verificarAtualizacaoRapida();
+    atualizarSecaoConfiguracoesLocal("atualizacoes", { ultimaVerificacaoEm: resultado.verificadoEm });
+    return resultado;
+  } catch (erro) {
+    const verificadoEm = agoraIso();
+    atualizarSecaoConfiguracoesLocal("atualizacoes", { ultimaVerificacaoEm: verificadoEm });
+    return {
+      verificadoEm,
+      atualizacaoDisponivel: false,
+      mensagem: erro instanceof Error ? erro.message : "Não foi possível consultar o atualizador assinado.",
+    };
+  }
 }

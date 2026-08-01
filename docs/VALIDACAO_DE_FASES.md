@@ -168,3 +168,24 @@ Valida a versão 1.2.0, schema SQLite v3, rotinas persistentes, repetição, rec
 
 ## Fase 16 — OAuth e publicação real
 Valida a rota `/canais`, o schema SQLite v4, o cofre de tokens, o callback loopback, os três adaptadores de publicação e a distribuição desktop 1.3.0.
+
+
+## Fase 17 — Atualizações assinadas
+
+Valida a versão 1.4.0, rota `/atualizacoes`, plugins updater/process, assinatura obrigatória, fluxo de download e instalação, rollback customizado e scripts seguros de release.
+
+
+## Hotfix 1.4.1 — interface clara e exportações reais
+
+Valida tema exclusivamente claro, migração de preferências antigas, criação de pasta de exportação, consolidação de arquivos reais do MoneyPrinterTurbo e ações de reprodução/localização no aplicativo desktop.
+
+Comando principal:
+
+```powershell
+.\VALIDAR_FASE_ATUAL.cmd
+```
+
+
+## Fase 18 — Observabilidade e diagnóstico
+
+Valida a rota `/observabilidade`, schema SQLite v5, sanitização, correlação, retenção, exportação de diagnóstico, captura global de erros, frontend e aplicativo desktop 1.5.0.

@@ -8,11 +8,6 @@ import {
   Clock3,
   Copy,
   ExternalLink,
-  FileAudio2,
-  FileCode2,
-  FileText,
-  FileVideo2,
-  FolderOpen,
   RotateCcw,
   TerminalSquare,
   Trash2,
@@ -34,14 +29,8 @@ import {
 } from "@/lib/producao-local";
 import type { PrioridadeTarefaProducao, TarefaProducao } from "@/types/producao";
 
+import { PainelArquivosTarefa } from "./painel-arquivos-tarefa";
 import { ProgressoEtapas } from "./progresso-etapas";
-
-const iconesArquivo = {
-  video: FileVideo2,
-  audio: FileAudio2,
-  legenda: FileText,
-  log: FileCode2,
-};
 
 const coresLog = {
   info: "bg-[#dfe9e7]",
@@ -146,15 +135,7 @@ export function PainelDetalhesTarefa({
             <div className="mt-3"><ProgressoEtapas etapas={tarefa.etapas} /></div>
           </section>
 
-          <section className="mt-4 painel-superficie rounded-md p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div><h3 className="flex items-center gap-2 text-[10px] font-semibold text-[#303637]"><FolderOpen className="size-3.5 text-[#74817e]" /> {conteudoProducao.arquivosTitulo}</h3><p className="mt-1 text-[8px] text-[#92999a]">Resultados vinculados a esta renderização.</p></div>
-              <span className="rounded-full bg-[#edf4f2] px-2 py-1 text-[8px] font-medium text-[#287565]">{tarefa.arquivos.length}</span>
-            </div>
-            <div className="mt-3 space-y-2">
-              {tarefa.arquivos.length === 0 ? <div className="rounded-md border border-dashed border-[#dfe4e4] px-3 py-6 text-center text-[8px] text-[#949b9c]">Os arquivos aparecerão após a finalização.</div> : tarefa.arquivos.map((arquivo) => { const Icone = iconesArquivo[arquivo.tipo]; return <div key={arquivo.id} className="flex items-center gap-3 rounded-md border border-[#e4e8e8] bg-[#fafbfb] p-3"><span className="grid size-8 shrink-0 place-items-center rounded-md bg-white text-[#6f7d79] ring-1 ring-[#e1e6e5]"><Icone className="size-3.5" /></span><div className="min-w-0 flex-1"><strong className="block truncate text-[8.5px] font-medium text-[#4b5253]">{arquivo.nome}</strong><span className="mt-1 block truncate text-[7px] text-[#969d9e]">{arquivo.tamanho} · {arquivo.caminho}</span></div></div>; })}
-            </div>
-          </section>
+          <PainelArquivosTarefa tarefa={tarefa} />
 
           <section className="mt-4 painel-superficie rounded-md p-4">
             <div className="flex items-center justify-between gap-4"><div><h3 className="flex items-center gap-2 text-[10px] font-semibold text-[#303637]"><TerminalSquare className="size-3.5 text-[#74817e]" /> {conteudoProducao.logsTitulo}</h3><p className="mt-1 text-[8px] text-[#92999a]">Mensagens simplificadas e histórico técnico da tarefa.</p></div>{tarefa.modoExecucao !== "moneyprinter" && !["concluida", "erro", "cancelada"].includes(tarefa.status) && <button type="button" onClick={aoSimularErro} className="foco-acessivel inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[7.5px] text-[#91654d] hover:bg-[#faf2ec]"><TriangleAlert className="size-3" /> Simular falha</button>}</div>
