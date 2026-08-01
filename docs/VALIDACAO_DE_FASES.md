@@ -189,3 +189,7 @@ Comando principal:
 ## Fase 18 — Observabilidade e diagnóstico
 
 Valida a rota `/observabilidade`, schema SQLite v5, sanitização, correlação, retenção, exportação de diagnóstico, captura global de erros, frontend e aplicativo desktop 1.5.0.
+
+## Fase 19 — Instalação assistida
+
+Valida a versão 1.6.0, rota `/instalacao`, diagnóstico do Windows e WinGet, criação do workspace permanente, instalação restrita de dependências aprovadas, preparação do MoneyPrinterTurbo, configuração de FFmpeg e ImageMagick, homologação do ambiente Python e teste da API local.

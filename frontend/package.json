@@ -1,6 +1,6 @@
 {
   "name": "makeflux-studio",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -29,7 +29,8 @@
     "test:fase15": "node --test test/fase-15-rotinas-notificacoes.test.mjs",
     "test:fase16": "node --test test/fase-16-oauth-publicacao.test.mjs",
     "test:fase17": "node --test test/fase-17-atualizacoes-assinadas.test.mjs",
-    "test:fase18": "node --test test/fase-18-observabilidade-diagnostico.test.mjs"
+    "test:fase18": "node --test test/fase-18-observabilidade-diagnostico.test.mjs",
+    "test:fase19": "node --test test/fase-19-instalacao-assistida.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

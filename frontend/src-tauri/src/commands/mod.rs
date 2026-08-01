@@ -5,6 +5,7 @@ pub mod dados;
 pub mod desempenho;
 pub mod exportacoes;
 pub mod http;
+pub mod instalacao;
 pub mod moneyprinter;
 pub mod processo;
 

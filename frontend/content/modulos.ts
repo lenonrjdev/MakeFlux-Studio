@@ -39,6 +39,11 @@ export const modulosPlanejados = {
     fase: "Fase 16",
     descricao: "OAuth, cofre de tokens, upload real e histórico de distribuição social.",
   },
+  "/instalacao": {
+    titulo: "Instalação assistida",
+    fase: "Fase 19",
+    descricao: "Diagnóstico, workspace, dependências aprovadas, MoneyPrinterTurbo e homologação do ambiente.",
+  },
   "/integracoes": {
     titulo: "Integrações",
     fase: "Fase 9",

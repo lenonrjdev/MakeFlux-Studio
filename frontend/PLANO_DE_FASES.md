@@ -167,3 +167,13 @@ Renovação avançada de tokens, novos provedores, observabilidade e colaboraç�
 - retenção configurável;
 - exportação de diagnóstico sanitizado;
 - versão 1.5.0.
+
+
+## Fase 19 — Instalação assistida (1.6.0)
+
+- Diagnóstico nativo de WinGet, Git, uv, FFmpeg, ImageMagick e Python.
+- Workspace permanente com pastas de motores, projetos, exportações, cache, modelos e logs.
+- Instalação segura por lista branca de pacotes WinGet.
+- Clone oficial do MoneyPrinterTurbo e sincronização com `uv python install 3.11` + `uv sync --frozen`.
+- Registro automático dos caminhos do motor e do Python virtual nas integrações.
+- Validação técnica, inicialização da API e atalho para o primeiro vídeo de homologação.

@@ -22,6 +22,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
+            commands::instalacao::diagnosticar_instalacao_assistida,
+            commands::instalacao::preparar_workspace_assistido,
+            commands::instalacao::instalar_dependencia_assistida,
+            commands::instalacao::instalar_moneyprinter_assistido,
+            commands::instalacao::validar_moneyprinter_assistido,
+            commands::instalacao::abrir_pasta_instalacao_assistida,
             commands::moneyprinter::verificar_moneyprinter,
             commands::moneyprinter::criar_video_moneyprinter,
             commands::moneyprinter::consultar_tarefa_moneyprinter,

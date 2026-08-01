@@ -48,10 +48,11 @@ test("erros globais e navegação são registrados pelo provedor", () => {
   assert.match(provedor, /navegacao\.rota/);
 });
 
-test("a versão 1.5.0 permanece sincronizada", () => {
+test("a linha 1.5+ permanece sincronizada", () => {
   const pacote = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
-  assert.equal(pacote.version, "1.5.0");
-  assert.equal(tauri.version, "1.5.0");
-  assert.match(ler("src-tauri/Cargo.toml"), /version = "1\.5\.0"/);
+  const cargo = ler("src-tauri/Cargo.toml").match(/version = "([^"]+)"/)?.[1];
+  assert.equal(pacote.version, tauri.version);
+  assert.equal(pacote.version, cargo);
+  assert.ok(Number(pacote.version.split(".")[1]) >= 5);
 });

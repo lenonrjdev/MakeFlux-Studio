@@ -17,6 +17,7 @@ import {
   RadioTower,
   Settings2,
   Sparkles,
+  Wrench,
   WandSparkles,
 } from "lucide-react";
 
@@ -60,6 +61,7 @@ export const gruposNavegacao: GrupoNavegacao[] = [
   {
     titulo: "Sistema",
     itens: [
+      { titulo: "Instalação assistida", href: "/instalacao", icone: Wrench },
       { titulo: "Integrações", href: "/integracoes", icone: PlugZap },
       { titulo: "Configurações", href: "/configuracoes", icone: Settings2 },
       { titulo: "Qualidade", href: "/qualidade", icone: ShieldCheck },

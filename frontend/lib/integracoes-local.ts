@@ -862,3 +862,37 @@ export function restaurarCatalogoIntegracoesLocal() {
   salvarWorkspaceIntegracoes(restaurado);
   return copiarWorkspace(restaurado);
 }
+
+export function configurarMoneyPrinterInstaladoLocal({
+  diretorio,
+  pythonExecutavel,
+}: {
+  diretorio: string;
+  pythonExecutavel: string;
+}) {
+  const workspace = carregarWorkspaceIntegracoes();
+  const agora = agoraIso();
+  workspace.integracoes = workspace.integracoes.map((integracao) => {
+    if (integracao.id !== "moneyprinter-turbo") return integracao;
+    return {
+      ...integracao,
+      instalada: true,
+      status: "atencao" as const,
+      versao: integracao.versao === "Não detectada" ? "Ambiente local instalado" : integracao.versao,
+      configuracoes: {
+        ...integracao.configuracoes,
+        diretorioProjeto: diretorio,
+        pythonExecutavel,
+      },
+      mensagemStatus: "Motor instalado. Inicie a API para concluir a homologação.",
+      atualizadoEm: agora,
+      historico: [
+        criarEvento("configurada", "MoneyPrinterTurbo instalado pelo assistente do MakeFlux Studio.", agora),
+        ...integracao.historico,
+      ].slice(0, 50),
+    };
+  });
+  salvarWorkspaceIntegracoes(workspace);
+  return workspace;
+}
+
