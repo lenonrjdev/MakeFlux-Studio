@@ -20,3 +20,5 @@ pub mod atualizador;
 pub mod observabilidade;
 
 pub mod provedores_ia;
+
+pub mod beta;

@@ -1,0 +1,6 @@
+MAKEFLUX STUDIO - FASE 22 - BETA OPERACIONAL
+
+1. Extraia este pacote na raiz C:\projetos\makeFluxStudio.
+2. Execute cargo fmt com o Cargo.toml do Tauri.
+3. Execute VALIDAR_FASE_ATUAL.cmd.
+4. Consolide no Git somente após FASE APROVADA.

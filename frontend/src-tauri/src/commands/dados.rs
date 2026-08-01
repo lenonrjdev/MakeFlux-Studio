@@ -227,7 +227,32 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             );
             CREATE INDEX IF NOT EXISTS idx_fila_publicacao_status ON fila_publicacao_v2(status, atualizado_em DESC);
             CREATE INDEX IF NOT EXISTS idx_fila_publicacao_provedor ON fila_publicacao_v2(provedor, atualizado_em DESC);
-            PRAGMA user_version = 7;
+
+            CREATE TABLE IF NOT EXISTS sessoes_beta (
+                id TEXT PRIMARY KEY NOT NULL,
+                nome TEXT NOT NULL,
+                alvo TEXT NOT NULL,
+                status TEXT NOT NULL,
+                score INTEGER NOT NULL,
+                iniciado_em INTEGER NOT NULL,
+                finalizado_em INTEGER,
+                mensagem TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS checks_beta (
+                id TEXT PRIMARY KEY NOT NULL,
+                sessao_id TEXT NOT NULL,
+                ordem INTEGER NOT NULL,
+                categoria TEXT NOT NULL,
+                titulo TEXT NOT NULL,
+                descricao TEXT NOT NULL,
+                obrigatorio INTEGER NOT NULL,
+                concluido INTEGER NOT NULL,
+                evidencia TEXT NOT NULL,
+                atualizado_em INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_checks_beta_sessao ON checks_beta(sessao_id, ordem ASC);
+            CREATE INDEX IF NOT EXISTS idx_sessoes_beta_iniciado ON sessoes_beta(iniciado_em DESC);
+            PRAGMA user_version = 8;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -267,6 +292,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "hospedagem temporária, fila robusta e retomada de publicações v7"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v7: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (8, ?1, ?2)",
+            params![agora_millis() as i64, "sessões beta, evidências e release candidate v8"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v8: {erro}"))?;
     Ok(conexao)
 }
 

@@ -110,6 +110,13 @@ pub fn run() {
             commands::provedores_ia::cancelar_execucao_ia,
             commands::provedores_ia::listar_execucoes_ia,
             commands::provedores_ia::consultar_resumo_uso_ia,
+            commands::beta::consultar_beta_operacional,
+            commands::beta::iniciar_sessao_beta,
+            commands::beta::atualizar_check_beta,
+            commands::beta::finalizar_sessao_beta,
+            commands::beta::exportar_relatorio_beta,
+            commands::beta::criar_snapshot_beta,
+            commands::beta::revelar_artefato_beta,
         ])
         .setup(|app| {
             use tauri::Manager;

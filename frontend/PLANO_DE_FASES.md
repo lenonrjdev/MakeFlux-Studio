@@ -191,3 +191,12 @@ OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancela
 - Renovação automática e manual de tokens OAuth.
 - Fila SQLite v7 com tentativas, cancelamento, repetição e recuperação.
 - Central `/distribuicao` em tema claro e versão `1.8.0`.
+
+
+## Fase 22 — Beta operacional
+
+- sessões de homologação por máquina e release candidate;
+- portões automáticos;
+- checklist manual com evidências;
+- snapshot SQLite e relatório sanitizado;
+- aprovação bloqueada por critérios obrigatórios.

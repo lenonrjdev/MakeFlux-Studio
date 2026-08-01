@@ -27,6 +27,7 @@ const titulosRotas: Record<string, string> = {
   "/rotinas": "Rotinas e notificações",
   "/atualizacoes": "Atualizações assinadas",
   "/observabilidade": "Observabilidade e diagnóstico",
+  "/beta": "Beta operacional",
   "/central-de-ajuda": "Central de ajuda",
 };
 

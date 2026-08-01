@@ -73,7 +73,7 @@ test("o SQLite evolui para schema v7", () => {
   assert.match(dados, /configuracoes_armazenamento_publicacao/);
   assert.match(dados, /ativos_temporarios_publicacao/);
   assert.match(dados, /fila_publicacao_v2/);
-  assert.match(dados, /PRAGMA user_version = 7/);
+  assert.match(dados, /PRAGMA user_version = (?:7|8)/);
 });
 
 test("a interface permanece clara e não persiste segredos no frontend", () => {

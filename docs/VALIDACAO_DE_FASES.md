@@ -199,3 +199,8 @@ Valida a versão 1.6.0, rota `/instalacao`, diagnóstico do Windows e WinGet, cr
 ## Fase 21 — Hospedagem temporária e publicação robusta
 
 Valida a versão 1.8.0, rota `/distribuicao`, schema SQLite v7, armazenamento Cloudinary protegido pelo cofre, upload em blocos, sessões retomáveis, processamento de Reels, TikTok FILE_UPLOAD, renovação de tokens, cancelamento, repetição e recuperação da fila.
+
+
+## Fase 22 — Beta operacional
+
+Valida a versão 1.9.0, rota `/beta`, schema SQLite v8, portões automáticos, checklist com evidências, snapshot, relatório e aprovação da release candidate.

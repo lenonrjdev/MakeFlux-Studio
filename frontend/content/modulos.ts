@@ -89,6 +89,11 @@ export const modulosPlanejados = {
     fase: "Fase 18",
     descricao: "Logs estruturados, correlação de execuções, retenção e exportação sanitizada de diagnósticos.",
   },
+  "/beta": {
+    titulo: "Beta operacional",
+    fase: "Fase 22",
+    descricao: "Portões automáticos, evidências manuais, snapshots e aprovação de release candidate.",
+  },
   "/central-de-ajuda": {
     titulo: "Central de ajuda",
     fase: "Fase 11",
