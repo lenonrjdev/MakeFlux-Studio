@@ -1,3 +1,6 @@
 
 # Cache incremental do TypeScript
 *.tsbuildinfo
+
+# Instaladores e releases gerados localmente
+dist/release-candidate/
