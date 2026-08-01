@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   PlugZap,
   Rocket,
+  RadioTower,
   Settings2,
   Sparkles,
   WandSparkles,
@@ -49,7 +50,10 @@ export const gruposNavegacao: GrupoNavegacao[] = [
   },
   {
     titulo: "Distribuição",
-    itens: [{ titulo: "Publicação", href: "/publicacao", icone: Rocket }],
+    itens: [
+      { titulo: "Publicação", href: "/publicacao", icone: Rocket },
+      { titulo: "Contas e canais", href: "/canais", icone: RadioTower },
+    ],
   },
   {
     titulo: "Sistema",

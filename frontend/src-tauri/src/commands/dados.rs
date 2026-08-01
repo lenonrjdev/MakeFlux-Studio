@@ -124,7 +124,32 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             CREATE INDEX IF NOT EXISTS idx_rotinas_proxima ON rotinas_agendadas(ativa, proxima_execucao_em);
             CREATE INDEX IF NOT EXISTS idx_execucoes_rotina ON execucoes_rotinas(rotina_id, iniciada_em DESC);
             CREATE INDEX IF NOT EXISTS idx_notificacoes_lidas ON notificacoes_locais(lida, criada_em DESC);
-            PRAGMA user_version = 3;
+
+            CREATE TABLE IF NOT EXISTS conexoes_publicacao (
+                provedor TEXT PRIMARY KEY NOT NULL,
+                conta_id TEXT NOT NULL,
+                conta_nome TEXT NOT NULL,
+                escopos TEXT NOT NULL,
+                status TEXT NOT NULL,
+                expira_em INTEGER,
+                conectada_em INTEGER NOT NULL,
+                atualizada_em INTEGER NOT NULL,
+                detalhes TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS envios_publicacao (
+                id TEXT PRIMARY KEY NOT NULL,
+                publicacao_id TEXT NOT NULL,
+                provedor TEXT NOT NULL,
+                status TEXT NOT NULL,
+                progresso INTEGER NOT NULL,
+                remoto_id TEXT,
+                link TEXT,
+                criado_em INTEGER NOT NULL,
+                atualizado_em INTEGER NOT NULL,
+                mensagem TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_envios_publicacao_status ON envios_publicacao(status, atualizado_em DESC);
+            PRAGMA user_version = 4;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -140,6 +165,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "rotinas persistentes, histórico e notificações v3"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v3: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (4, ?1, ?2)",
+            params![agora_millis() as i64, "conexões OAuth e envios sociais v4"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v4: {erro}"))?;
     Ok(conexao)
 }
 

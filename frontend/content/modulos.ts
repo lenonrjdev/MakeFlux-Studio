@@ -34,6 +34,11 @@ export const modulosPlanejados = {
     fase: "Fase 8",
     descricao: "Metadados sociais, planejamento, thumbnails e registro das publicações.",
   },
+  "/canais": {
+    titulo: "Contas e canais",
+    fase: "Fase 16",
+    descricao: "OAuth, cofre de tokens, upload real e histórico de distribuição social.",
+  },
   "/integracoes": {
     titulo: "Integrações",
     fase: "Fase 9",

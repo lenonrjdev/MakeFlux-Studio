@@ -8,3 +8,6 @@ pub mod moneyprinter;
 pub mod processo;
 
 pub mod rotinas;
+
+pub mod oauth;
+pub mod publicacao_social;

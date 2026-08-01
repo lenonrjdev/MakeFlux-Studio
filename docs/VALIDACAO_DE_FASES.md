@@ -165,3 +165,6 @@ Valida a versão 1.1.0, schema SQLite v2, paginação, virtualização, lotes ca
 ## Fase 15 — Rotinas locais e notificações
 
 Valida a versão 1.2.0, schema SQLite v3, rotinas persistentes, repetição, recuperação de pendências, histórico, central de notificações, plugin nativo do Tauri, rota `/rotinas` e instalador desktop completo.
+
+## Fase 16 — OAuth e publicação real
+Valida a rota `/canais`, o schema SQLite v4, o cofre de tokens, o callback loopback, os três adaptadores de publicação e a distribuição desktop 1.3.0.

@@ -288,3 +288,71 @@ pub fn remover_segredo_cofre(
     salvar_arquivo(&app, &criptografar(&chave_mestra, &salt, &dados)?)?;
     status_interno(&app, &estado)
 }
+
+pub(crate) fn ler_segredo_interno(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    identificador: &str,
+) -> Result<String, String> {
+    let chave_mestra = estado
+        .0
+        .lock()
+        .map_err(|_| "Estado do cofre indisponível.".to_owned())?
+        .as_ref()
+        .copied()
+        .ok_or_else(|| "Desbloqueie o cofre antes de continuar.".to_owned())?;
+    let dados = descriptografar(&chave_mestra, &ler_arquivo(app)?)?;
+    dados
+        .get(identificador)
+        .map(|registro| registro.valor.clone())
+        .ok_or_else(|| "A credencial solicitada não está disponível no cofre.".to_owned())
+}
+
+pub(crate) fn salvar_segredo_interno(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    identificador: &str,
+    valor: &str,
+) -> Result<(), String> {
+    let chave_mestra = estado
+        .0
+        .lock()
+        .map_err(|_| "Estado do cofre indisponível.".to_owned())?
+        .as_ref()
+        .copied()
+        .ok_or_else(|| "Desbloqueie o cofre antes de continuar.".to_owned())?;
+    let arquivo_atual = ler_arquivo(app)?;
+    let salt = STANDARD
+        .decode(&arquivo_atual.salt)
+        .map_err(|_| "Salt do cofre inválido.".to_owned())?;
+    let mut dados = descriptografar(&chave_mestra, &arquivo_atual)?;
+    dados.insert(
+        identificador.to_owned(),
+        RegistroSegredo {
+            valor: valor.to_owned(),
+            atualizado_em: agora_millis(),
+        },
+    );
+    salvar_arquivo(app, &criptografar(&chave_mestra, &salt, &dados)?)
+}
+
+pub(crate) fn remover_segredo_interno(
+    app: &AppHandle,
+    estado: &EstadoCofre,
+    identificador: &str,
+) -> Result<(), String> {
+    let chave_mestra = estado
+        .0
+        .lock()
+        .map_err(|_| "Estado do cofre indisponível.".to_owned())?
+        .as_ref()
+        .copied()
+        .ok_or_else(|| "Desbloqueie o cofre antes de continuar.".to_owned())?;
+    let arquivo_atual = ler_arquivo(app)?;
+    let salt = STANDARD
+        .decode(&arquivo_atual.salt)
+        .map_err(|_| "Salt do cofre inválido.".to_owned())?;
+    let mut dados = descriptografar(&chave_mestra, &arquivo_atual)?;
+    dados.remove(identificador);
+    salvar_arquivo(app, &criptografar(&chave_mestra, &salt, &dados)?)
+}

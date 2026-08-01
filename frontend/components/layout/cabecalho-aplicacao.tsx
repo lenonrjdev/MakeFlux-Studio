@@ -17,6 +17,7 @@ const titulosRotas: Record<string, string> = {
   "/templates": "Templates",
   "/publicacao": "Publicação",
   "/integracoes": "Integrações",
+  "/canais": "Contas e canais",
   "/configuracoes": "Configurações",
   "/qualidade": "Qualidade e distribuição",
   "/desempenho": "Desempenho e grandes volumes",

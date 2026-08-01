@@ -23,17 +23,18 @@ test("a Fase 15 possui a Central de rotinas e notificações", () => {
   ]) assert.equal(existsSync(join(raiz, arquivo)), true, `Arquivo ausente: ${arquivo}`);
 });
 
-test("a versão 1.2.0 está sincronizada", () => {
+test("a linha 1.2+ permanece sincronizada", () => {
   const pacote = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
-  assert.equal(pacote.version, "1.2.0");
-  assert.equal(tauri.version, "1.2.0");
-  assert.match(ler("src-tauri/Cargo.toml"), /version\s*=\s*"1\.2\.0"/);
+  assert.equal(pacote.version, tauri.version);
+  assert.match(pacote.version, /^1\.(?:[2-9]|[1-9]\d+)\.\d+$/);
+  assert.match(ler("src-tauri/Cargo.toml"), new RegExp(`version\\s*=\\s*"${pacote.version.replaceAll(".", "\\.")}"`));
 });
 
 test("o schema v3 persiste rotinas, execuções e notificações", () => {
   const fonte = ler("src-tauri/src/commands/dados.rs");
-  for (const contrato of ["rotinas_agendadas", "execucoes_rotinas", "notificacoes_locais", "idx_rotinas_proxima", "PRAGMA user_version = 3"]) assert.match(fonte, new RegExp(contrato));
+  for (const contrato of ["rotinas_agendadas", "execucoes_rotinas", "notificacoes_locais", "idx_rotinas_proxima"]) assert.match(fonte, new RegExp(contrato));
+  assert.match(fonte, /VALUES \(3, \?1, \?2\)/);
 });
 
 test("o agendador nativo recupera pendências e limita disparos", () => {

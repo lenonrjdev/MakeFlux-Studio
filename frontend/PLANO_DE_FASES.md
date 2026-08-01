@@ -127,5 +127,15 @@
 - Notificações nativas pelo plugin oficial do Tauri e central interna no cabeçalho.
 - Versão `1.2.0` sincronizada em Next.js, Cargo e Tauri.
 
-## Pós-1.2 — Evolução contínua
-Publicação real por OAuth, atualização automática assinada e novos provedores serão entregues por versões incrementais.
+## Fase 16 — Contas, OAuth e publicação real — concluída
+- Schema SQLite v4 para conexões de canais e histórico de envios.
+- OAuth por navegador externo, state obrigatório, PKCE e callback local temporário.
+- Tokens armazenados exclusivamente no cofre criptografado da Fase 13.
+- Upload retomável de vídeos e Shorts para o YouTube.
+- Publicação de Reels por URL pública no Instagram Graph API.
+- Direct Post do TikTok usando URL pertencente a domínio verificado.
+- Central `/canais` com contas, status, conteúdos prontos e histórico de distribuição.
+- Versão `1.3.0` sincronizada em Next.js, Cargo e Tauri.
+
+## Pós-1.3 — Evolução contínua
+Atualização automática assinada, renovação avançada de tokens e novos provedores serão entregues por versões incrementais.

@@ -1,0 +1,12 @@
+MAKEFLUX STUDIO - FASE 16
+CONTAS, OAUTH E PUBLICACAO REAL
+
+1. Extraia este pacote na raiz C:\projetos\makeFluxStudio.
+2. Execute cargo fmt --manifest-path .\frontend\src-tauri\Cargo.toml.
+3. Execute .\VALIDAR_FASE_ATUAL.cmd.
+4. Consolide o commit somente depois de FASE APROVADA.
+
+Antes de conectar uma conta, inicialize e desbloqueie o cofre em Qualidade.
+YouTube aceita arquivo local. Instagram e TikTok exigem URL HTTPS compatível com as regras da plataforma e aplicativo aprovado.
+
+URI de retorno OAuth para cadastrar nos portais: http://127.0.0.1:47891/oauth/callback

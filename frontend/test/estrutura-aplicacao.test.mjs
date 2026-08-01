@@ -37,6 +37,7 @@ test("as rotas essenciais da aplicacao existem", () => {
     "app/qualidade/page.tsx",
     "app/desempenho/page.tsx",
     "app/rotinas/page.tsx",
+    "app/canais/page.tsx",
   ];
   for (const rota of rotas) {
     assert.equal(existsSync(join(raiz, rota)), true, `Rota ausente: ${rota}`);
@@ -69,6 +70,7 @@ test("a navegacao contem os modulos obrigatorios do produto", () => {
     "/qualidade",
     "/desempenho",
     "/rotinas",
+    "/canais",
   ]) {
     assert.match(navegacao, new RegExp(`href:\\s*[\"']${rota.replaceAll("/", "\\/")}[\"']`));
   }

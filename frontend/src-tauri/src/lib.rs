@@ -2,17 +2,22 @@ mod commands;
 mod models;
 mod state;
 
-use state::{EstadoAgendadorRotinas, EstadoCofre, EstadoOperacoesLote, EstadoProcessoMotor};
+use state::{
+    EstadoAgendadorRotinas, EstadoCofre, EstadoOauthPublicacao, EstadoOperacoesLote,
+    EstadoProcessoMotor,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_opener::init())
         .manage(EstadoProcessoMotor::default())
         .manage(EstadoCofre::default())
         .manage(EstadoOperacoesLote::default())
         .manage(EstadoAgendadorRotinas::default())
+        .manage(EstadoOauthPublicacao::default())
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
@@ -59,6 +64,12 @@ pub fn run() {
             commands::rotinas::remover_notificacoes_lidas,
             commands::rotinas::enviar_notificacao_teste,
             commands::rotinas::status_agendador_rotinas,
+            commands::oauth::iniciar_oauth_publicacao,
+            commands::oauth::concluir_oauth_publicacao,
+            commands::oauth::listar_conexoes_publicacao,
+            commands::oauth::desconectar_canal_publicacao,
+            commands::publicacao_social::publicar_conteudo_social,
+            commands::publicacao_social::listar_envios_publicacao,
         ])
         .setup(|app| {
             use tauri::Manager;

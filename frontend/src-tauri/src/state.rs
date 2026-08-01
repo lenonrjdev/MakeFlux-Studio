@@ -36,3 +36,17 @@ impl Default for EstadoAgendadorRotinas {
         }
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct SessaoOauthPendente {
+    pub provedor: String,
+    pub state: String,
+    pub verifier: String,
+    pub redirect_uri: String,
+    pub codigo: Option<String>,
+    pub erro: Option<String>,
+    pub expira_em: u64,
+}
+
+#[derive(Clone, Default)]
+pub struct EstadoOauthPublicacao(pub Arc<Mutex<HashMap<String, SessaoOauthPendente>>>);
