@@ -13,6 +13,7 @@ const titulosRotas: Record<string, string> = {
   "/projetos": "Projetos",
   "/producao": "Produção",
   "/laboratorio-de-ia": "Laboratório de IA",
+  "/provedores-ia": "Provedores reais de IA",
   "/biblioteca": "Biblioteca",
   "/templates": "Templates",
   "/publicacao": "Publicação",

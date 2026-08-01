@@ -30,6 +30,8 @@ export function CentralLaboratorioIa() {
     criar,
     atualizar,
     executar,
+    cancelar,
+    ultimoErro,
     selecionarMelhor,
     duplicar,
     excluir,
@@ -107,15 +109,21 @@ export function CentralLaboratorioIa() {
     atualizar(experimentoSelecionado.id, alteracoes);
   }
 
-  function executarSelecionado() {
+  async function executarSelecionado() {
     if (!experimentoSelecionado) return;
     if (!experimentoSelecionado.tema.trim() || !experimentoSelecionado.promptUsuario.trim()) {
       notificar("Preencha o tema e a instrução do experimento antes de gerar as variações.", "aviso");
       return;
     }
-    executar(experimentoSelecionado.id);
     setComparar(false);
-    notificar("Experimento iniciado. As condições do teste foram preservadas.");
+    notificar(experimentoSelecionado.modoExecucao === "real" ? "Execução real iniciada." : "Demonstração iniciada.");
+    const resultado = await executar(experimentoSelecionado.id);
+    if (!resultado) notificar("A execução não foi concluída. Consulte a mensagem do experimento.", "aviso");
+  }
+
+  async function cancelarSelecionado() {
+    const cancelado = await cancelar();
+    notificar(cancelado ? "Cancelamento solicitado. O resultado já concluído será preservado." : "Nenhuma requisição real está ativa.", cancelado ? "sucesso" : "aviso");
   }
 
   function duplicarSelecionado(id: string) {
@@ -226,7 +234,8 @@ export function CentralLaboratorioIa() {
                 experimento={experimentoSelecionado}
                 executando={executando}
                 aoAtualizar={atualizarSelecionado}
-                aoExecutar={executarSelecionado}
+                aoExecutar={() => void executarSelecionado()}
+                aoCancelar={() => void cancelarSelecionado()}
                 aoSalvarPreset={salvarPresetSelecionado}
               />
               <PainelResultadosLaboratorio
@@ -281,6 +290,8 @@ export function CentralLaboratorioIa() {
           </div>
         )}
       </div>
+
+      {ultimoErro && <div className="fixed bottom-6 left-[250px] z-50 max-w-[520px] rounded-md border border-[#ebd5d5] bg-white px-4 py-3 text-[9px] text-[#9a4d4d] shadow-[0_12px_35px_rgba(20,29,27,.13)]">{ultimoErro}</div>}
 
       {notificacao && (
         <div

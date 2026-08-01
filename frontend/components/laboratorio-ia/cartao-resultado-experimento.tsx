@@ -35,6 +35,7 @@ export function CartaoResultadoExperimento({
             )}
           </div>
           <p className="mt-1 text-[7.5px] text-[#8a9293]">{resultado.resumo}</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5 text-[6.5px] text-[#7d8787]"><span className="rounded border border-[#e0e6e5] bg-white px-1.5 py-0.5">{resultado.origem === "real" ? "Execução real" : "Demonstração"}</span>{resultado.provedor && <span>{resultado.provedor} · {resultado.modeloReal}</span>}{resultado.tokensEntrada !== undefined && <span>{resultado.tokensEntrada + (resultado.tokensSaida ?? 0)} tokens</span>}{resultado.custoEstimado !== undefined && <span>US$ {resultado.custoEstimado.toFixed(6)}</span>}</div>
         </div>
         <div className="flex items-center gap-1.5 text-[7px] text-[#92999a]">
           <span>{resultado.palavras} palavras</span>

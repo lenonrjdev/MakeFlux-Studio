@@ -14,7 +14,7 @@ export const EVENTO_WORKSPACE_LABORATORIO_IA = "makeflux:workspace-laboratorio-i
 export const CHAVE_TRANSFERENCIA_LABORATORIO = "makeflux:transferencia-laboratorio:v1";
 
 const workspaceVazio: WorkspaceLaboratorioIa = {
-  versao: 1,
+  versao: 2,
   experimentos: [],
   presets: presetsLaboratorioIniciais,
 };
@@ -30,16 +30,27 @@ function copiarWorkspace(workspace: WorkspaceLaboratorioIa): WorkspaceLaboratori
   return JSON.parse(JSON.stringify(workspace)) as WorkspaceLaboratorioIa;
 }
 
+function normalizarExperimento(experimento: ExperimentoLaboratorio): ExperimentoLaboratorio {
+  return {
+    ...experimento,
+    modoExecucao: experimento.modoExecucao ?? "real",
+    provedorPreferido: experimento.provedorPreferido ?? "automatico",
+    permitirFallback: experimento.permitirFallback ?? true,
+    maxTokensSaida: experimento.maxTokensSaida ?? 2400,
+    resultados: Array.isArray(experimento.resultados)
+      ? experimento.resultados.map((resultado) => ({ ...resultado, origem: resultado.origem ?? "demonstracao" }))
+      : [],
+  };
+}
+
 function normalizarWorkspace(valor: unknown): WorkspaceLaboratorioIa {
   if (!valor || typeof valor !== "object") return workspaceVazio;
-  const candidato = valor as Partial<WorkspaceLaboratorioIa>;
-  if (candidato.versao !== 1 || !Array.isArray(candidato.experimentos)) return workspaceVazio;
+  const candidato = valor as { versao?: number; experimentos?: ExperimentoLaboratorio[]; presets?: PresetPromptLaboratorio[] };
+  if (!Array.isArray(candidato.experimentos)) return workspaceVazio;
   return {
-    versao: 1,
-    experimentos: candidato.experimentos,
-    presets: Array.isArray(candidato.presets) && candidato.presets.length > 0
-      ? candidato.presets
-      : presetsLaboratorioIniciais,
+    versao: 2,
+    experimentos: candidato.experimentos.map(normalizarExperimento),
+    presets: Array.isArray(candidato.presets) && candidato.presets.length > 0 ? candidato.presets : presetsLaboratorioIniciais,
   };
 }
 
@@ -79,12 +90,16 @@ export function criarConfiguracaoExperimentoPadrao(
     publico: "Pessoas interessadas em produtividade e tecnologia",
     plataforma: "YouTube Shorts",
     idioma: "Português (Brasil)",
-    modelo: "OpenAI · modelo padrão",
+    modelo: "Configuração do provedor",
     promptSistema: preset.promptSistema,
     promptUsuario: preset.promptUsuario,
     quantidadeVariacoes: 3,
     temperatura: 0.7,
     observacoes: "",
+    modoExecucao: "real",
+    provedorPreferido: "automatico",
+    permitirFallback: true,
+    maxTokensSaida: 2400,
   };
 }
 
@@ -253,6 +268,7 @@ function criarResultados(experimento: ExperimentoLaboratorio) {
         aderencia: gerarPontuacao(base, 4),
       },
       criadoEm: agora,
+      origem: "demonstracao",
     };
     return resultado;
   });
@@ -287,6 +303,72 @@ export function executarExperimentoLaboratorioIaLocal(id: string) {
     }),
   }));
   return executado;
+}
+
+export function concluirExperimentoLaboratorioIaRealLocal(
+  id: string,
+  execucao: import("@/types/provedores-ia").ResultadoExecucaoIa,
+) {
+  let concluido: ExperimentoLaboratorio | null = null;
+  transformarWorkspace((workspace) => ({
+    ...workspace,
+    experimentos: workspace.experimentos.map((experimento) => {
+      if (experimento.id !== id) return experimento;
+      const agora = new Date().toISOString();
+      const resultados: ResultadoExperimentoLaboratorio[] = execucao.variacoes.map((item, indice) => {
+        const palavras = item.conteudo.trim().split(/\s+/).filter(Boolean).length;
+        return {
+          id: item.id,
+          titulo: `Variação ${String.fromCharCode(65 + indice)}`,
+          conteudo: item.conteudo,
+          resumo: item.tentativa > 1 ? "Concluída por fallback" : "Resposta real do provedor",
+          duracaoEstimada: experimento.tipo === "roteiro" ? `${Math.max(18, Math.round(palavras / 2.6))}s` : "—",
+          palavras,
+          pontuacoes: { clareza: 85, engajamento: 84, representabilidade: 82, aderencia: 88 },
+          criadoEm: agora,
+          origem: "real",
+          provedor: item.provedor,
+          modeloReal: item.modelo,
+          tokensEntrada: item.tokensEntrada,
+          tokensSaida: item.tokensSaida,
+          custoEstimado: item.custoEstimado,
+          duracaoMs: item.duracaoMs,
+          tentativa: item.tentativa,
+        };
+      });
+      concluido = {
+        ...experimento,
+        status: resultados.length > 0 ? "concluido" : "erro",
+        resultados,
+        melhorResultadoId: resultados[0]?.id,
+        ultimaMensagem: execucao.mensagem,
+        requisicaoId: undefined,
+        atualizadoEm: agora,
+      };
+      return concluido;
+    }),
+  }));
+  return concluido;
+}
+
+export function marcarExperimentoErroLocal(id: string, mensagem: string) {
+  transformarWorkspace((workspace) => ({
+    ...workspace,
+    experimentos: workspace.experimentos.map((experimento) => experimento.id === id ? {
+      ...experimento, status: "erro", ultimaMensagem: mensagem, requisicaoId: undefined,
+      atualizadoEm: new Date().toISOString(),
+    } : experimento),
+  }));
+}
+
+export function registrarRequisicaoExperimentoLocal(id: string, requisicaoId: string) {
+  transformarWorkspace((workspace) => ({
+    ...workspace,
+    experimentos: workspace.experimentos.map((experimento) => experimento.id === id ? {
+      ...experimento, requisicaoId, status: "processando", ultimaMensagem: "Executando com provedor real.",
+      atualizadoEm: new Date().toISOString(),
+    } : experimento),
+  }));
 }
 
 export function selecionarMelhorResultadoLaboratorioIaLocal(

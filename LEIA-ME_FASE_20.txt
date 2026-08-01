@@ -1,0 +1,7 @@
+MAKEFLUX STUDIO — FASE 20
+
+Provedores reais de IA: OpenAI, Gemini, DeepSeek e Ollama.
+Inclui cofre de chaves, testes reais, fallback, limites, custos, histórico e cancelamento.
+Versão: 1.7.0
+
+A fase só deve ser consolidada após FASE APROVADA.

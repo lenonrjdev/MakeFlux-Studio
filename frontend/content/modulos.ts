@@ -19,6 +19,11 @@ export const modulosPlanejados = {
     fase: "Fase 5",
     descricao: "Comparação de prompts, modelos, roteiros, termos visuais, vozes e resultados A/B.",
   },
+  "/provedores-ia": {
+    titulo: "Provedores reais de IA",
+    fase: "Fase 20",
+    descricao: "OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancelamento.",
+  },
   "/biblioteca": {
     titulo: "Biblioteca",
     fase: "Fase 6",

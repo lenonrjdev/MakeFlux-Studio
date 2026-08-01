@@ -26,7 +26,7 @@ test("o schema v5 persiste logs, correlações e índices", () => {
   assert.match(dados, /CREATE TABLE IF NOT EXISTS logs_estruturados/);
   assert.match(dados, /correlacao_id/);
   assert.match(dados, /idx_logs_correlacao/);
-  assert.match(dados, /user_version = 5/);
+  assert.match(dados, /user_version = [5-9]|user_version = [1-9][0-9]+/);
 });
 
 test("a observabilidade sanitiza segredos antes da persistência", () => {

@@ -162,7 +162,21 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             CREATE INDEX IF NOT EXISTS idx_logs_criado ON logs_estruturados(criado_em DESC);
             CREATE INDEX IF NOT EXISTS idx_logs_nivel_origem ON logs_estruturados(nivel, origem, criado_em DESC);
             CREATE INDEX IF NOT EXISTS idx_logs_correlacao ON logs_estruturados(correlacao_id, criado_em ASC);
-            PRAGMA user_version = 5;
+            CREATE TABLE IF NOT EXISTS provedores_ia (
+                id TEXT PRIMARY KEY NOT NULL, endpoint TEXT NOT NULL, modelo TEXT NOT NULL, habilitado INTEGER NOT NULL,
+                prioridade INTEGER NOT NULL, timeout_segundos INTEGER NOT NULL, limite_diario_requisicoes INTEGER NOT NULL,
+                max_tokens_saida INTEGER NOT NULL, temperatura REAL NOT NULL, custo_entrada_milhao REAL NOT NULL,
+                custo_saida_milhao REAL NOT NULL, ultima_verificacao_em INTEGER, latencia_ms REAL,
+                ultimo_status TEXT NOT NULL, ultima_mensagem TEXT NOT NULL, atualizado_em INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS execucoes_ia (
+                id TEXT PRIMARY KEY NOT NULL, experimento_id TEXT NOT NULL, provedor TEXT NOT NULL, modelo TEXT NOT NULL,
+                status TEXT NOT NULL, tokens_entrada INTEGER NOT NULL, tokens_saida INTEGER NOT NULL, custo_estimado REAL NOT NULL,
+                duracao_ms REAL NOT NULL, mensagem TEXT NOT NULL, correlacao_id TEXT NOT NULL, criado_em INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_execucoes_ia_criado ON execucoes_ia(criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_execucoes_ia_provedor ON execucoes_ia(provedor, criado_em DESC);
+            PRAGMA user_version = 6;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -190,6 +204,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "logs estruturados, correlação e diagnóstico sanitizado v5"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v5: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (6, ?1, ?2)",
+            params![agora_millis() as i64, "provedores reais, limites e execuções de IA v6"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v6: {erro}"))?;
     Ok(conexao)
 }
 

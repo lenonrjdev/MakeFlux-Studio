@@ -4,7 +4,7 @@ mod state;
 
 use state::{
     EstadoAgendadorRotinas, EstadoCofre, EstadoOauthPublicacao, EstadoOperacoesLote,
-    EstadoProcessoMotor,
+    EstadoProcessoMotor, EstadoRequisicoesIa,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -19,6 +19,7 @@ pub fn run() {
         .manage(EstadoOperacoesLote::default())
         .manage(EstadoAgendadorRotinas::default())
         .manage(EstadoOauthPublicacao::default())
+        .manage(EstadoRequisicoesIa::default())
         .invoke_handler(tauri::generate_handler![
             commands::capacidades::detectar_capacidades_sistema,
             commands::http::testar_http_nativo,
@@ -89,6 +90,15 @@ pub fn run() {
             commands::observabilidade::limpar_logs_estruturados,
             commands::observabilidade::exportar_pacote_diagnostico,
             commands::observabilidade::revelar_pacote_diagnostico,
+            commands::provedores_ia::listar_provedores_ia,
+            commands::provedores_ia::salvar_configuracao_provedor_ia,
+            commands::provedores_ia::salvar_credencial_provedor_ia,
+            commands::provedores_ia::remover_credencial_provedor_ia,
+            commands::provedores_ia::testar_provedor_ia,
+            commands::provedores_ia::executar_experimento_ia,
+            commands::provedores_ia::cancelar_execucao_ia,
+            commands::provedores_ia::listar_execucoes_ia,
+            commands::provedores_ia::consultar_resumo_uso_ia,
         ])
         .setup(|app| {
             use tauri::Manager;

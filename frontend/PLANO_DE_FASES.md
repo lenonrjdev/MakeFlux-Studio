@@ -177,3 +177,7 @@ Renovação avançada de tokens, novos provedores, observabilidade e colaboraç�
 - Clone oficial do MoneyPrinterTurbo e sincronização com `uv python install 3.11` + `uv sync --frozen`.
 - Registro automático dos caminhos do motor e do Python virtual nas integrações.
 - Validação técnica, inicialização da API e atalho para o primeiro vídeo de homologação.
+
+
+## Fase 20 — Provedores reais de IA
+OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancelamento.

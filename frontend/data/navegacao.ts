@@ -47,6 +47,7 @@ export const gruposNavegacao: GrupoNavegacao[] = [
     titulo: "Recursos",
     itens: [
       { titulo: "Laboratório de IA", href: "/laboratorio-de-ia", icone: Bot },
+      { titulo: "Provedores de IA", href: "/provedores-ia", icone: Sparkles },
       { titulo: "Biblioteca", href: "/biblioteca", icone: Library },
       { titulo: "Templates", href: "/templates", icone: Boxes },
     ],

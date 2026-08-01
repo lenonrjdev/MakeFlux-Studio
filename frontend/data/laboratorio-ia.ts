@@ -53,12 +53,14 @@ export const ferramentasLaboratorio: Array<{
   },
 ];
 
-export const modelosLaboratorio = [
-  "OpenAI · modelo padrão",
-  "Ollama · modelo local",
-  "DeepSeek · modelo conectado",
-  "Comparação sem provedor",
-];
+export const modelosLaboratorio = ["Configuração do provedor"];
+export const provedoresLaboratorio = [
+  { id: "automatico", titulo: "Automático · usar prioridade" },
+  { id: "openai", titulo: "OpenAI" },
+  { id: "gemini", titulo: "Google Gemini" },
+  { id: "deepseek", titulo: "DeepSeek" },
+  { id: "ollama", titulo: "Ollama local" },
+] as const;
 
 export const idiomasLaboratorio = ["Português (Brasil)", "Inglês", "Espanhol"];
 export const plataformasLaboratorio = [

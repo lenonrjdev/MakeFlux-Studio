@@ -54,9 +54,12 @@ test("a instalação registra os caminhos do motor nas integrações", async () 
   assert.match(integracoes, /MoneyPrinterTurbo instalado pelo assistente/);
 });
 
-test("as versões da Fase 19 permanecem sincronizadas em 1.6.0", async () => {
-  const [pkg, cargo, tauri] = await Promise.all([ler("package.json"), ler("src-tauri/Cargo.toml"), ler("src-tauri/tauri.conf.json")]);
-  assert.match(pkg, /"version": "1\.6\.0"/);
-  assert.match(cargo, /version = "1\.6\.0"/);
-  assert.match(tauri, /"version": "1\.6\.0"/);
+test("a linha 1.6+ permanece sincronizada", async () => {
+  const [pkgTexto, cargoTexto, tauriTexto] = await Promise.all([ler("package.json"), ler("src-tauri/Cargo.toml"), ler("src-tauri/tauri.conf.json")]);
+  const pkg = JSON.parse(pkgTexto);
+  const tauri = JSON.parse(tauriTexto);
+  const cargo = cargoTexto.match(/version = "([^"]+)"/)?.[1];
+  assert.equal(pkg.version, tauri.version);
+  assert.equal(pkg.version, cargo);
+  assert.ok(Number(pkg.version.split(".")[1]) >= 6);
 });

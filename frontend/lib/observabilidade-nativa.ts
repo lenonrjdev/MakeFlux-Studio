@@ -74,7 +74,7 @@ export async function consultarResumoObservabilidade(): Promise<ResumoObservabil
   const limite24h = Date.now() - 86_400_000;
   return {
     disponivel: false,
-    schemaVersao: 5,
+    schemaVersao: 6,
     totalLogs: logs.length,
     erros24h: logs.filter((log) => log.nivel === "erro" && log.criadoEm >= limite24h).length,
     avisos24h: logs.filter((log) => log.nivel === "aviso" && log.criadoEm >= limite24h).length,

@@ -50,3 +50,6 @@ pub struct SessaoOauthPendente {
 
 #[derive(Clone, Default)]
 pub struct EstadoOauthPublicacao(pub Arc<Mutex<HashMap<String, SessaoOauthPendente>>>);
+
+#[derive(Clone, Default)]
+pub struct EstadoRequisicoesIa(pub Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>);

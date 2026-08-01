@@ -17,3 +17,5 @@ pub mod publicacao_social;
 pub mod atualizador;
 
 pub mod observabilidade;
+
+pub mod provedores_ia;
