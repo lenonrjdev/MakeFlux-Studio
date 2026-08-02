@@ -295,7 +295,53 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
                 ON historico_atualizacoes_reais(iniciada_em DESC);
             CREATE INDEX IF NOT EXISTS idx_historico_atualizacoes_status
                 ON historico_atualizacoes_reais(status, iniciada_em DESC);
-            PRAGMA user_version = 9;
+
+            CREATE TABLE IF NOT EXISTS estado_estabilidade (
+                singleton INTEGER PRIMARY KEY NOT NULL CHECK (singleton = 1),
+                execucao_ativa INTEGER NOT NULL,
+                iniciada_em INTEGER,
+                ultima_saida_limpa_em INTEGER,
+                falhas_consecutivas INTEGER NOT NULL,
+                modo_seguro INTEGER NOT NULL,
+                rota_ultima_sessao TEXT NOT NULL,
+                sessao_json TEXT NOT NULL,
+                sessao_atualizada_em INTEGER,
+                restauracao_pendente INTEGER NOT NULL,
+                mensagem TEXT NOT NULL
+            );
+            INSERT OR IGNORE INTO estado_estabilidade (
+                singleton, execucao_ativa, iniciada_em, ultima_saida_limpa_em,
+                falhas_consecutivas, modo_seguro, rota_ultima_sessao, sessao_json,
+                sessao_atualizada_em, restauracao_pendente, mensagem
+            ) VALUES (1, 0, NULL, NULL, 0, 0, '', '{}', NULL, 0, 'Estado inicializado.');
+            CREATE TABLE IF NOT EXISTS incidentes_estabilidade (
+                id TEXT PRIMARY KEY NOT NULL,
+                origem TEXT NOT NULL,
+                categoria TEXT NOT NULL,
+                mensagem TEXT NOT NULL,
+                contexto TEXT NOT NULL,
+                correlacao_id TEXT NOT NULL,
+                criado_em INTEGER NOT NULL,
+                recuperado INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS reparos_estabilidade (
+                id TEXT PRIMARY KEY NOT NULL,
+                acao TEXT NOT NULL,
+                status TEXT NOT NULL,
+                integridade_antes TEXT NOT NULL,
+                integridade_depois TEXT NOT NULL,
+                backup_path TEXT NOT NULL,
+                bytes_liberados INTEGER NOT NULL,
+                criado_em INTEGER NOT NULL,
+                mensagem TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_incidentes_estabilidade_criado
+                ON incidentes_estabilidade(criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_incidentes_estabilidade_categoria
+                ON incidentes_estabilidade(categoria, criado_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_reparos_estabilidade_criado
+                ON reparos_estabilidade(criado_em DESC);
+            PRAGMA user_version = 10;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -347,6 +393,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "checkpoint, confirmação pós-reinício e histórico de atualizações reais v9"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v9: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (10, ?1, ?2)",
+            params![agora_millis() as i64, "modo seguro, sessões, incidentes e reparos de estabilidade v10"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v10: {erro}"))?;
     Ok(conexao)
 }
 

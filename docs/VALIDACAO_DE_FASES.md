@@ -209,3 +209,7 @@ Valida a versão 1.9.0, rota `/beta`, schema SQLite v8, portões automáticos, c
 ## Fase 23 — Atualização real 1.9.1
 
 Valida a versão 1.9.1, schema SQLite v9, checkpoint pré-instalação, snapshot local, confirmação pós-reinício, preservação do SQLite e do cofre, canais estável/beta e rollback assinado para 1.9.0.
+
+## Fase 24 — Estabilidade operacional
+
+Valida a versão 1.10.0, rota `/estabilidade`, schema SQLite v10, modo seguro, detecção de encerramento inesperado, restauração de sessão, incidentes sanitizados, reparo preventivo com backup, limpeza restrita de cache e relatório técnico exportável.

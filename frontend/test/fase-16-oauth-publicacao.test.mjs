@@ -45,7 +45,7 @@ test("o schema atual preserva conexões e envios da v4", () => {
   const dados = ler("src-tauri/src/commands/dados.rs");
   assert.match(dados, /conexoes_publicacao/);
   assert.match(dados, /envios_publicacao/);
-  assert.match(dados, /user_version = [4-9]/);
+  assert.match(dados, /user_version = (?:[4-9]|10)/);
 });
 
 test("as versões do frontend e do aplicativo desktop permanecem sincronizadas após a Fase 16", () => {

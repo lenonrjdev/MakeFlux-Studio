@@ -25,15 +25,15 @@ test("a Fase 23 possui a homologação da atualização real", () => {
   }
 });
 
-test("a versão 1.9.1 permanece sincronizada em todos os contratos", () => {
+test("as versões permanecem sincronizadas após a Fase 23", () => {
   const raizPackage = JSON.parse(lerProjeto("package.json"));
   const packageFrontend = JSON.parse(ler("package.json"));
   const tauri = JSON.parse(ler("src-tauri/tauri.conf.json"));
   const cargo = ler("src-tauri/Cargo.toml");
-  assert.equal(raizPackage.version, "1.9.1");
-  assert.equal(packageFrontend.version, "1.9.1");
-  assert.equal(tauri.version, "1.9.1");
-  assert.match(cargo, /version = "1\.9\.1"/);
+  assert.equal(packageFrontend.version, raizPackage.version);
+  assert.equal(tauri.version, raizPackage.version);
+  assert.match(cargo, new RegExp(`version = "${raizPackage.version.replaceAll(".", "\\.")}"`));
+  assert.match(raizPackage.version, /^1\.(?:9\.1|10\.0)$/);
 });
 
 test("o SQLite evolui para schema v9 com checkpoint e histórico nativo", () => {
@@ -42,7 +42,7 @@ test("o SQLite evolui para schema v9 com checkpoint e histórico nativo", () => 
     "historico_atualizacoes_reais",
     "checkpoint_atualizacao",
     "idx_historico_atualizacoes_iniciado",
-    "PRAGMA user_version = 9",
+    "PRAGMA user_version = 10",
     "atualizações reais v9",
   ]) assert.match(dados, new RegExp(termo));
 });

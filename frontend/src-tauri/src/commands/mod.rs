@@ -22,3 +22,5 @@ pub mod observabilidade;
 pub mod provedores_ia;
 
 pub mod beta;
+
+pub mod estabilidade;

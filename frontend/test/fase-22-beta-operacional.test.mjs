@@ -44,7 +44,7 @@ test("o schema local avança para a versão 8", () => {
   const dados = ler("src-tauri/src/commands/dados.rs");
   assert.match(dados, /CREATE TABLE IF NOT EXISTS sessoes_beta/);
   assert.match(dados, /CREATE TABLE IF NOT EXISTS checks_beta/);
-  assert.match(dados, /PRAGMA user_version = (?:8|9)/);
+  assert.match(dados, /PRAGMA user_version = (?:8|9|10)/);
 });
 
 test("a interface da Fase 22 permanece clara", () => {

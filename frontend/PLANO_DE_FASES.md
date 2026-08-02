@@ -211,3 +211,17 @@ OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancela
 - histórico nativo;
 - canais estável e beta;
 - rollback assinado para 1.9.0.
+
+## Fase 24 — Estabilidade operacional — concluída
+
+- Versão `1.10.0` sincronizada em Next.js, Cargo e Tauri.
+- Schema SQLite v10 para estado de inicialização, incidentes e histórico de reparos.
+- Detecção de encerramento inesperado e confirmação de saída limpa.
+- Modo seguro manual e automático após falhas consecutivas.
+- Pausa de rotinas e retomadas de publicação durante o modo seguro.
+- Persistência da última rota e restauração somente após encerramento inesperado.
+- Captura sanitizada de erros globais e rejeições de promessas.
+- Validação de SQLite, cofre, checkpoint e caches gerenciados.
+- Reparo preventivo com checkpoint WAL, backup, REINDEX e PRAGMA optimize.
+- Limpeza limitada a pastas de cache aprovadas, sem remover projetos ou exportações.
+- Relatório JSON sanitizado para suporte pós-lançamento.

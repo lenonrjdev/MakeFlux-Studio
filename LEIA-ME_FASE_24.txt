@@ -1,0 +1,20 @@
+MAKEFLUX STUDIO — FASE 24 — ESTABILIDADE OPERACIONAL
+
+Versão: 1.10.0
+
+Esta atualização adiciona:
+- modo seguro;
+- detecção de encerramentos inesperados;
+- restauração da última sessão;
+- incidentes sanitizados;
+- validação de arquivos essenciais;
+- reparo preventivo do SQLite com backup;
+- limpeza segura de cache;
+- relatório técnico de estabilidade.
+
+Aplique o ZIP na raiz C:\projetos\makeFluxStudio e execute:
+
+cargo fmt --manifest-path .\frontend\src-tauri\Cargo.toml
+.\VALIDAR_FASE_ATUAL.cmd
+
+Somente consolide após a mensagem FASE APROVADA.

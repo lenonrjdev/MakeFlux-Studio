@@ -122,6 +122,18 @@ pub fn run() {
             commands::beta::exportar_relatorio_beta,
             commands::beta::criar_snapshot_beta,
             commands::beta::revelar_artefato_beta,
+            commands::estabilidade::consultar_estabilidade,
+            commands::estabilidade::registrar_sessao_estabilidade,
+            commands::estabilidade::descartar_restauracao_estabilidade,
+            commands::estabilidade::definir_modo_seguro,
+            commands::estabilidade::registrar_incidente_estabilidade,
+            commands::estabilidade::listar_incidentes_estabilidade,
+            commands::estabilidade::marcar_incidente_recuperado,
+            commands::estabilidade::validar_arquivos_estabilidade,
+            commands::estabilidade::reparar_banco_estabilidade,
+            commands::estabilidade::limpar_cache_estabilidade,
+            commands::estabilidade::exportar_relatorio_estabilidade,
+            commands::estabilidade::revelar_artefato_estabilidade,
         ])
         .setup(|app| {
             use tauri::Manager;
@@ -134,11 +146,19 @@ pub fn run() {
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
 
-            let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
-            commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
+            let estabilidade =
+                commands::estabilidade::registrar_inicio_aplicacao(app.handle()).ok();
+            let modo_seguro = estabilidade
+                .as_ref()
+                .map(|status| status.modo_seguro)
+                .unwrap_or(false);
+            if !modo_seguro {
+                let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
+                commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
+                let _ = commands::publicacao_social::recuperar_envios_interrompidos(app.handle());
+            }
             let _ = commands::atualizador::reconciliar_checkpoint_pos_atualizacao(app.handle());
             let _ = commands::observabilidade::limpar_logs_estruturados(app.handle().clone(), 30);
-            let _ = commands::publicacao_social::recuperar_envios_interrompidos(app.handle());
             let _ = commands::observabilidade::registrar_log_interno(
                 app.handle(),
                 "info",
@@ -171,6 +191,7 @@ pub fn run() {
                 agendador
                     .parar
                     .store(true, std::sync::atomic::Ordering::SeqCst);
+                let _ = commands::estabilidade::registrar_saida_limpa(janela.app_handle());
             }
         })
         .run(tauri::generate_context!())

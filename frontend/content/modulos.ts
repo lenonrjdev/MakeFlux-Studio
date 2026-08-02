@@ -94,6 +94,11 @@ export const modulosPlanejados = {
     fase: "Fase 22",
     descricao: "Portões automáticos, evidências manuais, snapshots e aprovação de release candidate.",
   },
+  "/estabilidade": {
+    titulo: "Estabilidade operacional",
+    fase: "Fase 24",
+    descricao: "Modo seguro, restauração de sessão, incidentes sanitizados, reparo preventivo e limpeza protegida.",
+  },
   "/central-de-ajuda": {
     titulo: "Central de ajuda",
     fase: "Fase 11",
