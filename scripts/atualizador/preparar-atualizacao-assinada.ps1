@@ -66,16 +66,45 @@ try {
 }
 
 $bundle = Join-Path $frontend "src-tauri\target\release\bundle"
-$candidatos = @()
-$candidatos += Get-ChildItem -Path (Join-Path $bundle "nsis") -Filter "*.exe" -File -ErrorAction SilentlyContinue
-$candidatos += Get-ChildItem -Path (Join-Path $bundle "msi") -Filter "*.msi" -File -ErrorAction SilentlyContinue
-$artefato = $candidatos | Where-Object { Test-Path -LiteralPath "$($_.FullName).sig" } | Select-Object -First 1
-if (-not $artefato) { throw "Nenhum instalador com arquivo .sig foi encontrado em $bundle." }
+$padraoVersao = "(^|[_-])$([Regex]::Escape($versao))([_-]|$)"
+
+$candidatosNsis = @(
+    Get-ChildItem -Path (Join-Path $bundle "nsis") -Filter "*.exe" -File -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -match $padraoVersao -and
+            (Test-Path -LiteralPath "$($_.FullName).sig")
+        } |
+        Sort-Object LastWriteTime -Descending
+)
+
+$candidatosMsi = @(
+    Get-ChildItem -Path (Join-Path $bundle "msi") -Filter "*.msi" -File -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -match $padraoVersao -and
+            (Test-Path -LiteralPath "$($_.FullName).sig")
+        } |
+        Sort-Object LastWriteTime -Descending
+)
+
+$artefato = @($candidatosNsis + $candidatosMsi) | Select-Object -First 1
+if (-not $artefato) {
+    throw "Nenhum instalador assinado da versão $versao foi encontrado em $bundle."
+}
 
 Remove-Item -LiteralPath $destino -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $destino -Force | Out-Null
-Copy-Item -LiteralPath $artefato.FullName -Destination $destino -Force
-Copy-Item -LiteralPath "$($artefato.FullName).sig" -Destination $destino -Force
+
+# O GitHub normaliza espaços em nomes de assets. Usamos um nome estável sem
+# espaços para que latest.json aponte exatamente para o arquivo publicado.
+$nomeArtefato = ($artefato.Name -replace '\s+', '.')
+$caminhoArtefatoDestino = Join-Path $destino $nomeArtefato
+$caminhoAssinaturaDestino = "$caminhoArtefatoDestino.sig"
+
+Copy-Item -LiteralPath $artefato.FullName -Destination $caminhoArtefatoDestino -Force
+Copy-Item -LiteralPath "$($artefato.FullName).sig" -Destination $caminhoAssinaturaDestino -Force
+
+Write-Host "Artefato selecionado: $($artefato.Name)" -ForegroundColor DarkCyan
+Write-Host "Artefato da release: $nomeArtefato" -ForegroundColor DarkCyan
 
 $arquitetura = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
 $arch = switch ($arquitetura) {
@@ -85,10 +114,9 @@ $arch = switch ($arquitetura) {
     default { "x86_64" }
 }
 $alvo = "windows-$arch"
-$nomeArtefato = $artefato.Name
 $nomeArtefatoUrl = [Uri]::EscapeDataString($nomeArtefato)
 $urlArtefato = "$BaseUrl/v$versao/$nomeArtefatoUrl"
-$assinatura = (Get-Content -LiteralPath "$($artefato.FullName).sig" -Raw).Trim()
+$assinatura = (Get-Content -LiteralPath $caminhoAssinaturaDestino -Raw).Trim()
 
 $plataformas = [ordered]@{}
 $plataformas[$alvo] = [ordered]@{ signature = $assinatura; url = $urlArtefato }
