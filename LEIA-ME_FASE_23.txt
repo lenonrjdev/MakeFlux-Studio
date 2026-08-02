@@ -1,0 +1,14 @@
+MAKEFLUX STUDIO — FASE 23 — VERSÃO 1.9.1
+
+Esta atualização implementa o teste real do atualizador assinado.
+
+ANTES DE CONSOLIDAR:
+1. Aplique o ZIP na raiz C:\projetos\makeFluxStudio.
+2. Execute cargo fmt para o Cargo.toml do frontend.
+3. Execute VALIDAR_FASE_ATUAL.cmd.
+4. Aguarde FASE APROVADA.
+5. Faça o commit da fase.
+6. Gere e publique a release assinada v1.9.1.
+7. Teste a atualização partindo do instalador oficial v1.9.0.
+
+O ZIP é incremental e não deve ser extraído dentro de frontend.

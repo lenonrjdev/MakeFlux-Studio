@@ -8,7 +8,7 @@ export function CabecalhoAtualizacoes({ versao }: { versao: string }) {
       <div className="flex items-start justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 text-[7px] font-semibold uppercase tracking-[0.09em] text-[#2d8b76]">
-            <ShieldCheck className="size-3" /> Fase 17 · distribuição segura
+            <ShieldCheck className="size-3" /> Fase 23 · atualização real
           </div>
           <h1 className="mt-2 text-[23px] font-semibold tracking-[-0.045em] text-[#2b3132]">{conteudoAtualizador.titulo}</h1>
           <p className="mt-1 max-w-[720px] text-[9px] leading-5 text-[#81898a]">{conteudoAtualizador.descricao}</p>

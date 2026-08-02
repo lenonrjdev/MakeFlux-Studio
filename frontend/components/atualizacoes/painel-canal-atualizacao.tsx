@@ -23,7 +23,7 @@ export function PainelCanalAtualizacao({
           aoAlterar={aoAlterar}
           opcoes={[
             { id: "estavel", titulo: "Estável" },
-            { id: "antecipado", titulo: "Antecipado" },
+            { id: "beta", titulo: "Beta" },
           ]}
         />
       </div>

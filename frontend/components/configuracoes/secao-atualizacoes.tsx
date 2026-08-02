@@ -22,7 +22,7 @@ export function SecaoAtualizacoes({ atualizacoes, verificando, aoAtualizar, aoVe
         </div>
       </CartaoConfiguracao>
       <CartaoConfiguracao titulo="Política de atualização" descricao="Configure como o aplicativo consulta e recebe releases assinadas.">
-        <label className="block"><strong className="mb-2 block text-[10.5px] text-[#303637]">Canal</strong><select value={atualizacoes.canal} onChange={(e) => aoAtualizar({ canal: e.target.value as ConfiguracaoAtualizacoes["canal"] })} className="h-10 w-full rounded-md border border-[#dfe4e4] bg-white px-3 text-[10.5px]"><option value="estavel">Estável</option><option value="antecipado">Acesso antecipado</option></select></label>
+        <label className="block"><strong className="mb-2 block text-[10.5px] text-[#303637]">Canal</strong><select value={atualizacoes.canal} onChange={(e) => aoAtualizar({ canal: e.target.value as ConfiguracaoAtualizacoes["canal"] })} className="h-10 w-full rounded-md border border-[#dfe4e4] bg-white px-3 text-[10.5px]"><option value="estavel">Estável</option><option value="beta">Beta</option></select></label>
         <div className="grid grid-cols-2 gap-3">
           <Interruptor ativo={atualizacoes.verificarAutomaticamente} aoAlterar={(valor) => aoAtualizar({ verificarAutomaticamente: valor })} rotulo="Verificar automaticamente" />
           <Interruptor ativo={atualizacoes.baixarAutomaticamente} aoAlterar={(valor) => aoAtualizar({ baixarAutomaticamente: valor })} rotulo="Baixar automaticamente" />

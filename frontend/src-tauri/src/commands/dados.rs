@@ -252,7 +252,50 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             );
             CREATE INDEX IF NOT EXISTS idx_checks_beta_sessao ON checks_beta(sessao_id, ordem ASC);
             CREATE INDEX IF NOT EXISTS idx_sessoes_beta_iniciado ON sessoes_beta(iniciado_em DESC);
-            PRAGMA user_version = 8;
+
+            CREATE TABLE IF NOT EXISTS historico_atualizacoes_reais (
+                id TEXT PRIMARY KEY NOT NULL,
+                versao_origem TEXT NOT NULL,
+                versao_destino TEXT NOT NULL,
+                canal TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                status TEXT NOT NULL,
+                banco_integro_antes INTEGER NOT NULL,
+                banco_integro_depois INTEGER,
+                workspace_registros_antes INTEGER NOT NULL,
+                workspace_registros_depois INTEGER,
+                banco_bytes_antes INTEGER NOT NULL,
+                banco_bytes_depois INTEGER,
+                banco_sha256_antes TEXT NOT NULL,
+                banco_sha256_depois TEXT,
+                cofre_existia_antes INTEGER NOT NULL,
+                cofre_existe_depois INTEGER,
+                snapshot_path TEXT NOT NULL,
+                iniciada_em INTEGER NOT NULL,
+                concluida_em INTEGER,
+                mensagem TEXT NOT NULL,
+                checkpoint_previo INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS checkpoint_atualizacao (
+                singleton INTEGER PRIMARY KEY NOT NULL CHECK (singleton = 1),
+                id TEXT NOT NULL,
+                versao_origem TEXT NOT NULL,
+                versao_destino TEXT NOT NULL,
+                canal TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                banco_integro_antes INTEGER NOT NULL,
+                workspace_registros_antes INTEGER NOT NULL,
+                banco_bytes_antes INTEGER NOT NULL,
+                banco_sha256_antes TEXT NOT NULL,
+                cofre_existia_antes INTEGER NOT NULL,
+                snapshot_path TEXT NOT NULL,
+                criado_em INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_historico_atualizacoes_iniciado
+                ON historico_atualizacoes_reais(iniciada_em DESC);
+            CREATE INDEX IF NOT EXISTS idx_historico_atualizacoes_status
+                ON historico_atualizacoes_reais(status, iniciada_em DESC);
+            PRAGMA user_version = 9;
             "#,
         )
         .map_err(|erro| format!("Falha ao preparar o schema SQLite: {erro}"))?;
@@ -298,6 +341,12 @@ pub(crate) fn abrir_banco(app: &AppHandle) -> Result<Connection, String> {
             params![agora_millis() as i64, "sessões beta, evidências e release candidate v8"],
         )
         .map_err(|erro| format!("Falha ao registrar o schema v8: {erro}"))?;
+    conexao
+        .execute(
+            "INSERT OR IGNORE INTO schema_migrations (id, aplicada_em, detalhes) VALUES (9, ?1, ?2)",
+            params![agora_millis() as i64, "checkpoint, confirmação pós-reinício e histórico de atualizações reais v9"],
+        )
+        .map_err(|erro| format!("Falha ao registrar o schema v9: {erro}"))?;
     Ok(conexao)
 }
 

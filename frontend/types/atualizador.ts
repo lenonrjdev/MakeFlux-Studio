@@ -4,11 +4,13 @@ export type StatusFluxoAtualizacao =
   | "disponivel"
   | "baixando"
   | "pronto"
+  | "preparando"
   | "instalando"
   | "concluido"
   | "erro";
 
-export type TipoOperacaoAtualizador = "verificacao" | "download" | "instalacao" | "rollback";
+export type CanalAtualizacao = "estavel" | "beta";
+export type TipoOperacaoAtualizador = "verificacao" | "download" | "instalacao" | "rollback" | "confirmacao";
 export type ResultadoOperacaoAtualizador = "sucesso" | "aviso" | "erro";
 
 export type StatusAtualizadorNativo = {
@@ -37,10 +39,44 @@ export type RegistroHistoricoAtualizador = {
   criadoEm: string;
 };
 
+export type RegistroAtualizacaoReal = {
+  id: string;
+  versaoOrigem: string;
+  versaoDestino: string;
+  canal: CanalAtualizacao;
+  tipo: "atualizacao" | "rollback";
+  status: string;
+  bancoIntegroAntes: boolean;
+  bancoIntegroDepois: boolean | null;
+  workspaceRegistrosAntes: number;
+  workspaceRegistrosDepois: number | null;
+  bancoBytesAntes: number;
+  bancoBytesDepois: number | null;
+  bancoSha256Antes: string;
+  bancoSha256Depois: string | null;
+  cofreExistiaAntes: boolean;
+  cofreExisteDepois: boolean | null;
+  snapshotPath: string;
+  iniciadaEm: number;
+  concluidaEm: number | null;
+  mensagem: string;
+  checkpointPrevio: boolean;
+};
+
+export type PainelHomologacaoAtualizador = {
+  versaoAtual: string;
+  checkpointPendente: RegistroAtualizacaoReal | null;
+  ultimaOperacao: RegistroAtualizacaoReal | null;
+  historico: RegistroAtualizacaoReal[];
+  dadosPreservados: boolean | null;
+  rollbackDisponivel: boolean;
+  atualizadoEm: number;
+};
+
 export type WorkspaceAtualizador = {
-  versao: 1;
+  versao: 2;
   status: StatusFluxoAtualizacao;
-  canal: "estavel" | "antecipado";
+  canal: CanalAtualizacao;
   progresso: number;
   bytesBaixados: number;
   totalBytes: number;

@@ -6,22 +6,31 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   baixarPacoteAtualizacao,
   carregarWorkspaceAtualizador,
+  consultarHomologacaoAtualizador,
   consultarStatusAtualizadorNativo,
   criarRegistroHistoricoAtualizador,
   criarWorkspaceAtualizadorPadrao,
+  descartarCheckpointAtualizacao,
   EVENTO_WORKSPACE_ATUALIZADOR,
   instalarPacoteAtualizacao,
+  prepararCheckpointAtualizacao,
+  reconciliarTransicaoLegadaAtualizadorFrontend,
   reiniciarAposAtualizacao,
   salvarWorkspaceAtualizador,
   verificarAtualizacaoAssinada,
 } from "@/lib/atualizador-assinado";
-import type { StatusAtualizadorNativo, WorkspaceAtualizador } from "@/types/atualizador";
+import type {
+  PainelHomologacaoAtualizador,
+  StatusAtualizadorNativo,
+  WorkspaceAtualizador,
+} from "@/types/atualizador";
 
 const workspaceInicial = criarWorkspaceAtualizadorPadrao();
 
 export function useAtualizadorAssinado() {
   const [workspace, setWorkspace] = useState<WorkspaceAtualizador>(workspaceInicial);
   const [runtime, setRuntime] = useState<StatusAtualizadorNativo | null>(null);
+  const [homologacao, setHomologacao] = useState<PainelHomologacaoAtualizador | null>(null);
   const [carregado, setCarregado] = useState(false);
   const workspaceRef = useRef(workspaceInicial);
   const updateRef = useRef<Update | null>(null);
@@ -47,6 +56,26 @@ export function useAtualizadorAssinado() {
     });
   }, [aplicar]);
 
+  const recarregarHomologacao = useCallback(async () => {
+    const painel = await consultarHomologacaoAtualizador();
+    setHomologacao(painel);
+    const statusOperacao = painel.ultimaOperacao?.status ?? "";
+    if (["confirmada", "confirmada-legado"].includes(statusOperacao)) {
+      alterar({
+        status: "concluido",
+        progresso: 100,
+        mensagem: painel.ultimaOperacao?.mensagem ?? "Atualização confirmada após o reinício.",
+        atualizacao: null,
+      });
+    } else if (["dados-inconsistentes", "dados-inconsistentes-legado", "versao-inesperada"].includes(statusOperacao)) {
+      alterar({
+        status: "erro",
+        mensagem: painel.ultimaOperacao?.mensagem ?? "A atualização requer verificação dos dados locais.",
+      });
+    }
+    return painel;
+  }, [alterar]);
+
   const recarregar = useCallback(() => {
     const carregadoLocal = carregarWorkspaceAtualizador();
     workspaceRef.current = carregadoLocal;
@@ -57,7 +86,29 @@ export function useAtualizadorAssinado() {
   useEffect(() => {
     const inicial = window.setTimeout(() => {
       recarregar();
-      void consultarStatusAtualizadorNativo().then(setRuntime);
+      void (async () => {
+        const runtimeAtual = await consultarStatusAtualizadorNativo();
+        setRuntime(runtimeAtual);
+        const painel = await reconciliarTransicaoLegadaAtualizadorFrontend();
+        setHomologacao(painel);
+        const statusOperacao = painel.ultimaOperacao?.status ?? "";
+        if (["confirmada", "confirmada-legado"].includes(statusOperacao)) {
+          alterar({
+            status: "concluido",
+            progresso: 100,
+            mensagem: painel.ultimaOperacao?.mensagem ?? "Atualização confirmada após o reinício.",
+            atualizacao: null,
+          });
+        } else if (["dados-inconsistentes", "dados-inconsistentes-legado", "versao-inesperada"].includes(statusOperacao)) {
+          alterar({
+            status: "erro",
+            mensagem: painel.ultimaOperacao?.mensagem ?? "A atualização requer verificação dos dados locais.",
+          });
+        }
+      })().catch((erro) => {
+        const mensagem = erro instanceof Error ? erro.message : String(erro);
+        alterar({ status: "erro", mensagem });
+      });
     }, 0);
     window.addEventListener(EVENTO_WORKSPACE_ATUALIZADOR, recarregar);
     return () => {
@@ -65,7 +116,7 @@ export function useAtualizadorAssinado() {
       window.removeEventListener(EVENTO_WORKSPACE_ATUALIZADOR, recarregar);
       if (updateRef.current) void updateRef.current.close();
     };
-  }, [recarregar]);
+  }, [alterar, recarregar]);
 
   const verificar = useCallback(async (rollback = false) => {
     if (!runtime?.configurado) {
@@ -85,16 +136,27 @@ export function useAtualizadorAssinado() {
 
     try {
       if (updateRef.current) await updateRef.current.close();
-      const alvo = rollback ? `rollback-${runtime.alvo}` : undefined;
+      const alvoCanal = workspaceRef.current.canal === "beta"
+        ? `beta-${runtime.alvo}`
+        : runtime.alvo;
+      const alvo = rollback ? `rollback-${alvoCanal}` : alvoCanal;
       const resultado = await verificarAtualizacaoAssinada({ alvo, rollback });
       const verificadoEm = new Date().toISOString();
       updateRef.current = resultado.update;
       if (!resultado.update || !resultado.metadados) {
         const mensagem = rollback
-          ? "Nenhum ponto de recuperação assinado foi publicado para este alvo."
-          : `O MakeFlux Studio ${runtime.versaoAtual} já está atualizado.`;
+          ? "Nenhum ponto de recuperação assinado foi publicado para este canal e alvo."
+          : `O MakeFlux Studio ${runtime.versaoAtual} já está atualizado no canal ${workspaceRef.current.canal}.`;
         alterar({ status: "ocioso", mensagem, atualizacao: null, ultimaVerificacaoEm: verificadoEm });
         registrar({ operacao: rollback ? "rollback" : "verificacao", resultado: "sucesso", mensagem, versao: null });
+        return null;
+      }
+      if (!rollback && resultado.metadados.versao === runtime.versaoAtual) {
+        await resultado.update.close();
+        updateRef.current = null;
+        const mensagem = `A versão ${runtime.versaoAtual} já está instalada. A reinstalação foi bloqueada.`;
+        alterar({ status: "ocioso", mensagem, atualizacao: null, ultimaVerificacaoEm: verificadoEm });
+        registrar({ operacao: "verificacao", resultado: "aviso", mensagem, versao: runtime.versaoAtual });
         return null;
       }
       alterar({
@@ -156,20 +218,34 @@ export function useAtualizadorAssinado() {
 
   const instalar = useCallback(async () => {
     const update = updateRef.current;
-    if (!update || !workspaceRef.current.atualizacao) return;
-    const versao = workspaceRef.current.atualizacao.versao;
-    alterar({ status: "instalando", mensagem: "Instalando a versão validada. O aplicativo será reiniciado..." });
-    registrar({ operacao: "instalacao", resultado: "sucesso", mensagem: "Instalação iniciada.", versao });
+    const metadados = workspaceRef.current.atualizacao;
+    if (!update || !metadados) return;
+    const versao = metadados.versao;
+    alterar({ status: "preparando", mensagem: "Criando checkpoint e validando os dados locais..." });
     try {
+      await prepararCheckpointAtualizacao({
+        versaoDestino: versao,
+        canal: workspaceRef.current.canal,
+        rollback: metadados.rollback,
+      });
+      await recarregarHomologacao();
+      alterar({ status: "instalando", mensagem: "Instalando a versão validada. O aplicativo será reiniciado..." });
+      registrar({ operacao: metadados.rollback ? "rollback" : "instalacao", resultado: "sucesso", mensagem: "Checkpoint concluído e instalação iniciada.", versao });
       await instalarPacoteAtualizacao(update);
-      alterar({ status: "concluido", mensagem: "Atualização instalada. Reiniciando o aplicativo..." });
+      alterar({ status: "concluido", mensagem: "Pacote instalado. Reiniciando para confirmar a versão e os dados..." });
       await reiniciarAposAtualizacao();
     } catch (erro) {
       const mensagem = erro instanceof Error ? erro.message : String(erro);
       alterar({ status: "erro", mensagem });
-      registrar({ operacao: "instalacao", resultado: "erro", mensagem, versao });
+      registrar({ operacao: metadados.rollback ? "rollback" : "instalacao", resultado: "erro", mensagem, versao });
+      await recarregarHomologacao().catch(() => null);
     }
-  }, [alterar, registrar]);
+  }, [alterar, recarregarHomologacao, registrar]);
+
+  const descartarCheckpoint = useCallback(async () => {
+    await descartarCheckpointAtualizacao();
+    await recarregarHomologacao();
+  }, [recarregarHomologacao]);
 
   const limparHistorico = useCallback(() => {
     alterar({ historico: [] });
@@ -178,11 +254,14 @@ export function useAtualizadorAssinado() {
   return {
     workspace,
     runtime,
+    homologacao,
     carregado,
     verificar,
     baixar,
     instalar,
     limparHistorico,
+    recarregarHomologacao,
+    descartarCheckpoint,
     alterarCanal: useCallback((canal: WorkspaceAtualizador["canal"]) => alterar({ canal }), [alterar]),
   };
 }

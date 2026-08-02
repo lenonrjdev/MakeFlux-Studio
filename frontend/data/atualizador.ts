@@ -8,6 +8,7 @@ export const rotulosStatusAtualizador: Record<StatusFluxoAtualizacao, string> = 
   disponivel: "Disponível",
   baixando: "Baixando",
   pronto: "Pronto para instalar",
+  preparando: "Criando checkpoint",
   instalando: "Instalando",
   concluido: "Concluído",
   erro: "Atenção",

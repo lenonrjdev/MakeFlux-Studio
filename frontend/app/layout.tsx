@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ProvedorConfiguracoes } from "@/components/configuracoes/provedor-configuracoes";
+import { ProvedorHomologacaoAtualizador } from "@/components/atualizacoes/provedor-homologacao-atualizador";
 import { ProvedorPersistenciaNativa } from "@/components/qualidade/provedor-persistencia-nativa";
 import { ProvedorObservabilidade } from "@/components/observabilidade/provedor-observabilidade";
 import { AplicacaoShell } from "@/components/layout/aplicacao-shell";
@@ -18,7 +19,11 @@ export default function LayoutRaiz({ children }: Readonly<{ children: React.Reac
       <body>
         <ProvedorPersistenciaNativa>
           <ProvedorConfiguracoes>
-            <ProvedorObservabilidade><AplicacaoShell>{children}</AplicacaoShell></ProvedorObservabilidade>
+            <ProvedorObservabilidade>
+              <ProvedorHomologacaoAtualizador>
+                <AplicacaoShell>{children}</AplicacaoShell>
+              </ProvedorHomologacaoAtualizador>
+            </ProvedorObservabilidade>
           </ProvedorConfiguracoes>
         </ProvedorPersistenciaNativa>
       </body>

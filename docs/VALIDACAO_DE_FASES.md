@@ -204,3 +204,8 @@ Valida a versão 1.8.0, rota `/distribuicao`, schema SQLite v7, armazenamento Cl
 ## Fase 22 — Beta operacional
 
 Valida a versão 1.9.0, rota `/beta`, schema SQLite v8, portões automáticos, checklist com evidências, snapshot, relatório e aprovação da release candidate.
+
+
+## Fase 23 — Atualização real 1.9.1
+
+Valida a versão 1.9.1, schema SQLite v9, checkpoint pré-instalação, snapshot local, confirmação pós-reinício, preservação do SQLite e do cofre, canais estável/beta e rollback assinado para 1.9.0.

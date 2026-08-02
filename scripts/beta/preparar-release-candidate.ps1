@@ -1,5 +1,5 @@
 param(
-    [string]$Versao = "1.9.0",
+    [string]$Versao = "",
     [string]$Identificador = "rc.1",
     [switch]$PularValidacao,
     [switch]$PermitirAlteracoesLocais
@@ -18,17 +18,22 @@ if (-not $PermitirAlteracoesLocais) {
 }
 
 if (-not $PularValidacao) {
-    & (Join-Path $raiz "scripts\validacao\validar-fase-22.ps1")
-    if ($LASTEXITCODE -ne 0) { throw "A Fase 22 não foi aprovada pelo validador." }
+    & (Join-Path $raiz "scripts\validacao\validar-fase-atual.ps1")
+    if ($LASTEXITCODE -ne 0) { throw "A fase atual não foi aprovada pelo validador." }
 }
 
 $pacote = Get-Content (Join-Path $raiz "frontend\package.json") -Raw | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace($Versao)) {
+    $Versao = [string]$pacote.version
+}
 if ($pacote.version -ne $Versao) {
     throw "A versão do frontend ($($pacote.version)) difere da versão solicitada ($Versao)."
 }
 
 $pastaNsis = Join-Path $raiz "frontend\src-tauri\target\release\bundle\nsis"
+$padraoVersao = "(^|[_-])$([Regex]::Escape($Versao))([_-]|$)"
 $instalador = Get-ChildItem $pastaNsis -Filter "*setup.exe" -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match $padraoVersao } |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 1
 if (-not $instalador) { throw "Nenhum instalador NSIS foi encontrado em $pastaNsis." }

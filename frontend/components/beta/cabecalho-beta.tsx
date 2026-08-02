@@ -15,7 +15,7 @@ export function CabecalhoBeta({ score, carregando, aoAtualizar }: { score: numbe
         </div>
         <div className="flex items-center gap-2">
           <SeloStatus texto={`Prontidão ${score}%`} tom={score >= 85 ? "verde" : "neutro"} />
-          <SeloStatus texto="Versão 1.9.0" tom="verde" />
+          <SeloStatus texto="Linha 1.9.x" tom="verde" />
           <Botao variante="primario" onClick={aoAtualizar} disabled={carregando}><RefreshCw className={`size-3.5 ${carregando ? "animate-spin" : ""}`} /> Atualizar</Botao>
         </div>
       </div>

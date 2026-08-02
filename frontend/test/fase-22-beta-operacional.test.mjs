@@ -44,7 +44,7 @@ test("o schema local avança para a versão 8", () => {
   const dados = ler("src-tauri/src/commands/dados.rs");
   assert.match(dados, /CREATE TABLE IF NOT EXISTS sessoes_beta/);
   assert.match(dados, /CREATE TABLE IF NOT EXISTS checks_beta/);
-  assert.match(dados, /PRAGMA user_version = 8/);
+  assert.match(dados, /PRAGMA user_version = (?:8|9)/);
 });
 
 test("a interface da Fase 22 permanece clara", () => {
@@ -58,5 +58,5 @@ test("a fase prepara uma release candidate com checksum", () => {
   const script = readFileSync(new URL("../../scripts/beta/preparar-release-candidate.ps1", import.meta.url), "utf8");
   assert.match(script, /release-candidate\.json/);
   assert.match(script, /Get-FileHash/);
-  assert.match(script, /validar-fase-22\.ps1/);
+  assert.match(script, /validar-fase-(?:22|atual)\.ps1/);
 });

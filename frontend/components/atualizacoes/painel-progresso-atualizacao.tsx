@@ -12,10 +12,10 @@ function formatarBytes(valor: number) {
 
 export function PainelProgressoAtualizacao({ workspace, aoInstalar }: { workspace: WorkspaceAtualizador; aoInstalar: () => Promise<unknown> }) {
   const pronto = workspace.status === "pronto";
-  const ativo = ["baixando", "pronto", "instalando", "concluido"].includes(workspace.status);
+  const ativo = ["baixando", "pronto", "preparando", "instalando", "concluido"].includes(workspace.status);
   return (
     <section className="rounded-md border border-[#e1e7e6] bg-white p-4">
-      <div className="flex items-center gap-2 text-[10px] font-semibold text-[#303737]">{workspace.status === "baixando" || workspace.status === "instalando" ? <LoaderCircle className="size-3.5 animate-spin text-[#278a76]" /> : <Download className="size-3.5 text-[#278a76]" />} Download e instalação</div>
+      <div className="flex items-center gap-2 text-[10px] font-semibold text-[#303737]">{["baixando", "preparando", "instalando"].includes(workspace.status) ? <LoaderCircle className="size-3.5 animate-spin text-[#278a76]" /> : <Download className="size-3.5 text-[#278a76]" />} Download e instalação</div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#edf1f0]"><div className="h-full rounded-full bg-[#2b9a82] transition-[width] duration-300" style={{ width: `${ativo ? workspace.progresso : 0}%` }} /></div>
       <div className="mt-2 flex justify-between text-[7px] text-[#8b9393]"><span>{workspace.progresso}%</span><span>{formatarBytes(workspace.bytesBaixados)} / {workspace.totalBytes ? formatarBytes(workspace.totalBytes) : "tamanho desconhecido"}</span></div>
       <p className="mt-3 min-h-8 text-[8px] leading-4 text-[#737c7b]">{workspace.mensagem}</p>

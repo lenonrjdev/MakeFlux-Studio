@@ -6,10 +6,11 @@ param(
     [string]$ChavePublica,
 
     [string]$SenhaChave = $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD,
-    [string]$Endpoint = "https://github.com/lenonrjdev/MakeFlux-Studio/releases/latest/download/latest.json",
+    [string]$Endpoint = "https://github.com/lenonrjdev/MakeFlux-Studio/releases/latest/download/{{target}}.json",
     [string]$BaseUrl = "https://github.com/lenonrjdev/MakeFlux-Studio/releases/download",
     [string]$Notas = "Nova versão estável do MakeFlux Studio.",
-    [string]$ManifestoAnterior = ""
+    [string]$ManifestoAnterior = "",
+    [switch]$SemAliasBeta
 )
 
 $ErrorActionPreference = "Stop"
@@ -119,19 +120,39 @@ $urlArtefato = "$BaseUrl/v$versao/$nomeArtefatoUrl"
 $assinatura = (Get-Content -LiteralPath $caminhoAssinaturaDestino -Raw).Trim()
 
 $plataformas = [ordered]@{}
-$plataformas[$alvo] = [ordered]@{ signature = $assinatura; url = $urlArtefato }
-
-if ($ManifestoAnterior -and (Test-Path -LiteralPath $ManifestoAnterior)) {
-    $anterior = Get-Content -LiteralPath $ManifestoAnterior -Raw | ConvertFrom-Json
-    $entradaAnterior = $anterior.platforms.$alvo
-    if ($entradaAnterior -and $entradaAnterior.url -and $entradaAnterior.signature) {
-        $plataformas["rollback-$alvo"] = [ordered]@{
-            signature = [string]$entradaAnterior.signature
-            url = [string]$entradaAnterior.url
-        }
-    }
+$entradaAtual = [ordered]@{ signature = $assinatura; url = $urlArtefato }
+$plataformas[$alvo] = $entradaAtual
+if (-not $SemAliasBeta) {
+    # O canal beta usa um alvo próprio. Nesta manutenção ele aponta para o
+    # mesmo binário estável, mas pode receber outro artefato em releases futuras.
+    $plataformas["beta-$alvo"] = $entradaAtual
 }
 
+function Salvar-ManifestoEstatico {
+    param(
+        [Parameter(Mandatory = $true)][string]$Caminho,
+        [Parameter(Mandatory = $true)][string]$VersaoManifesto,
+        [Parameter(Mandatory = $true)][string]$NotasManifesto,
+        [Parameter(Mandatory = $true)][string]$AlvoManifesto,
+        [Parameter(Mandatory = $true)]$EntradaManifesto
+    )
+
+    $mapa = [ordered]@{}
+    $mapa[$AlvoManifesto] = [ordered]@{
+        signature = [string]$EntradaManifesto.signature
+        url = [string]$EntradaManifesto.url
+    }
+    $conteudo = [ordered]@{
+        version = $VersaoManifesto
+        notes = $NotasManifesto
+        pub_date = [DateTime]::UtcNow.ToString("o")
+        platforms = $mapa
+    }
+    $conteudo | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $Caminho -Encoding utf8
+}
+
+# Compatibilidade com instalações anteriores, como a 1.9.0, que consultam
+# diretamente latest.json sem um alvo no nome do arquivo.
 $manifesto = [ordered]@{
     version = $versao
     notes = $Notas
@@ -140,12 +161,58 @@ $manifesto = [ordered]@{
 }
 $manifesto | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $destino "latest.json") -Encoding utf8
 
-$arquivosHash = Get-ChildItem -LiteralPath $destino -File
-$linhasHash = foreach ($arquivo in $arquivosHash) {
-    $hash = (Get-FileHash -LiteralPath $arquivo.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$hash  $($arquivo.Name)"
+# Instalações da Fase 23 em diante consultam um manifesto por alvo. Isso
+# permite que o rollback anuncie corretamente a versão anterior no campo
+# `version`, em vez de misturar versões diferentes no mesmo latest.json.
+$manifestosCanal = @()
+foreach ($chaveCanal in @($plataformas.Keys)) {
+    $nomeManifesto = "$chaveCanal.json"
+    Salvar-ManifestoEstatico `
+        -Caminho (Join-Path $destino $nomeManifesto) `
+        -VersaoManifesto $versao `
+        -NotasManifesto $Notas `
+        -AlvoManifesto $chaveCanal `
+        -EntradaManifesto $plataformas[$chaveCanal]
+    $manifestosCanal += $nomeManifesto
 }
-$linhasHash | Set-Content -LiteralPath (Join-Path $destino "checksums.sha256") -Encoding utf8
+
+$manifestosRollback = @()
+if ($ManifestoAnterior -and (Test-Path -LiteralPath $ManifestoAnterior)) {
+    $anterior = Get-Content -LiteralPath $ManifestoAnterior -Raw | ConvertFrom-Json
+    $versaoAnterior = [string]$anterior.version
+    if ([string]::IsNullOrWhiteSpace($versaoAnterior)) {
+        throw "O manifesto anterior não informa uma versão válida."
+    }
+
+    foreach ($chaveCanal in @($plataformas.Keys)) {
+        $chaveBase = if ($chaveCanal -like "beta-*") {
+            $chaveCanal.Substring(5)
+        } else {
+            $chaveCanal
+        }
+        $propriedadeCanal = $anterior.platforms.PSObject.Properties[$chaveCanal]
+        $propriedadeBase = $anterior.platforms.PSObject.Properties[$chaveBase]
+        $entradaAnterior = if ($propriedadeCanal) {
+            $propriedadeCanal.Value
+        } elseif ($propriedadeBase) {
+            $propriedadeBase.Value
+        } else {
+            $null
+        }
+
+        if ($entradaAnterior -and $entradaAnterior.url -and $entradaAnterior.signature) {
+            $alvoRollback = "rollback-$chaveCanal"
+            $nomeManifestoRollback = "$alvoRollback.json"
+            Salvar-ManifestoEstatico `
+                -Caminho (Join-Path $destino $nomeManifestoRollback) `
+                -VersaoManifesto $versaoAnterior `
+                -NotasManifesto "Rollback assinado para o MakeFlux Studio $versaoAnterior." `
+                -AlvoManifesto $alvoRollback `
+                -EntradaManifesto $entradaAnterior
+            $manifestosRollback += $nomeManifestoRollback
+        }
+    }
+}
 
 $release = [ordered]@{
     produto = "MakeFlux Studio"
@@ -154,11 +221,23 @@ $release = [ordered]@{
     endpoint = $Endpoint
     artefato = $nomeArtefato
     url = $urlArtefato
-    rollbackIncluido = $plataformas.Contains("rollback-$alvo")
+    manifestosCanal = $manifestosCanal
+    manifestosRollback = $manifestosRollback
+    rollbackIncluido = $manifestosRollback.Count -gt 0
+    aliasBetaIncluido = $plataformas.Contains("beta-$alvo")
     criadoEm = [DateTime]::UtcNow.ToString("o")
 }
-$release | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $destino "release-manifest.json") -Encoding utf8
+$release | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $destino "release-manifest.json") -Encoding utf8
+
+$arquivosHash = Get-ChildItem -LiteralPath $destino -File |
+    Where-Object { $_.Name -ne "checksums.sha256" } |
+    Sort-Object Name
+$linhasHash = foreach ($arquivo in $arquivosHash) {
+    $hash = (Get-FileHash -LiteralPath $arquivo.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    "$hash  $($arquivo.Name)"
+}
+$linhasHash | Set-Content -LiteralPath (Join-Path $destino "checksums.sha256") -Encoding utf8
 
 Write-Host ""
 Write-Host "Release assinada preparada em: $destino" -ForegroundColor Green
-Write-Host "Envie o instalador, o .sig e latest.json para a mesma GitHub Release v$versao." -ForegroundColor Cyan
+Write-Host "Envie o instalador, o .sig e todos os manifestos JSON para a mesma GitHub Release v$versao." -ForegroundColor Cyan

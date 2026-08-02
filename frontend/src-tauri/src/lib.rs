@@ -95,6 +95,11 @@ pub fn run() {
             commands::armazenamento_publicacao::remover_ativo_temporario_publicacao,
             commands::armazenamento_publicacao::limpar_ativos_temporarios_expirados,
             commands::atualizador::status_atualizador_nativo,
+            commands::atualizador::preparar_checkpoint_atualizacao,
+            commands::atualizador::registrar_transicao_legada_atualizacao,
+            commands::atualizador::confirmar_pos_atualizacao,
+            commands::atualizador::descartar_checkpoint_atualizacao,
+            commands::atualizador::consultar_homologacao_atualizador,
             commands::observabilidade::registrar_log_estruturado,
             commands::observabilidade::listar_logs_estruturados,
             commands::observabilidade::consultar_resumo_observabilidade,
@@ -131,6 +136,7 @@ pub fn run() {
 
             let estado = app.state::<EstadoAgendadorRotinas>().inner().clone();
             commands::rotinas::iniciar_worker_rotinas(app.handle().clone(), estado);
+            let _ = commands::atualizador::reconciliar_checkpoint_pos_atualizacao(app.handle());
             let _ = commands::observabilidade::limpar_logs_estruturados(app.handle().clone(), 30);
             let _ = commands::publicacao_social::recuperar_envios_interrompidos(app.handle());
             let _ = commands::observabilidade::registrar_log_interno(

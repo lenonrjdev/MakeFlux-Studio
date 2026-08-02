@@ -49,7 +49,7 @@ test("o fluxo cobre verificação, download, assinatura, instalação e reiníci
 test("o rollback usa alvo customizado e permite downgrade somente de forma explícita", () => {
   const hook = ler("hooks/use-atualizador-assinado.ts");
   const biblioteca = ler("lib/atualizador-assinado.ts");
-  assert.match(hook, /rollback-\$\{runtime\.alvo\}/);
+  assert.match(hook, /rollback-\$\{alvoCanal\}/);
   assert.match(biblioteca, /allowDowngrades: rollback/);
 });
 

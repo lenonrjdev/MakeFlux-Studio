@@ -200,3 +200,14 @@ OpenAI, Gemini, DeepSeek e Ollama com cofre, fallback, limites, custos e cancela
 - checklist manual com evidências;
 - snapshot SQLite e relatório sanitizado;
 - aprovação bloqueada por critérios obrigatórios.
+
+
+## Fase 23 — Atualização real e homologação pós-reinício
+
+- versão 1.9.1;
+- atualização assinada real partindo de 1.9.0;
+- checkpoint e snapshot antes da instalação;
+- confirmação da versão e dos dados depois do reinício;
+- histórico nativo;
+- canais estável e beta;
+- rollback assinado para 1.9.0.
